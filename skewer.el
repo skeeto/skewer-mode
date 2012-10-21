@@ -10,8 +10,10 @@
 
 (defun skewer-eval (string)
   (while skewer-clients
-    (with-httpd-buffer (pop skewer-clients) "text/javascript"
-      (insert string))))
+    (condition-case error-case
+        (with-httpd-buffer (pop skewer-clients) "text/javascript"
+          (insert string))
+      (error nil))))
 
 (skewer-eval "Math.pow(35, 5)")
 (skewer-eval "$('h1').html('Foobar');")

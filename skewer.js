@@ -1,10 +1,7 @@
-function foo() {
+function skewer() {
     $.get("/skewer/get", function (code) {
-        $.post("/skewer/post", eval(code).toString());
-        setTimeout(foo, 100);
+        $.post("/skewer/post", eval(code).toString(), skewer);
     }, "script");
 }
 
-$("document").ready(function () {
-    foo();
-});
+$("document").ready(skewer);
