@@ -1,11 +1,34 @@
+;;; simple-httpd.el --- pure elisp HTTP server
+
+;; This is free and unencumbered software released into the public domain.
+
+;; Author: Christopher Wellons <mosquitopsu@gmail.com>
+;; URL: https://github.com/skeeto/skewer-mode
+;; Version: 1.0
+
+;;; Commentary:
+
+;;  1. Start the HTTP server (`httpd-start')
+;;  2. Put your HTML document in the root (`httpd-root')
+;;  3. Include jQuery and `/skewer` as scripts (see example.html)
+;;  4. Visit the document from a browser (probably http://localhost:8080/)
+
+;; With `skewer-mode' enabled in a buffer, typing C-x C-e
+;; (`skewer-eval-last-expression') will evaluate the JavaScript
+;; expression before the point in the visiting browser, like the
+;; various Lisp modes. The result of the expression is echoed in the
+;; minibuffer.
+
+;;; Code:
+
 (require 'cl)
 (require 'simple-httpd)
 (require 'js)
 
 (defvar skewer-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)
-    map)
+    (prog1 map
+      (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)))
   "Keymap for skewer-mode.")
 
 (defvar skewer-data-root (file-name-directory load-file-name)
@@ -24,6 +47,7 @@
   (message "%s" (cadr (assoc "Content" req))))
 
 (defun skewer-eval (string)
+  "Evaluate STRING in the waiting browsers."
   (while skewer-clients
     (condition-case error-case
         (with-httpd-buffer (pop skewer-clients) "text/javascript"
@@ -55,3 +79,5 @@ waiting browser."
 (add-hook 'js-mode-hook 'skewer-mode)
 
 (provide 'skewer)
+
+;;; skewer.el ends here
