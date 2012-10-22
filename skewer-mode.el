@@ -39,6 +39,9 @@
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
 
+(defvar skewer-post-hook '(skewer-post-minibuffer)
+  "Functions to be called with result alist when browser returns.")
+
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
 
@@ -47,7 +50,17 @@
 
 (defservlet skewer/post text/plain (path args req)
   (let ((result (json-read-from-string (cadr (assoc "Content" req)))))
-    (message "%s" (cdr (assoc 'value result)))))
+    (dolist (hook skewer-post-hook)
+      (funcall hook result))))
+
+(defun skewer-success-p (result)
+  "Return T if result was a success."
+  (equal "success" (cdr (assoc 'status result))))
+
+(defun skewer-post-minibuffer (result)
+  "Report results in the minibuffer."
+  (message "%s%s" (if (skewer-success-p result) "" "error: ")
+           (cdr (assoc 'value result))))
 
 (defun skewer-eval (string)
   "Evaluate STRING in the waiting browsers."
