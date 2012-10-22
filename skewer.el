@@ -1,4 +1,5 @@
 (require 'cl)
+(require 'simple-httpd)
 (require 'js)
 
 (defvar skewer-mode-map
@@ -46,3 +47,5 @@ waiting browser."
   :keymap skewer-mode-map)
 
 (add-hook 'js-mode-hook 'skewer-mode)
+
+(provide 'skewer)
