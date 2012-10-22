@@ -77,6 +77,9 @@ trust. These whitelisted functions are considered safe.")
         (funcall callback result)
       (message "warning: invalid callback: %s" callback))))
 
+(defservlet skewer/example text/html ()
+  (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
+
 (defun skewer-success-p (result)
   "Return T if result was a success."
   (equal "success" (cdr (assoc 'status result))))
