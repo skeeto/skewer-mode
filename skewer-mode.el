@@ -24,6 +24,7 @@
 (require 'cl)
 (require 'simple-httpd)
 (require 'js)
+(require 'json)
 
 (defvar skewer-mode-map
   (let ((map (make-sparse-keymap)))
@@ -45,7 +46,8 @@
   (push proc skewer-clients))
 
 (defservlet skewer/post text/plain (path args req)
-  (message "%s" (cadr (assoc "Content" req))))
+  (let ((result (json-read-from-string (cadr (assoc "Content" req)))))
+    (message "%s" (cdr (assoc 'value result)))))
 
 (defun skewer-eval (string)
   "Evaluate STRING in the waiting browsers."
@@ -54,7 +56,8 @@
       (condition-case error-case
           (progn
             (with-httpd-buffer (pop skewer-clients) "text/plain"
-              (insert string))
+              (insert (json-encode `((eval . ,string)
+                                     (id . ,(random most-positive-fixnum))))))
             (setq sent t))
         (error nil)))
     (if (not sent)

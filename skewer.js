@@ -1,13 +1,16 @@
 function skewer() {
-    $.get("/skewer/get", function (code) {
-        var result;
+    $.get("/skewer/get", function (str) {
+        var request = JSON.parse(str);
+        var result = {"id": request.id};
         try {
-            result = (eval, eval)(code); // global eval
+            result.value = (eval, eval)(request.eval); // global eval
+            result.status = "success";
         } catch (err) {
-            result = "error: " + err.message;
+            result.value = err.message;
+            result.status = "error";
         }
-        if (result == undefined) result = "undefined";
-        $.post("/skewer/post", result.toString(), skewer);
+        if (result.value == undefined) result.value = "undefined";
+        $.post("/skewer/post", JSON.stringify(result), skewer);
     }, "text");
 }
 
