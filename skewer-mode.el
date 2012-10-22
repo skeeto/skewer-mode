@@ -40,13 +40,34 @@
   "Browsers awaiting JavaScript snippets.")
 
 (defvar skewer-callbacks '(skewer-post-minibuffer)
-  "Whitelist of valid callback functions.")
+  "A whitelist of valid callback functions. The browser hands
+back the name of the callback function, which we can't
+trust. These whitelisted functions are considered safe.")
+
+(defvar skewer-queue ()
+  "Queued messages for the browser.")
+
+(defun skewer-process-queue ()
+  "Send all queued messages to clients."
+  (when (and skewer-queue skewer-clients)
+    (let ((message (pop skewer-queue))
+          (sent nil))
+      (while skewer-clients
+        (condition-case error-case
+            (progn
+              (with-httpd-buffer (pop skewer-clients) "text/plain"
+                (insert (json-encode message)))
+              (setq sent t))
+          (error nil)))
+      (if (not sent) (push message skewer-queue)))
+    (skewer-process-queue)))
 
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
 
 (defun httpd/skewer/get (proc path &rest args)
-  (push proc skewer-clients))
+  (push proc skewer-clients)
+  (skewer-process-queue))
 
 (defservlet skewer/post text/plain (path args req)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
@@ -77,19 +98,13 @@
         (beginning-of-buffer)))))
 
 (defun skewer-eval (string callback)
-  "Evaluate STRING in the waiting browsers."
-  (let ((sent nil))
-    (while skewer-clients
-      (condition-case error-case
-          (progn
-            (with-httpd-buffer (pop skewer-clients) "text/plain"
-              (insert (json-encode `((eval . ,string)
-                                     (callback . ,callback)
-                                     (id . ,(random most-positive-fixnum))))))
-            (setq sent t))
-        (error nil)))
-    (if (not sent)
-        (message "Warning: no skewer clients connected"))))
+  "Evaluate STRING in the waiting browsers, giving the result to
+CALLBACK. The callback function must be listed in `skewer-callbacks'."
+  (let ((request `((eval . ,string)
+                   (callback . ,callback)
+                   (id . ,(random most-positive-fixnum)))))
+    (setq skewer-queue (append skewer-queue (list request)))
+    (skewer-process-queue)))
 
 (defun skewer-eval-last-expression ()
   "Evaluate the JavaScript expression before the point in the
