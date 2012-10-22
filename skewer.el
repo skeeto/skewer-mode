@@ -8,8 +8,14 @@
     map)
   "Keymap for skewer-mode.")
 
+(defvar skewer-data-root (file-name-directory load-file-name)
+  "Location of data files needed by impatient-mode.")
+
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
+
+(defservlet skewer text/javascript ()
+  (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
 
 (defun httpd/skewer/get (proc path &rest args)
   (push proc skewer-clients))
