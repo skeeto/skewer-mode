@@ -1,6 +1,7 @@
 function skewer() {
     $.get("/skewer/get", function (code) {
-        $.post("/skewer/post", eval(code).toString(), skewer);
+        var result = eval(code) || "undefined";
+        $.post("/skewer/post", result.toString(), skewer);
     }, "script");
 }
 
