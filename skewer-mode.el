@@ -57,9 +57,22 @@
   "Return T if result was a success."
   (equal "success" (cdr (assoc 'status result))))
 
+(define-derived-mode skewer-error-mode special-mode "skewer-error"
+  "Mode for displaying JavaScript errors returned by skewer-mode."
+  (setq truncate-lines t))
+
 (defun skewer-post-minibuffer (result)
-  "Report results in the minibuffer."
-  (message "%s" (cdr (assoc 'value result))))
+  "Report results in the minibuffer or the error buffer."
+  (if (skewer-success-p result)
+      (message "%s" (cdr (assoc 'value result)))
+    (with-current-buffer (pop-to-buffer (get-buffer-create "*skewer-error*"))
+      (let ((inhibit-read-only t)
+            (error (cdr (assoc 'error result))))
+        (erase-buffer)
+        (skewer-error-mode)
+        (insert (cdr (assoc 'value result)) "\n")
+        (insert (cdr (assoc 'stack error)) "\n")
+        (beginning-of-buffer)))))
 
 (defun skewer-eval (string)
   "Evaluate STRING in the waiting browsers."
