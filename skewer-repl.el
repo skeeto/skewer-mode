@@ -9,7 +9,7 @@
   :syntax-table emacs-lisp-mode-syntax-table
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
   (setq comint-input-sender 'skewer-input-sender)
-  (add-hook 'skewer-post-hook 'skewer-post-repl)
+  (add-to-list 'skewer-callbacks 'skewer-post-repl)
   (unless (comint-check-proc (current-buffer))
     (start-process "ielm" (current-buffer) "hexl")
     (set-process-query-on-exit-flag (skewer-repl-process) nil)
@@ -19,7 +19,7 @@
     (set-process-filter (skewer-repl-process) 'comint-output-filter)))
 
 (defun skewer-input-sender (proc input)
-  (skewer-eval input))
+  (skewer-eval input 'skewer-post-repl))
 
 (defun skewer-post-repl (result)
   (let ((buffer (get-buffer "*skewer-repl*"))

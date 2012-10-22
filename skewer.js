@@ -1,7 +1,7 @@
 function skewer() {
     $.get("/skewer/get", function (str) {
         var request = JSON.parse(str);
-        var result = {"id": request.id};
+        var result = {"id": request.id, "callback": request.callback};
         var value;
         try {
             value = (eval, eval)(request.eval); // global eval

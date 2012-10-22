@@ -39,8 +39,8 @@
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
 
-(defvar skewer-post-hook '(skewer-post-minibuffer)
-  "Functions to be called with result alist when browser returns.")
+(defvar skewer-callbacks '(skewer-post-minibuffer)
+  "Whitelist of valid callback functions.")
 
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
@@ -49,9 +49,11 @@
   (push proc skewer-clients))
 
 (defservlet skewer/post text/plain (path args req)
-  (let ((result (json-read-from-string (cadr (assoc "Content" req)))))
-    (dolist (hook skewer-post-hook)
-      (funcall hook result))))
+  (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
+         (callback (intern-soft (cdr (assoc 'callback result)))))
+    (if (member callback skewer-callbacks)
+        (funcall callback result)
+      (message "warning: invalid callback: %s" callback))))
 
 (defun skewer-success-p (result)
   "Return T if result was a success."
@@ -74,7 +76,7 @@
         (insert (cdr (assoc 'stack error)) "\n")
         (beginning-of-buffer)))))
 
-(defun skewer-eval (string)
+(defun skewer-eval (string callback)
   "Evaluate STRING in the waiting browsers."
   (let ((sent nil))
     (while skewer-clients
@@ -82,6 +84,7 @@
           (progn
             (with-httpd-buffer (pop skewer-clients) "text/plain"
               (insert (json-encode `((eval . ,string)
+                                     (callback . ,callback)
                                      (id . ,(random most-positive-fixnum))))))
             (setq sent t))
         (error nil)))
@@ -103,7 +106,8 @@ waiting browser."
         (re-search-forward "[^ \n\r;]")
         (backward-char)
         (js--forward-expression))
-      (skewer-eval (buffer-substring-no-properties last p)))))
+      (skewer-eval (buffer-substring-no-properties last p)
+                   'skewer-post-minibuffer))))
 
 (defun skewer-eval-defun ()
   "Evaluate the JavaScript expression around the point in the
@@ -113,7 +117,8 @@ waiting browser."
     (backward-paragraph)
     (let ((start (point)))
       (forward-paragraph)
-      (skewer-eval (buffer-substring-no-properties start (point))))))
+      (skewer-eval (buffer-substring-no-properties start (point))
+                   'skewer-post-minibuffer))))
 
 (define-minor-mode skewer-mode
   "Minor mode for interacting with a browser."
