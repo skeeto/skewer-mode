@@ -35,6 +35,7 @@
   "When T, skewer will attempt to modify pages to insert its script.")
 
 (defun skewer-proxy-servlet (proc p &rest args)
+  "Passes requests through to remote host at `httpd-proxy-url'."
   (with-current-buffer (url-retrieve-synchronously (concat skewer-proxy-url p))
     (let* ((header-string (car (split-string (buffer-string) "\n\r?\n\r?")))
            (header (httpd-parse header-string)))
