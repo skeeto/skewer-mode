@@ -5,9 +5,11 @@ function skewer() {
         try {
             value = (eval, eval)(request.eval); // global eval
             result.status = "success";
-        } catch (err) {
-            value = err.message;
+        } catch (error) {
+            value = error;
             result.status = "error";
+            result.error = {"name": error.name, "stack": error.stack,
+                            "type": error.type, "message": error.message};
         }
         if (value == undefined)
             result.value = "undefined"

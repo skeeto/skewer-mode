@@ -59,8 +59,7 @@
 
 (defun skewer-post-minibuffer (result)
   "Report results in the minibuffer."
-  (message "%s%s" (if (skewer-success-p result) "" "error: ")
-           (cdr (assoc 'value result))))
+  (message "%s" (cdr (assoc 'value result))))
 
 (defun skewer-eval (string)
   "Evaluate STRING in the waiting browsers."
