@@ -50,7 +50,7 @@
   "Evaluate STRING in the waiting browsers."
   (while skewer-clients
     (condition-case error-case
-        (with-httpd-buffer (pop skewer-clients) "text/javascript"
+        (with-httpd-buffer (pop skewer-clients) "text/plain"
           (insert string))
       (error nil))))
 
