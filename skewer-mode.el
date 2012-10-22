@@ -14,10 +14,10 @@
 ;;  4. Visit the document from a browser (probably http://localhost:8080/)
 
 ;; With `skewer-mode' enabled in a buffer, typing C-x C-e
-;; (`skewer-eval-last-expression') will evaluate the JavaScript
-;; expression before the point in the visiting browser, like the
-;; various Lisp modes. The result of the expression is echoed in the
-;; minibuffer.
+;; (`skewer-eval-last-expression') or C-M-x (`skewer-eval-defun') will
+;; evaluate the JavaScript expression before the point in the visiting
+;; browser, like the various Lisp modes. The result of the expression
+;; is echoed in the minibuffer.
 
 ;;; Code:
 
@@ -28,7 +28,8 @@
 (defvar skewer-mode-map
   (let ((map (make-sparse-keymap)))
     (prog1 map
-      (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)))
+      (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)
+      (define-key map (kbd "C-M-x") 'skewer-eval-defun)))
   "Keymap for skewer-mode.")
 
 (defvar skewer-data-root (file-name-directory load-file-name)
@@ -70,6 +71,16 @@ waiting browser."
         (backward-char)
         (js--forward-expression))
       (skewer-eval (buffer-substring-no-properties last p)))))
+
+(defun skewer-eval-defun ()
+  "Evaluate the JavaScript expression around the point in the
+  waiting browser."
+  (interactive)
+  (save-excursion
+    (backward-paragraph)
+    (let ((start (point)))
+      (forward-paragraph)
+      (skewer-eval (buffer-substring-no-properties start (point))))))
 
 (define-minor-mode skewer-mode
   "Minor mode for interacting with a browser."
