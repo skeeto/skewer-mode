@@ -17,11 +17,26 @@ browser, like the various Lisp modes. The result of the expression is
 echoed in the minibuffer. Once loaded, `skewer-mode` is automatically
 enabled in `js-mode` buffers.
 
+## REPL
+
+With `skewer-repl.el` loaded, a REPL into the browser can be created
+with `M-x skewer-repl`. This should work just like a REPL in console
+within the browser.
+
+## Transparent Proxy
+
+To work around the same origin policy, skewer can also be a proxy for
+another site, where it will automatically inject it's own HTML. This
+is experimental and a bit flaky right now. See `skewer-proxy.el`.
+
 ## Rationalization
 
 I wanted something like [swank-js][swank-js] but without all the
 painful setup. Having already written an Emacs web server I was
-halfway there.
+halfway there. It took relatively little code to accomplish.
+
+The name refers to the idea that Emacs is *skewering* the browser from
+server-side.
 
 [simple-httpd]: https://github.com/skeeto/emacs-http-server
 [swank-js]: https://github.com/swank-js/swank-js

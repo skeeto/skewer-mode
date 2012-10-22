@@ -14,11 +14,20 @@
 ;;  3. Include jQuery and `/skewer` as scripts (see example.html)
 ;;  4. Visit the document from a browser (probably http://localhost:8080/)
 
-;; With `skewer-mode' enabled in a buffer, typing C-x C-e
-;; (`skewer-eval-last-expression') or C-M-x (`skewer-eval-defun') will
-;; evaluate the JavaScript expression before the point in the visiting
-;; browser, like the various Lisp modes. The result of the expression
-;; is echoed in the minibuffer.
+;; With `skewer-mode' enabled in a buffer, these commands will
+;; evaluate the JavaScript expression around the point, like the
+;; various Lisp modes.
+
+;;  * C-x C-e --  `skewer-eval-last-expression'
+;;  * C-M-x   --  `skewer-eval-defun'
+
+;; The result of the expression is echoed in the minibuffer.
+
+;; There's also a REPL (`skewer-repl') provided in skewer-repl.el.
+
+;; To work around the same origin policy, skewer can become a
+;; transparent proxy to serve another website through Emacs, injecting
+;; its own JavaScript. See skewer-proxy.el.
 
 ;;; Code:
 
