@@ -49,11 +49,16 @@
 
 (defun skewer-eval (string)
   "Evaluate STRING in the waiting browsers."
-  (while skewer-clients
-    (condition-case error-case
-        (with-httpd-buffer (pop skewer-clients) "text/plain"
-          (insert string))
-      (error nil))))
+  (let ((sent nil))
+    (while skewer-clients
+      (condition-case error-case
+          (progn
+            (with-httpd-buffer (pop skewer-clients) "text/plain"
+              (insert string))
+            (setq sent t))
+        (error nil)))
+    (if (not sent)
+        (message "Warning: no skewer clients connected"))))
 
 (defun skewer-eval-last-expression ()
   "Evaluate the JavaScript expression before the point in the
