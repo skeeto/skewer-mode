@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
 ;; Version: 1.0
-;; Package-Requires: ((simple-httpd "1.2.2"))
+;; Package-Requires: ((simple-httpd "1.2.3"))
 
 ;;; Commentary:
 
