@@ -1,6 +1,14 @@
 (require 'cl)
+(require 'js)
 
-(defvar skewer-clients ())
+(defvar skewer-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)
+    map)
+  "Keymap for skewer-mode.")
+
+(defvar skewer-clients ()
+  "Browsers awaiting JavaScript snippets.")
 
 (defun httpd/skewer/get (proc path &rest args)
   (push proc skewer-clients))
@@ -20,22 +28,21 @@
 waiting browser."
   (interactive)
   (save-excursion
-    (re-search-backward "[^ \n\r]+")
+    (re-search-backward "[^ \n\r;]+")
     (forward-char)
     (let ((p (point))
            (last (point-min)))
       (goto-char (point-min))
       (while (< (point) p)
         (setq last (point))
-        (re-search-forward "[^ \n\r]")
+        (re-search-forward "[^ \n\r;]")
         (backward-char)
         (js--forward-expression))
       (skewer-eval (buffer-substring-no-properties last p)))))
 
-;;; Test
+(define-minor-mode skewer-mode
+  "Minor mode for interacting with a browser."
+  :lighter " skewer"
+  :keymap skewer-mode-map)
 
-(skewer-eval "Math.pow(35, 5)")
-(skewer-eval "$('h1').html('Foobar');")
-(skewer-eval "alert('foo')")
-(skewer-eval "function foo() { return 100; }")
-(skewer-eval "foo()")
+(add-hook 'js-mode-hook 'skewer-mode)
