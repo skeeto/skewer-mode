@@ -31,10 +31,14 @@
 (defvar skewer--enabled nil
   "Current status of skewer-proxy.")
 
+(defvar skewer-inject t
+  "When T, skewer will attempt to modify pages to insert its script.")
+
 (defun skewer-proxy-servlet (proc p &rest args)
   (with-current-buffer (url-retrieve-synchronously (concat skewer-proxy-url p))
     (let* ((header-string (car (split-string (buffer-string) "\n\r?\n\r?")))
            (header (httpd-parse header-string)))
+      (if skewer-inject (skewer-inject))
       (process-send-region proc (point-min) (point-max))
       (if (equal "close" (cadr (assoc "Connection" header)))
           (process-send-eof proc)))))
@@ -52,6 +56,41 @@
   (interactive)
   (fset 'httpd/ skewer--orig-httpd/)
   (setq skewer--enabled nil))
+
+;; Page manipulation
+
+(defvar skewer-inject-string
+  "<script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js\"></script><script src=\"/skewer\"></script>"
+  "String to inject to skewer a page.")
+
+(defun skewer--skeweredp ()
+  "Determine if the current page has been skewered already."
+  (save-excursion
+    (beginning-of-buffer)
+    (re-search-forward "\"/skewer\"" nil t)))
+
+(defun skewer--content-type ()
+  "Determine the content type of the current page."
+  (save-excursion
+    (beginning-of-buffer)
+    (re-search-forward "Content-Type: " nil t)
+    (read (current-buffer))))
+
+(defun skewer-inject ()
+  "Inject the skewer script into the current page."
+  (when (and (not (skewer--skeweredp)) (eq (skewer--content-type) 'text/html))
+    (save-excursion
+      (beginning-of-buffer)
+      (let ((case-fold-search t))
+        (when (re-search-forward "</head>" nil t)
+          (backward-char (length "</head>"))
+          (insert skewer-inject-string)
+          (beginning-of-buffer)
+          (when (re-search-forward "Content-Length: " nil t)
+            (let* ((length (read (current-buffer)))
+                   (fixed (+ length (length skewer-inject-string))))
+              (backward-kill-word 1)
+              (insert (number-to-string fixed)))))))))
 
 (provide 'skewer-proxy)
 
