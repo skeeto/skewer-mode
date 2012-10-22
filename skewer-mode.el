@@ -103,8 +103,9 @@ CALLBACK. The callback function must be listed in `skewer-callbacks'."
   (let ((request `((eval . ,string)
                    (callback . ,callback)
                    (id . ,(random most-positive-fixnum)))))
-    (setq skewer-queue (append skewer-queue (list request)))
-    (skewer-process-queue)))
+    (prog1 request
+      (setq skewer-queue (append skewer-queue (list request)))
+      (skewer-process-queue))))
 
 (defun skewer-eval-last-expression ()
   "Evaluate the JavaScript expression before the point in the
