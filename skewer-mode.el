@@ -1,4 +1,4 @@
-;;; simple-httpd.el --- pure elisp HTTP server
+;;; skewer-mode.el --- live browser JavaScript interaction
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -78,6 +78,6 @@ waiting browser."
 
 (add-hook 'js-mode-hook 'skewer-mode)
 
-(provide 'skewer)
+(provide 'skewer-mode)
 
-;;; skewer.el ends here
+;;; skewer-mode.el ends here
