@@ -2,10 +2,6 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Author: Christopher Wellons <mosquitopsu@gmail.com>
-;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.0
-
 ;;; Commentary:
 
 ;; This is largely based on of IELM's code. Run `skewer-repl' to
