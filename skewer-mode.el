@@ -14,12 +14,13 @@
 ;;  3. Include jQuery and `/skewer` as scripts (see example.html)
 ;;  4. Visit the document from a browser (probably http://localhost:8080/)
 
-;; With `skewer-mode' enabled in a buffer, these commands will
+;; With `skewer-mode' enabled in the buffer, these commands will
 ;; evaluate the JavaScript expression around the point, like the
 ;; various Lisp modes.
 
-;;  * C-x C-e --  `skewer-eval-last-expression'
-;;  * C-M-x   --  `skewer-eval-defun'
+;;  * C-x C-e   --  `skewer-eval-last-expression'
+;;  * C-M-x     --  `skewer-eval-defun'
+;;  * C-c C-k   --  `skewer-load-buffer'
 
 ;; The result of the expression is echoed in the minibuffer.
 
@@ -40,7 +41,8 @@
   (let ((map (make-sparse-keymap)))
     (prog1 map
       (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)
-      (define-key map (kbd "C-M-x") 'skewer-eval-defun)))
+      (define-key map (kbd "C-M-x") 'skewer-eval-defun)
+      (define-key map (kbd "C-c C-k") 'skewer-load-buffer)))
   "Keymap for skewer-mode.")
 
 (defvar skewer-data-root (file-name-directory load-file-name)
@@ -72,6 +74,8 @@ trust. These whitelisted functions are considered safe.")
       (if (not sent) (push message skewer-queue)))
     (skewer-process-queue)))
 
+;; Servlets
+
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
 
@@ -88,6 +92,8 @@ trust. These whitelisted functions are considered safe.")
 
 (defservlet skewer/example text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
+
+;; Minibuffer display
 
 (defun skewer-success-p (result)
   "Return T if result was a success."
@@ -109,6 +115,8 @@ trust. These whitelisted functions are considered safe.")
         (insert (cdr (assoc 'value result)) "\n")
         (insert (cdr (assoc 'stack error)) "\n")
         (beginning-of-buffer)))))
+
+;; Evaluation functions
 
 (defun skewer-eval (string callback)
   "Evaluate STRING in the waiting browsers, giving the result to
@@ -140,7 +148,7 @@ waiting browser."
 
 (defun skewer-eval-defun ()
   "Evaluate the JavaScript expression around the point in the
-  waiting browser."
+waiting browser."
   (interactive)
   (save-excursion
     (backward-paragraph)
@@ -148,6 +156,33 @@ waiting browser."
       (forward-paragraph)
       (skewer-eval (buffer-substring-no-properties start (point))
                    'skewer-post-minibuffer))))
+
+;; Script loading
+
+(defvar skewer-hosted-scripts (make-hash-table)
+  "Map of hosted scripts to IDs.")
+
+(defun skewer-host-script (string)
+  (let ((id (random most-positive-fixnum)))
+    (prog1 id
+      (puthash id (cons (float-time) string) skewer-hosted-scripts)
+      (maphash (lambda (k v)
+                 (if (> (- (float-time) 3600) (car v))
+                     (remhash k skewer-hosted-scripts)))
+               skewer-hosted-scripts))))
+
+(defun skewer-load-buffer ()
+  "Load the current buffer into the browser."
+  (interactive)
+  (let ((id (skewer-host-script (buffer-string))))
+    (skewer-eval (format "$.getScript('/skewer/script/%d')" id)
+                 'skewer-post-minibuffer)))
+
+(defservlet skewer/script text/javascript (path)
+  (let ((id (string-to-number (file-name-nondirectory path))))
+    (insert (cdr (gethash id skewer-hosted-scripts)))))
+
+;; Define the minor mode
 
 (define-minor-mode skewer-mode
   "Minor mode for interacting with a browser."
