@@ -184,11 +184,13 @@ waiting browser."
 
 ;; Define the minor mode
 
+;;;###autoload
 (define-minor-mode skewer-mode
   "Minor mode for interacting with a browser."
   :lighter " skewer"
   :keymap skewer-mode-map)
 
+;;;###autoload
 (add-hook 'js-mode-hook 'skewer-mode)
 
 (provide 'skewer-mode)

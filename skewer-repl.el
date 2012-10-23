@@ -45,6 +45,7 @@
         (comint-output-filter (skewer-repl-process)
                               (concat output "\n" skewer-repl-prompt))))))
 
+;;;###autoload
 (defun skewer-repl ()
   "Start a JavaScript REPL to be evaluated in the visiting browser."
   (interactive)

@@ -44,6 +44,7 @@
       (if (equal "close" (cadr (assoc "Connection" header)))
           (process-send-eof proc)))))
 
+;;;###autoload
 (defun skewer-proxy-enable ()
   "Enable the skewer proxy, overwriting the httpd/ servlet."
   (interactive)
