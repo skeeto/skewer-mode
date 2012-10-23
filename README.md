@@ -1,7 +1,7 @@
 # skewer-mode
 
 It's like SLIME and Swank for JavaScript in the browser. Requires
-[simple-httpd][simple-httpd].
+[simple-httpd][simple-httpd] (available on [MELPA][melpa]).
 
 ## Usage
 
@@ -53,4 +53,5 @@ The name refers to the idea that Emacs is *skewering* the browser from
 server-side.
 
 [simple-httpd]: https://github.com/skeeto/emacs-http-server
+[melpa]: http://melpa.milkbox.net/
 [swank-js]: https://github.com/swank-js/swank-js
