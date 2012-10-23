@@ -8,7 +8,11 @@ It's like SLIME and Swank for JavaScript in the browser. Requires
  1. Start the HTTP server (`httpd-start`)
  2. Put your HTML document in the root (`httpd-root`)
  3. Include jQuery and `/skewer` as scripts (see `example.html`)
- 4. Visit the document from a browser (probably http://localhost:8080/)
+ 4. Visit the document from a browser
+
+As a shortcut, the above can mostly be done with `M-x run-skewer`. A
+browser will be launched and connected to Emacs for use as a
+JavaScript REPL.
 
 With `skewer-mode` enabled in the buffer, these commands will evaluate
 the JavaScript expression around the point, like the various Lisp

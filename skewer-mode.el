@@ -12,7 +12,11 @@
 ;;  1. Start the HTTP server (`httpd-start')
 ;;  2. Put your HTML document in the root (`httpd-root')
 ;;  3. Include jQuery and `/skewer` as scripts (see example.html)
-;;  4. Visit the document from a browser (probably http://localhost:8080/)
+;;  4. Visit the document from a browser
+
+;; As a shortcut, the above can mostly be done with `run-skewer'. A
+;; browser will be launched and connected to Emacs for use as a
+;; JavaScript REPL.
 
 ;; With `skewer-mode' enabled in the buffer, these commands will
 ;; evaluate the JavaScript expression around the point, like the
@@ -192,6 +196,14 @@ waiting browser."
 
 ;;;###autoload
 (add-hook 'js-mode-hook 'skewer-mode)
+
+;;;###autoload
+(defun run-skewer ()
+  "Attach a browser to Emacs for a skewer JavaScript REPL. Uses
+`browse-url' to launch a browser."
+  (interactive)
+  (httpd-start)
+  (browse-url (format "http://127.0.0.1:%d/skewer/example" httpd-port)))
 
 (provide 'skewer-mode)
 
