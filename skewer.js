@@ -13,7 +13,7 @@ function skewer() {
                             "type": error.type, "message": error.message};
         }
         if (value == undefined)
-            result.value = "undefined"
+            result.value = "undefined";
         else
             result.value = value.toString(); // crush circular data
         $.post("/skewer/post", JSON.stringify(result), skewer);
