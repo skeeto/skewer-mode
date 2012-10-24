@@ -1,7 +1,11 @@
 # skewer-mode
 
-It's like SLIME and Swank for JavaScript in the browser. Requires
-[simple-httpd][simple-httpd] (available on [MELPA][melpa]).
+It's like SLIME and Swank for JavaScript in the browser.
+
+Dependencies:
+
+ * [simple-httpd][simple-httpd] (available on [MELPA][melpa])
+ * [js2-mode][js2-mode] (available on ELPA)
 
 ## Usage
 
@@ -53,5 +57,6 @@ The name refers to the idea that Emacs is *skewering* the browser from
 server-side.
 
 [simple-httpd]: https://github.com/skeeto/emacs-http-server
+[js2-mode]: http://code.google.com/p/js2-mode/
 [melpa]: http://melpa.milkbox.net/
 [swank-js]: https://github.com/swank-js/swank-js
