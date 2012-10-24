@@ -10,7 +10,8 @@ function skewer() {
             value = error;
             result.status = "error";
             result.error = {"name": error.name, "stack": error.stack,
-                            "type": error.type, "message": error.message};
+                            "type": error.type, "message": error.message,
+                            "eval": request.eval};
         }
         if (value == undefined)
             result.value = "undefined";

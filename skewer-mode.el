@@ -123,6 +123,13 @@ trust. These whitelisted functions are considered safe.")
   "Mode for displaying JavaScript errors returned by skewer-mode."
   (setq truncate-lines t))
 
+(defface skewer-error-face
+  `((t (:foreground "red" :underline t)))
+  "Face for JavaScript errors.")
+
+(defun skewer--error (string)
+  (propertize string 'font-lock-face 'skewer-error-face))
+
 (defun skewer-post-minibuffer (result)
   "Report results in the minibuffer or the error buffer."
   (if (skewer-success-p result)
@@ -132,8 +139,10 @@ trust. These whitelisted functions are considered safe.")
             (error (cdr (assoc 'error result))))
         (erase-buffer)
         (skewer-error-mode)
-        (insert (cdr (assoc 'value result)) "\n")
-        (insert (cdr (assoc 'stack error)) "\n")
+        (insert (skewer--error (cdr (assoc 'name error))) ": ")
+        (insert (cdr (assoc 'message error)) "\n\n")
+        (insert (cdr (assoc 'stack error)) "\n\n")
+        (insert "Expression:\n\n" (cdr (assoc 'eval error)))
         (beginning-of-buffer)))))
 
 ;; Evaluation functions
