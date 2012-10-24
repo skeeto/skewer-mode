@@ -195,6 +195,7 @@ waiting browser."
   "Map of hosted scripts to IDs.")
 
 (defun skewer-host-script (string)
+  "Host script STRING from the script servlet, returning the script ID."
   (let ((id (random most-positive-fixnum)))
     (prog1 id
       (puthash id (cons (float-time) string) skewer-hosted-scripts)
