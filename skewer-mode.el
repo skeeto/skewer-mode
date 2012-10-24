@@ -9,30 +9,46 @@
 
 ;;; Commentary:
 
-;;  1. Start the HTTP server (`httpd-start')
-;;  2. Put your HTML document in the root (`httpd-root')
-;;  3. Include jQuery and `/skewer` as scripts (see example.html)
-;;  4. Visit the document from a browser
+;;  1. Place dependencies in your `load-path' or load them directly
+;;  2. Load skewer-mode.el
+;;  3. M-x `run-skewer' to attach a browser to Emacs
+;;  4. From a `js2-mode' buffer, send forms to the browser to evaluate
 
-;; As a shortcut, the above can mostly be done with `run-skewer'. A
-;; browser will be launched and connected to Emacs for use as a
-;; JavaScript REPL.
+;; The keybindings for evaluating expressions in the browser are just
+;; like the Lisp modes. These are provided by the minor mode
+;; `skewer-mode'.
 
-;; With `skewer-mode' enabled in the buffer, these commands will
-;; evaluate the JavaScript expression around the point, like the
-;; various Lisp modes.
-
-;;  * C-x C-e   --  `skewer-eval-last-expression'
-;;  * C-M-x     --  `skewer-eval-defun'
-;;  * C-c C-k   --  `skewer-load-buffer'
+;;  * C-x C-e -- `skewer-eval-last-expression'
+;;  * C-M-x   -- `skewer-eval-defun'
+;;  * C-c C-k -- `skewer-load-buffer'
 
 ;; The result of the expression is echoed in the minibuffer.
 
-;; There's also a REPL (`skewer-repl') provided in skewer-repl.el.
+;; Note: `run-skewer' uses `browse-url' to launch the browser. This
+;; may require further setup depending on your operating system and
+;; personal preferences.
 
-;; To work around the same origin policy, skewer can become a
-;; transparent proxy to serve another website through Emacs, injecting
-;; its own JavaScript. See skewer-proxy.el.
+;; Manual version:
+
+;; To skewer your own document rather than the provided blank one,
+
+;;  1. Load the dependencies
+;;  2. Load skewer-mode.el
+;;  3. Start the HTTP server (`httpd-start')
+;;  4. Put your HTML document under the root (`httpd-root')
+;;  5. Include jQuery and "/skewer" as scripts (see `example.html')
+;;  6. Visit the document from your browser
+
+;; If your document isn't a static page but is instead hosted by its
+;; own server, you can still skewer the page. See the proxy below.
+
+;; With skewer-repl.el loaded, a REPL into the browser can be created
+;; with M-x `skewer-repl'. This should work just like a REPL in
+;; console within the browser.
+
+;; To work around the same origin policy, skewer can also be a proxy for
+;; another site, where it will automatically inject it's own HTML. This
+;; is experimental and a bit flaky right now. See skewer-proxy.el.
 
 ;;; Code:
 
