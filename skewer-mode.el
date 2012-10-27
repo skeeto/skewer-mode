@@ -141,7 +141,7 @@ trust. These whitelisted functions are considered safe.")
         (skewer-error-mode)
         (insert (skewer--error (cdr (assoc 'name error))) ": ")
         (insert (cdr (assoc 'message error)) "\n\n")
-        (insert (cdr (assoc 'stack error)) "\n\n")
+        (insert (or (cdr (assoc 'stack error)) "") "\n\n")
         (insert "Expression:\n\n" (cdr (assoc 'eval error)))
         (beginning-of-buffer)))))
 
