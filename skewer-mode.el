@@ -171,6 +171,8 @@ waiting browser."
           (error "no expression found"))
         (let ((start (js2-node-abs-pos node))
               (end (js2-node-abs-end node)))
+          (when (fboundp 'slime-flash-region)
+            (slime-flash-region start end))
           (skewer-eval (buffer-substring-no-properties start end)
                        #'skewer-post-minibuffer))))))
 
@@ -211,6 +213,8 @@ waiting browser."
     (save-excursion
       (let ((start (skewer--toplevel-start))
             (end (skewer--toplevel-end)))
+        (when (fboundp 'slime-flash-region)
+          (slime-flash-region start end))
         (skewer-eval (buffer-substring-no-properties start end)
                      #'skewer-post-minibuffer)))))
 
