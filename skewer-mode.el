@@ -106,9 +106,10 @@ trust. These whitelisted functions are considered safe.")
 (defservlet skewer/post text/plain (path args req)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (callback (intern-soft (cdr (assoc 'callback result)))))
-    (if (member callback skewer-callbacks)
-        (funcall callback result)
-      (message "warning: invalid callback: %s" callback))))
+    (if callback
+        (if (member callback skewer-callbacks)
+            (funcall callback result)
+          (message "warning: invalid callback: %s" callback)))))
 
 (defservlet skewer/example text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
@@ -150,7 +151,7 @@ trust. These whitelisted functions are considered safe.")
 
 ;; Evaluation functions
 
-(defun skewer-eval (string callback)
+(defun skewer-eval (string &optional callback)
   "Evaluate STRING in the waiting browsers, giving the result to
 CALLBACK. The callback function must be listed in `skewer-callbacks'."
   (let ((request `((eval . ,string)
