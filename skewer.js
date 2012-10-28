@@ -20,6 +20,8 @@ function skewer() {
             }
         } else if (typeof obj == "string") {
             return JSON.stringify(obj);
+        } else if (typeof obj == "function") {
+            return obj.toString();
         } else {
             return "Object";
         }
