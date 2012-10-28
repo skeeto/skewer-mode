@@ -5,8 +5,10 @@ function skewer() {
             return "true";
         } else if (obj === false) {
             return "false";
-        } else if (obj == undefined) {
+        } else if (obj === undefined) {
             return "undefined";
+        } else if (obj === null) {
+            return "null";
         } else if (typeof obj == "number") {
             return obj.toString();
         } else if (obj instanceof Array) {
