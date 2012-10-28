@@ -9,7 +9,7 @@ function skewer() {
             return "undefined";
         } else if (obj === null) {
             return "null";
-        } else if (typeof obj == "number") {
+        } else if (typeof obj === "number") {
             return obj.toString();
         } else if (obj instanceof Array) {
             if (seen.indexOf(obj) >= 0) {
@@ -20,10 +20,10 @@ function skewer() {
                     return safeStringify(e, seen);
                 }).join(", ") + "]";
             }
-        } else if (typeof obj == "string") {
+        } else if (typeof obj === "string") {
             return JSON.stringify(obj);
-        } else if (typeof obj == "function") {
-            return obj.toString();
+        } else if (typeof obj === "function") {
+            return "Function";
         } else {
             return "Object";
         }
