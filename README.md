@@ -58,6 +58,13 @@ To work around the same origin policy, skewer can also be a proxy for
 another site, where it will automatically inject it's own HTML. This
 is experimental and a bit flaky right now. See `skewer-proxy.el`.
 
+## Browser Support
+
+Skewer is known to work well with Firefox, Chrome, and Opera. Safari
+is a bit flaky but could probably be supported without much
+effort. Internet Explorer 9 doesn't work well at all, which is to be
+expected.
+
 ## Rationalization
 
 I wanted something like [swank-js][swank-js] but without all the
