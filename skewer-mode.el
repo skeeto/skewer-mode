@@ -124,7 +124,10 @@ trust. These whitelisted functions are considered safe.")
   (setq truncate-lines t))
 
 (defface skewer-error-face
-  `((t (:foreground "red" :underline t)))
+  '((((class color) (background light))
+     :foreground "red" :underline t)
+    (((class color) (background dark))
+     :foreground "red" :underline t))
   "Face for JavaScript errors.")
 
 (defun skewer--error (string)
