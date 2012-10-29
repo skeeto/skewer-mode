@@ -49,8 +49,9 @@ server, you can still skewer the page. See the proxy below.
 ## REPL
 
 With `skewer-repl.el` loaded, a REPL into the browser can be created
-with `M-x skewer-repl`. This should work just like a REPL in console
-within the browser.
+with `M-x skewer-repl`. This should work just like a console within
+the browser. Messages can be logged to this REPL with `skewer.log()`
+(just like `console.log()`).
 
 ## Transparent Proxy
 

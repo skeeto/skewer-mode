@@ -18,12 +18,20 @@
   "Return the process for the skewer REPL."
   (get-buffer-process (current-buffer)))
 
+(defface skewer-repl-log-face
+  '((((class color) (background light))
+     :foreground "#77F")
+    (((class color) (background dark))
+     :foreground "#77F"))
+  "Face for skewer.log() messages.")
+
 (define-derived-mode skewer-repl-mode comint-mode "js-REPL"
   "Provide a REPL into the visiting browser."
   :syntax-table emacs-lisp-mode-syntax-table
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
   (setq comint-input-sender 'skewer-input-sender)
   (add-to-list 'skewer-callbacks 'skewer-post-repl)
+  (add-to-list 'skewer-callbacks 'skewer-post-log)
   (unless (comint-check-proc (current-buffer))
     (start-process "ielm" (current-buffer) "hexl")
     (set-process-query-on-exit-flag (skewer-repl-process) nil)
@@ -44,6 +52,18 @@
       (with-current-buffer buffer
         (comint-output-filter (skewer-repl-process)
                               (concat output "\n" skewer-repl-prompt))))))
+
+(defun skewer-post-log (log)
+  "Callback for logging messages to the REPL."
+  (let ((buffer (get-buffer "*skewer-repl*"))
+        (output (propertize (cdr (assoc 'value log))
+                            'font-lock-face 'skewer-repl-log-face)))
+    (when buffer
+      (with-current-buffer buffer
+        (save-excursion
+          (forward-line 0)
+          (backward-char)
+          (insert (concat "\n" output "")))))))
 
 ;;;###autoload
 (defun skewer-repl ()
