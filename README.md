@@ -61,10 +61,8 @@ is experimental and a bit flaky right now. See `skewer-proxy.el`.
 
 ## Browser Support
 
-Skewer is known to work well with Firefox, Chrome, and Opera. Safari
-is a bit flaky but could probably be supported without much
-effort. Internet Explorer 9 doesn't work well at all, which is to be
-expected.
+Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
+and Internet Explorer 9.
 
 ## Rationalization
 
