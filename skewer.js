@@ -5,7 +5,12 @@ function skewer() {
                       callback: request.callback};
         try {
             var value = (eval, eval)(request.eval); // global eval
-            result.value = skewer.safeStringify(value, request.verbose);
+            try {
+                result.value = skewer.safeStringify(value, request.verbose);
+            } catch (error) {
+                /* Object was too deep, try non-verbose instead */
+                result.value = skewer.safeStringify(value, false);
+            }
             result.status = "success";
         } catch (error) {
             result.value = error.toString();
@@ -19,6 +24,7 @@ function skewer() {
 }
 
 skewer.safeStringify = function (obj, verbose, seen) {
+    var circular = "#<Circular>";
     seen = seen || [];
     if (obj === true) {
         return "true";
@@ -32,7 +38,7 @@ skewer.safeStringify = function (obj, verbose, seen) {
         return obj.toString();
     } else if (obj instanceof Array) {
         if (seen.indexOf(obj) >= 0) {
-            return "[ Circular ]";
+            return circular;
         } else {
             seen.push(obj);
             return "[" + obj.map(function(e) {
@@ -48,6 +54,10 @@ skewer.safeStringify = function (obj, verbose, seen) {
             return "Function";
     } else {
         if (verbose) {
+            if (seen.indexOf(obj) >= 0)
+                return circular;
+            else
+                seen.push(obj);
             var output = "{";
             for (key in obj) {
                 output += JSON.stringify(key) + ":";
@@ -62,8 +72,13 @@ skewer.safeStringify = function (obj, verbose, seen) {
 };
 
 skewer.log = function(message) {
-    var log = {type: "log", callback: "skewer-post-log",
-               value: skewer.safeStringify(message, true)};
+    var value;
+    try {
+        value = skewer.safeStringify(message, true);
+    } catch (error) {
+        value = skewer.safeStringify(message, false);
+    }
+    var log = {type: "log", callback: "skewer-post-log", value: value};
     $.post("/skewer/post", JSON.stringify(log));
 };
 
