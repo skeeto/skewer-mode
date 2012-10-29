@@ -39,7 +39,7 @@ skewer.safeStringify = function (object, verbose) {
             } else {
                 seen.push(obj);
                 return "[" + obj.map(function(e) {
-                    return skewer.stringify(e);
+                    return stringify(e);
                 }).join(", ") + "]";
             }
         } else if (typeof obj === "string") {
