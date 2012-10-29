@@ -5,12 +5,7 @@ function skewer() {
                       callback: request.callback};
         try {
             var value = (eval, eval)(request.eval); // global eval
-            try {
-                result.value = skewer.safeStringify(value, request.verbose);
-            } catch (error) {
-                /* Object was too deep, try non-verbose instead */
-                result.value = skewer.safeStringify(value, false);
-            }
+            result.value = skewer.safeStringify(value, request.verbose);
             result.status = "success";
         } catch (error) {
             result.value = error.toString();
@@ -23,62 +18,66 @@ function skewer() {
     }, "text");
 }
 
-skewer.safeStringify = function (obj, verbose, seen) {
+skewer.safeStringify = function (object, verbose) {
     var circular = "#<Circular>";
-    seen = seen || [];
-    if (obj === true) {
-        return "true";
-    } else if (obj === false) {
-        return "false";
-    } else if (obj === undefined) {
-        return "undefined";
-    } else if (obj === null) {
-        return "null";
-    } else if (typeof obj === "number") {
-        return obj.toString();
-    } else if (obj instanceof Array) {
-        if (seen.indexOf(obj) >= 0) {
-            return circular;
-        } else {
-            seen.push(obj);
-            return "[" + obj.map(function(e) {
-                return skewer.safeStringify(e, verbose, seen);
-            }).join(", ") + "]";
-        }
-    } else if (typeof obj === "string") {
-        return JSON.stringify(obj);
-    } else if (typeof obj === "function") {
-        if (verbose)
+    var seen = [];
+
+    function stringify(obj) {
+        if (obj === true) {
+            return "true";
+        } else if (obj === false) {
+            return "false";
+        } else if (obj === undefined) {
+            return "undefined";
+        } else if (obj === null) {
+            return "null";
+        } else if (typeof obj === "number") {
             return obj.toString();
-        else
-            return "Function";
-    } else {
-        if (verbose) {
-            if (seen.indexOf(obj) >= 0)
+        } else if (obj instanceof Array) {
+            if (seen.indexOf(obj) >= 0) {
                 return circular;
-            else
+            } else {
                 seen.push(obj);
-            var output = "{";
-            for (key in obj) {
-                output += JSON.stringify(key) + ":";
-                output += skewer.safeStringify(obj[key], verbose, seen);
-                output += ",";
+                return "[" + obj.map(function(e) {
+                    return skewer.stringify(e);
+                }).join(", ") + "]";
             }
-            return output.slice(0, -1) + "}";
+        } else if (typeof obj === "string") {
+            return JSON.stringify(obj);
+        } else if (typeof obj === "function") {
+            if (verbose)
+                return obj.toString();
+            else
+                return "Function";
         } else {
-            return "Object";
+            if (verbose) {
+                if (seen.indexOf(obj) >= 0)
+                    return circular;
+                else
+                    seen.push(obj);
+                var output = "{";
+                for (key in obj) {
+                    output += JSON.stringify(key) + ":";
+                    output += stringify(obj[key]);
+                    output += ",";
+                }
+                return output.slice(0, -1) + "}";
+            } else {
+                return "Object";
+            }
         }
+    }
+
+    try {
+        return stringify(object);
+    } catch (error) {
+        return skewer.safeStringify(object, false);
     }
 };
 
 skewer.log = function(message) {
-    var value;
-    try {
-        value = skewer.safeStringify(message, true);
-    } catch (error) {
-        value = skewer.safeStringify(message, false);
-    }
-    var log = {type: "log", callback: "skewer-post-log", value: value};
+    var log = {type: "log", callback: "skewer-post-log",
+               value: skewer.safeStringify(message, true)};
     $.post("/skewer/post", JSON.stringify(log));
 };
 
