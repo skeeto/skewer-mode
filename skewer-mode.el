@@ -87,8 +87,12 @@ trust. These whitelisted functions are considered safe.")
       (while skewer-clients
         (condition-case error-case
             (progn
-              (with-httpd-buffer (pop skewer-clients) "text/plain"
-                (insert (json-encode message)))
+              (let ((proc (pop skewer-clients)))
+                (with-temp-buffer
+                  (insert (json-encode message))
+                  (httpd-send-header proc "text/plain" 200
+                                     '("Cache-Control" . "no-cache"))
+                  (httpd-send-buffer proc (current-buffer))))
               (setq sent t))
           (error nil)))
       (if (not sent) (push message skewer-queue)))
