@@ -9,6 +9,7 @@
 
 ;;; Code:
 
+(require 'comint)
 (require 'skewer-mode)
 
 (defvar skewer-repl-prompt "js> "
