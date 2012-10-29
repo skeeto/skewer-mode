@@ -151,12 +151,14 @@ trust. These whitelisted functions are considered safe.")
 
 ;; Evaluation functions
 
-(defun skewer-eval (string &optional callback)
+(defun skewer-eval (string &optional callback verbose)
   "Evaluate STRING in the waiting browsers, giving the result to
-CALLBACK. The callback function must be listed in `skewer-callbacks'."
+CALLBACK. VERBOSE controls the verbosity of the returned
+string. The callback function must be listed in `skewer-callbacks'."
   (let ((request `((eval . ,string)
                    (callback . ,callback)
-                   (id . ,(random most-positive-fixnum)))))
+                   (id . ,(random most-positive-fixnum))
+                   (verbose . ,verbose))))
     (prog1 request
       (setq skewer-queue (append skewer-queue (list request)))
       (skewer-process-queue))))
