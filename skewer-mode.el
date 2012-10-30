@@ -179,7 +179,7 @@ waiting browser."
     (save-excursion
       (js2-backward-sws)
       (backward-char)
-      (let ((node (js2-node-at-point)))
+      (let ((node (js2-node-at-point nil t)))
         (when (js2-ast-root-p node)
           (error "no expression found"))
         (let ((start (js2-node-abs-pos node))
@@ -198,7 +198,7 @@ waiting browser."
     (save-excursion
       (js2-backward-sws)
       (backward-char)
-      (let ((node (js2-node-at-point)))
+      (let ((node (js2-node-at-point nil t)))
         (when (js2-ast-root-p node)
           (error "no expression found"))
         (while (and (js2-node-parent node)
