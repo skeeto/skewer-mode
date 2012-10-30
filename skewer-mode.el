@@ -201,8 +201,7 @@ waiting browser."
           (when (fboundp 'slime-flash-region)
             (slime-flash-region start end))
           (skewer-eval (buffer-substring-no-properties start end)
-                       #'skewer-post-minibuffer
-                       :strict (skewer-mode-strict-p)))))))
+                       #'skewer-post-minibuffer))))))
 
 (defun skewer-eval-defun ()
   "Evaluate the JavaScript expression before the point in the
@@ -224,8 +223,7 @@ waiting browser."
           (when (fboundp 'slime-flash-region)
             (slime-flash-region start end))
           (skewer-eval (buffer-substring-no-properties start end)
-                       #'skewer-post-minibuffer
-                       :strict (skewer-mode-strict-p)))))))
+                       #'skewer-post-minibuffer))))))
 
 ;; Script loading
 
