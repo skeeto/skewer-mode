@@ -115,7 +115,7 @@ trust. These whitelisted functions are considered safe.")
             (funcall callback result)
           (message "warning: invalid callback: %s" callback)))))
 
-(defservlet skewer/example text/html ()
+(defservlet skewer/demo text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
 
 ;; Minibuffer display
@@ -271,7 +271,7 @@ waiting browser."
 `browse-url' to launch a browser."
   (interactive)
   (httpd-start)
-  (browse-url (format "http://127.0.0.1:%d/skewer/example" httpd-port)))
+  (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port)))
 
 (provide 'skewer-mode)
 
