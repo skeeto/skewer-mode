@@ -23,7 +23,7 @@ skewer.safeStringify = function (object, verbose) {
     var circular = "#<Circular>";
     var seen = [];
 
-    function stringify(obj) {
+    var stringify = function(obj) {
         if (obj === true) {
             return "true";
         } else if (obj === false) {
@@ -67,7 +67,7 @@ skewer.safeStringify = function (object, verbose) {
                 return "Object";
             }
         }
-    }
+    };
 
     try {
         return stringify(object);
