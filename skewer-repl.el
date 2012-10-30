@@ -13,7 +13,7 @@
 (require 'comint)
 (require 'skewer-mode)
 
-(defvar skewer-repl-strict nil
+(defvar skewer-repl-strict-p nil
   "When non-NIL, all REPL evaluations are done in strict mode.")
 
 (defvar skewer-repl-prompt "js> "
@@ -48,12 +48,14 @@
 (defun skewer-repl-toggle-strict-mode ()
   "Toggle strict mode for expressions evaluated by the REPL."
   (interactive)
-  (setq skewer-repl-strict (not skewer-repl-strict))
-  (message "REPL strict mode %s" (if skewer-repl-strict "enabled" "disabled")))
+  (setq skewer-repl-strict-p (not skewer-repl-strict-p))
+  (message "REPL strict mode %s"
+           (if skewer-repl-strict-p "enabled" "disabled")))
 
 (defun skewer-input-sender (proc input)
   "REPL comint handler."
-  (skewer-eval input 'skewer-post-repl :verbose t :strict skewer-repl-strict))
+  (skewer-eval input 'skewer-post-repl
+               :verbose t :strict skewer-repl-strict-p))
 
 (defun skewer-post-repl (result)
   "Callback for reporting results in the REPL."
