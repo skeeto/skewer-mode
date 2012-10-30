@@ -43,7 +43,7 @@
 
 (defun skewer-input-sender (proc input)
   "REPL comint handler."
-  (skewer-eval input 'skewer-post-repl t))
+  (skewer-eval input 'skewer-post-repl :verbose t))
 
 (defun skewer-post-repl (result)
   "Callback for reporting results in the REPL."

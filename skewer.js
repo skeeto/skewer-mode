@@ -2,9 +2,10 @@ function skewer() {
     $.get("/skewer/get", function (str) {
         var request = JSON.parse(str);
         var result = {type: "eval", id: request.id,
-                      callback: request.callback};
+                      callback: request.callback, strict: request.strict};
         try {
-            var value = (eval, eval)(request.eval); // global eval
+            var prefix = request.strict ? '"use strict";\n' : "";
+            var value = (eval, eval)(prefix + request.eval); // global eval
             result.value = skewer.safeStringify(value, request.verbose);
             result.status = "success";
         } catch (error) {

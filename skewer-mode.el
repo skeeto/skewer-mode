@@ -150,19 +150,22 @@ trust. These whitelisted functions are considered safe.")
         (insert (skewer--error (cdr (assoc 'name error))) ": ")
         (insert (cdr (assoc 'message error)) "\n\n")
         (insert (or (cdr (assoc 'stack error)) "") "\n\n")
-        (insert "Expression:\n\n" (cdr (assoc 'eval error)))
+        (insert (format "Expression: %s\n\n"
+                        (if (cdr (assoc 'strict result)) "(strict)" ""))
+                (cdr (assoc 'eval error)))
         (beginning-of-buffer)))))
 
 ;; Evaluation functions
 
-(defun skewer-eval (string &optional callback verbose)
+(defun* skewer-eval (string &optional callback &key verbose strict)
   "Evaluate STRING in the waiting browsers, giving the result to
 CALLBACK. VERBOSE controls the verbosity of the returned
 string. The callback function must be listed in `skewer-callbacks'."
   (let ((request `((eval . ,string)
                    (callback . ,callback)
                    (id . ,(random most-positive-fixnum))
-                   (verbose . ,verbose))))
+                   (verbose . ,verbose)
+                   (strict . ,strict))))
     (prog1 request
       (setq skewer-queue (append skewer-queue (list request)))
       (skewer-process-queue))))
