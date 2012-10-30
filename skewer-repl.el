@@ -6,7 +6,7 @@
 
 ;; This is largely based on of IELM's code. Run `skewer-repl' to
 ;; switch to the REPL buffer and evaluate code. Use
-;; `skewer-repl-strict' to turn on and off strict mode.
+;; `skewer-repl-toggle-strict-mode' to turn strict mode on and off.
 
 ;;; Code:
 
@@ -44,6 +44,12 @@
     (set (make-local-variable 'comint-inhibit-carriage-motion) t)
     (comint-output-filter (skewer-repl-process) skewer-repl-prompt)
     (set-process-filter (skewer-repl-process) 'comint-output-filter)))
+
+(defun skewer-repl-toggle-strict-mode ()
+  "Toggle strict mode for expressions evaluated by the REPL."
+  (interactive)
+  (setq skewer-repl-strict (not skewer-repl-strict))
+  (message "REPL strict mode %s" (if skewer-repl-strict "enabled" "disabled")))
 
 (defun skewer-input-sender (proc input)
   "REPL comint handler."
