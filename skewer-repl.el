@@ -5,12 +5,16 @@
 ;;; Commentary:
 
 ;; This is largely based on of IELM's code. Run `skewer-repl' to
-;; switch to the REPL buffer and evaluate code.
+;; switch to the REPL buffer and evaluate code. Use
+;; `skewer-repl-strict' to turn on and off strict mode.
 
 ;;; Code:
 
 (require 'comint)
 (require 'skewer-mode)
+
+(defvar skewer-repl-strict nil
+  "When non-NIL, all REPL evaluations are done in strict mode.")
 
 (defvar skewer-repl-prompt "js> "
   "Prompt string for JavaScript REPL.")
@@ -43,7 +47,7 @@
 
 (defun skewer-input-sender (proc input)
   "REPL comint handler."
-  (skewer-eval input 'skewer-post-repl :verbose t))
+  (skewer-eval input 'skewer-post-repl :verbose t :strict skewer-repl-strict))
 
 (defun skewer-post-repl (result)
   "Callback for reporting results in the REPL."

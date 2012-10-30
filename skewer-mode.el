@@ -170,6 +170,20 @@ string. The callback function must be listed in `skewer-callbacks'."
       (setq skewer-queue (append skewer-queue (list request)))
       (skewer-process-queue))))
 
+(defun skewer-mode-strict-p ()
+  "Return T if buffer contents indicates strict mode."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (beginning-of-buffer)
+      (js2-forward-sws)
+      (forward-char 1)
+      (let* ((stricts '("\"use strict\"" "'use strict'"))
+             (node (js2-node-at-point))
+             (code (buffer-substring-no-properties (js2-node-abs-pos node)
+                                                   (js2-node-abs-end node))))
+        (and (member code stricts) t)))))
+
 (defun skewer-eval-last-expression ()
   "Evaluate the JavaScript expression before the point in the
 waiting browser."
@@ -187,7 +201,8 @@ waiting browser."
           (when (fboundp 'slime-flash-region)
             (slime-flash-region start end))
           (skewer-eval (buffer-substring-no-properties start end)
-                       #'skewer-post-minibuffer))))))
+                       #'skewer-post-minibuffer
+                       :strict (skewer-mode-strict-p)))))))
 
 (defun skewer-eval-defun ()
   "Evaluate the JavaScript expression before the point in the
@@ -209,7 +224,8 @@ waiting browser."
           (when (fboundp 'slime-flash-region)
             (slime-flash-region start end))
           (skewer-eval (buffer-substring-no-properties start end)
-                       #'skewer-post-minibuffer))))))
+                       #'skewer-post-minibuffer
+                       :strict (skewer-mode-strict-p)))))))
 
 ;; Script loading
 
