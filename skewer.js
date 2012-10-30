@@ -20,6 +20,7 @@ function skewer() {
 }
 
 skewer.safeStringify = function (object, verbose) {
+    "use strict";
     var circular = "#<Circular>";
     var seen = [];
 
@@ -77,6 +78,7 @@ skewer.safeStringify = function (object, verbose) {
 };
 
 skewer.log = function(message) {
+    "use strict";
     var log = {type: "log", callback: "skewer-post-log",
                value: skewer.safeStringify(message, true)};
     $.post("/skewer/post", JSON.stringify(log));
