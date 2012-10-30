@@ -189,47 +189,27 @@ waiting browser."
           (skewer-eval (buffer-substring-no-properties start end)
                        #'skewer-post-minibuffer))))))
 
-(defun skewer--toplevel-start ()
-  "Move point to the beginning of the current toplevel form returning point."
-  (interactive)
-  (js2-forward-sws)
-  (if (= (point) (point-max))
-      (js2-mode-forward-sexp -1)
-    (let ((node (js2-node-at-point)))
-      (when (js2-ast-root-p node)
-        (error "cannot locate any toplevel form"))
-      (while (and (js2-node-parent node)
-                  (not (js2-ast-root-p (js2-node-parent node))))
-        (setf node (js2-node-parent node)))
-      (goto-char (js2-node-abs-pos node))
-      (js2-forward-sws)))
-  (point))
-
-(defun skewer--toplevel-end ()
-  "Move point to the end of the current toplevel form returning point."
-  (interactive)
-  (js2-forward-sws)
-  (let ((node (js2-node-at-point)))
-    (unless (or (null node) (js2-ast-root-p node))
-      (while (and (js2-node-parent node)
-                  (not (js2-ast-root-p (js2-node-parent node))))
-        (setf node (js2-node-parent node)))
-      (goto-char (js2-node-abs-end node)))
-    (point)))
-
 (defun skewer-eval-defun ()
-  "Evaluate the JavaScript expression around the point in the
+  "Evaluate the JavaScript expression before the point in the
 waiting browser."
   (interactive)
   (if js2-mode-buffer-dirty-p
-      (js2-mode-wait-for-parse #'skewer-eval-defun)
+      (js2-mode-wait-for-parse #'skewer-eval-last-expression)
     (save-excursion
-      (let ((start (skewer--toplevel-start))
-            (end (skewer--toplevel-end)))
-        (when (fboundp 'slime-flash-region)
-          (slime-flash-region start end))
-        (skewer-eval (buffer-substring-no-properties start end)
-                     #'skewer-post-minibuffer)))))
+      (js2-backward-sws)
+      (backward-char)
+      (let ((node (js2-node-at-point)))
+        (when (js2-ast-root-p node)
+          (error "no expression found"))
+        (while (and (js2-node-parent node)
+                    (not (js2-ast-root-p (js2-node-parent node))))
+          (setf node (js2-node-parent node)))
+        (let ((start (js2-node-abs-pos node))
+              (end (js2-node-abs-end node)))
+          (when (fboundp 'slime-flash-region)
+            (slime-flash-region start end))
+          (skewer-eval (buffer-substring-no-properties start end)
+                       #'skewer-post-minibuffer))))))
 
 ;; Script loading
 
