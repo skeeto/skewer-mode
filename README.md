@@ -64,6 +64,18 @@ is experimental and a bit flaky right now. See `skewer-proxy.el`.
 Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
 and Internet Explorer 9.
 
+## Strict mode
+
+Evaluation can be done in strict mode but, unfortunately, because
+strict mode `eval` is neutered the results are completely at odds with
+skewer. It's not possible to create new global bindings in strict
+mode, so functions and variables defined in strict mode evaluations
+can't be accessed by skewer again later. If you want to redefine
+loaded code in skewer, make sure you disable strict mode.
+
+However, you *can* use strict *within* your functions since this
+doesn't effect skewer's top-level `eval`.
+
 ## Rationalization
 
 I wanted something like [swank-js][swank-js] but without all the
