@@ -110,10 +110,8 @@ trust. These whitelisted functions are considered safe.")
 (defservlet skewer/post text/plain (path args req)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (callback (intern-soft (cdr (assoc 'callback result)))))
-    (if callback
-        (if (member callback skewer-callbacks)
-            (funcall callback result)
-          (message "warning: invalid callback: %s" callback)))))
+    (when (and callback (member callback skewer-callbacks))
+      (funcall callback result))))
 
 (defservlet skewer/demo text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
@@ -166,9 +164,11 @@ string. The callback function must be listed in `skewer-callbacks'."
                    (id . ,(random most-positive-fixnum))
                    (verbose . ,verbose)
                    (strict . ,strict))))
-    (prog1 request
-      (setq skewer-queue (append skewer-queue (list request)))
-      (skewer-process-queue))))
+    (if (or (not callback) (member callback skewer-callbacks))
+        (prog1 request
+          (setq skewer-queue (append skewer-queue (list request)))
+          (skewer-process-queue))
+      (error "Provided callback is not whitelisted in `skewer-callbacks'."))))
 
 (defun skewer-mode-strict-p ()
   "Return T if buffer contents indicates strict mode."
