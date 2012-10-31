@@ -68,13 +68,13 @@
 (defun skewer--skeweredp ()
   "Determine if the current page has been skewered already."
   (save-excursion
-    (beginning-of-buffer)
+    (goto-char (point-min))
     (re-search-forward "\"/skewer\"" nil t)))
 
 (defun skewer--content-type ()
   "Determine the content type of the current page."
   (save-excursion
-    (beginning-of-buffer)
+    (goto-char (point-min))
     (re-search-forward "Content-Type: " nil t)
     (read (current-buffer))))
 
@@ -82,12 +82,12 @@
   "Inject the skewer script into the current page."
   (when (and (not (skewer--skeweredp)) (eq (skewer--content-type) 'text/html))
     (save-excursion
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (let ((case-fold-search t))
         (when (re-search-forward "</head>" nil t)
           (backward-char (length "</head>"))
           (insert skewer-inject-string)
-          (beginning-of-buffer)
+          (goto-char (point-min))
           (when (re-search-forward "Content-Length: " nil t)
             (let* ((length (read (current-buffer)))
                    (fixed (+ length (length skewer-inject-string))))

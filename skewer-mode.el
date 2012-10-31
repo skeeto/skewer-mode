@@ -151,7 +151,7 @@ trust. These whitelisted functions are considered safe.")
         (insert (format "Expression: %s\n\n"
                         (if (cdr (assoc 'strict result)) "(strict)" ""))
                 (cdr (assoc 'eval error)))
-        (beginning-of-buffer)))))
+        (goto-char (point-min))))))
 
 ;; Evaluation functions
 
@@ -175,7 +175,7 @@ string. The callback function must be listed in `skewer-callbacks'."
   (save-excursion
     (save-restriction
       (widen)
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (js2-forward-sws)
       (forward-char 1)
       (let* ((stricts '("\"use strict\"" "'use strict'"))
