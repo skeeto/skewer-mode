@@ -1,8 +1,12 @@
-# skewer-mode
+# Skewer -- live Emacs JavaScript interaction
 
-Provides live interaction with JavaScript in a browser. Expressions
-can be sent on-the-fly from a buffer to be evaluated in the browser,
-just like Emacs does with an inferior Lisp process in Lisp modes.
+Provides live interaction with JavaScript running in a browser.
+Expressions are sent on-the-fly from an editing buffer to be evaluated
+in the browser, just like Emacs does with an inferior Lisp process in
+Lisp modes.
+
+This package and its dependencies are pure Elisp, meaning setup is a
+breeze and the whole thing is highly portable.
 
 Dependencies:
 
@@ -34,7 +38,7 @@ preferences.
 
 ### Manual version
 
-To skewer your own document rather than the provided blank one,
+To Skewer your own document rather than the provided blank one,
 
  1. Load the dependencies
  2. Load `skewer-mode.el`
@@ -44,7 +48,12 @@ To skewer your own document rather than the provided blank one,
  6. Visit the document from your browser
 
 If your document isn't a static page but is instead hosted by its own
-server, you can still skewer the page. See the proxy below.
+server, you can still Skewer the page. See the proxy below.
+
+## Browser Support
+
+Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
+and Internet Explorer 9.
 
 ## REPL
 
@@ -53,28 +62,31 @@ with `M-x skewer-repl`. This should work just like a console within
 the browser. Messages can be logged to this REPL with `skewer.log()`
 (just like `console.log()`).
 
-## Transparent Proxy
+Results of expressions evaluated in the REPL are printed more
+verbosely than in the minibuffer, when possible. This may help in
+debugging.
 
-To work around the same origin policy, skewer can also be a proxy for
-another site, where it will automatically inject it's own HTML. This
-is experimental and a bit flaky right now. See `skewer-proxy.el`.
-
-## Browser Support
-
-Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
-and Internet Explorer 9.
+Use `M-x skewer-repl-toggle-strict-mode` to toggle strict evaluation
+for expressions in the REPL. However, be aware of the
+[consequences of using strict mode][strict-mode].
 
 ## Strict mode
 
-Evaluation can be done in strict mode but, unfortunately, because
-strict mode `eval` is neutered the results are completely at odds with
-skewer. It's not possible to create new global bindings in strict
-mode, so functions and variables defined in strict mode evaluations
-can't be accessed by skewer again later. If you want to redefine
-loaded code in skewer, make sure you disable strict mode.
+Evaluation can be done in [strict mode][strict-mode] but,
+unfortunately, because strict mode `eval` is neutered the results are
+completely at odds with Skewer. It's not possible to create new global
+bindings in strict mode, so functions and variables defined in strict
+mode evaluations can't be accessed by Skewer again later. If you want
+to redefine loaded code in Skewer, make sure you disable strict mode.
 
 However, you *can* use strict *within* your functions since this
-doesn't effect skewer's top-level `eval`.
+doesn't effect Skewer's top-level `eval`.
+
+## Transparent Proxy
+
+To work around the same origin policy, Skewer can also be a proxy for
+another site, where it will automatically inject it's own HTML. This
+is experimental and a bit flaky right now. See `skewer-proxy.el`.
 
 ## Rationalization
 
@@ -89,3 +101,4 @@ server-side.
 [js2-mode]: http://code.google.com/p/js2-mode/
 [melpa]: http://melpa.milkbox.net/
 [swank-js]: https://github.com/swank-js/swank-js
+[strict-mode]: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/Strict_mode
