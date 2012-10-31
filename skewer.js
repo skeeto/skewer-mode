@@ -74,7 +74,7 @@ skewer.safeStringify = function (object, verbose) {
                     return circular;
                 else
                     seen.push(obj);
-                var output = "{";
+                var output = "{", key;
                 for (key in obj) {
                     output += JSON.stringify(key) + ":";
                     output += stringify(obj[key]);
