@@ -1,3 +1,14 @@
+/**
+ * @fileOverview Live browser interaction with Emacs
+ * @requires jQuery
+ * @version 1.0
+ */
+
+/**
+ * Makes a request to Emacs for something to evaluate. Once done it
+ * sends the results back and queues itself for another request.
+ * @namespace Holds all of Skewer's functionality.
+ */
 function skewer() {
     $.get("/skewer/get", function (str) {
         var request = JSON.parse(str);
@@ -19,6 +30,12 @@ function skewer() {
     }, "text");
 }
 
+/**
+ * Stringify a potentially circular object without throwing an exception.
+ * @param object The object to be printed.
+ * @param {boolean} verbose Enable more verbose output.
+ * @returns {string} The printed object.
+ */
 skewer.safeStringify = function (object, verbose) {
     "use strict";
     var circular = "#<Circular>";
@@ -77,6 +94,10 @@ skewer.safeStringify = function (object, verbose) {
     }
 };
 
+/**
+ * Log an object to the Skewer REPL in Emacs (console.log).
+ * @param message The object to be logged.
+ */
 skewer.log = function(message) {
     "use strict";
     var log = {type: "log", callback: "skewer-post-log",
