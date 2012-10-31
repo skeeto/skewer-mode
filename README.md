@@ -50,7 +50,7 @@ To Skewer your own document rather than the provided blank one,
 If your document isn't a static page but is instead hosted by its own
 server, you can still Skewer the page. See the proxy below.
 
-## Browser Support
+### Browser Support
 
 Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
 and Internet Explorer 9.
