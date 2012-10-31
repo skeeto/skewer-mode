@@ -13,11 +13,15 @@
 (require 'comint)
 (require 'skewer-mode)
 
-(defvar skewer-repl-strict-p nil
-  "When non-NIL, all REPL evaluations are done in strict mode.")
+(defcustom skewer-repl-strict-p nil
+  "When non-NIL, all REPL evaluations are done in strict mode."
+  :type 'boolean
+  :group 'skewer)
 
-(defvar skewer-repl-prompt "js> "
-  "Prompt string for JavaScript REPL.")
+(defcustom skewer-repl-prompt "js> "
+  "Prompt string for JavaScript REPL."
+  :type 'string
+  :group 'skewer)
 
 (defun skewer-repl-process ()
   "Return the process for the skewer REPL."
@@ -28,10 +32,12 @@
      :foreground "#77F")
     (((class color) (background dark))
      :foreground "#77F"))
-  "Face for skewer.log() messages.")
+  "Face for skewer.log() messages."
+  :group 'skewer)
 
 (define-derived-mode skewer-repl-mode comint-mode "js-REPL"
   "Provide a REPL into the visiting browser."
+  :group 'skewer
   :syntax-table emacs-lisp-mode-syntax-table
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
   (setq comint-input-sender 'skewer-input-sender)

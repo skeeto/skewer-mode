@@ -57,6 +57,10 @@
 (require 'js2-mode)
 (require 'json)
 
+(defgroup skewer nil
+  "Live browser JavaScript interaction."
+  :group 'languages)
+
 (defvar skewer-mode-map
   (let ((map (make-sparse-keymap)))
     (prog1 map
@@ -123,6 +127,7 @@ trust. These whitelisted functions are considered safe.")
   (equal "success" (cdr (assoc 'status result))))
 
 (define-derived-mode skewer-error-mode special-mode "skewer-error"
+  :group 'skewer
   "Mode for displaying JavaScript errors returned by skewer-mode."
   (setq truncate-lines t))
 
@@ -131,7 +136,8 @@ trust. These whitelisted functions are considered safe.")
      :foreground "red" :underline t)
     (((class color) (background dark))
      :foreground "red" :underline t))
-  "Face for JavaScript errors.")
+  "Face for JavaScript errors."
+  :group 'skewer)
 
 (defun skewer--error (string)
   (propertize string 'font-lock-face 'skewer-error-face))
@@ -259,7 +265,8 @@ waiting browser."
 (define-minor-mode skewer-mode
   "Minor mode for interacting with a browser."
   :lighter " skewer"
-  :keymap skewer-mode-map)
+  :keymap skewer-mode-map
+  :group 'skewer)
 
 ;;;###autoload
 (add-hook 'js2-mode-hook 'skewer-mode)

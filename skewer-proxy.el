@@ -22,17 +22,21 @@
 
 (require 'skewer-mode)
 
-(defvar skewer-proxy-url "http://example.com"
-  "Remote server for the silent proxy.")
+(defcustom skewer-proxy-url "http://example.com"
+  "Remote server for the silent proxy."
+  :type 'string
+  :group 'skewer)
+
+(defcustom skewer-inject t
+  "When T, skewer will attempt to modify pages to insert its script."
+  :type 'boolean
+  :group 'skewer)
 
 (defvar skewer--orig-httpd/ (symbol-function 'httpd/)
   "Original definition of the servlet at httpd/.")
 
 (defvar skewer--enabled nil
   "Current status of skewer-proxy.")
-
-(defvar skewer-inject t
-  "When T, skewer will attempt to modify pages to insert its script.")
 
 (defun skewer-proxy-servlet (proc p &rest args)
   "Passes requests through to remote host at `httpd-proxy-url'."
