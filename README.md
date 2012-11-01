@@ -5,10 +5,10 @@ Expressions are sent on-the-fly from an editing buffer to be evaluated
 in the browser, just like Emacs does with an inferior Lisp process in
 Lisp modes.
 
-* Watch the [demo video on YouTube](http://youtu.be/4tyTgyzUJqM)
+* Watch the [**demo video** on YouTube](http://youtu.be/4tyTgyzUJqM)
   ([webm](http://nullprogram.s3.amazonaws.com/skewer/demo.webm))
 
-Skewer is available from [MELPA][melpa], which will install the
+**Skewer is available from [MELPA][melpa]**, which will install the
 dependencies for you. This package and its dependencies are pure
 Elisp, meaning setup is a breeze and the whole thing is highly
 portable.
@@ -22,7 +22,7 @@ Dependencies:
 
 ### Quick version
 
-If the package was installed from MELPA, skip to step 3.
+If Skewer was installed from MELPA, skip to step 3.
 
  1. Place dependencies in your `load-path` or load them directly
  2. Load `skewer-mode.el`
