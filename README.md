@@ -91,6 +91,9 @@ To work around the same origin policy, Skewer can also be a proxy for
 another site, where it will automatically inject it's own HTML. This
 is experimental and a bit flaky right now. See `skewer-proxy.el`.
 
+[CORS][cors] is a *much* better alternative if you can use it. It's
+supported by Skewer.
+
 ## Rationalization
 
 I wanted something like [swank-js][swank-js] but without all the
@@ -105,3 +108,4 @@ server-side.
 [melpa]: http://melpa.milkbox.net/
 [swank-js]: https://github.com/swank-js/swank-js
 [strict-mode]: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/Strict_mode
+[cors]: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
