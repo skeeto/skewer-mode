@@ -10,7 +10,7 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    $.get("/skewer/get", function (str) {
+    $.get(skewer.host + "/skewer/get", function (str) {
         var request = JSON.parse(str);
         var result = {type: "eval", id: request.id,
                       callback: request.callback, strict: request.strict};
@@ -26,9 +26,15 @@ function skewer() {
                             "type": error.type, "message": error.message,
                             "eval": request.eval};
         }
-        $.post("/skewer/post", JSON.stringify(result), skewer);
+        $.post(skewer.host + "/skewer/post", JSON.stringify(result), skewer);
     }, "text");
 }
+
+/**
+ * Host of the skewer script (CORS support).
+ * @type string
+ */
+skewer.host = $('script').get(-1).src.match(/[a-z]+:\/\/[^/]+/)[0];
 
 /**
  * Stringify a potentially circular object without throwing an exception.
@@ -102,7 +108,7 @@ skewer.log = function(message) {
     "use strict";
     var log = {type: "log", callback: "skewer-post-log",
                value: skewer.safeStringify(message, true)};
-    $.post("/skewer/post", JSON.stringify(log));
+    $.post(skewer.host + "/skewer/post", JSON.stringify(log));
 };
 
 $("document").ready(skewer);
