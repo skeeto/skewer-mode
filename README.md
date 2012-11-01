@@ -98,11 +98,14 @@ is experimental and a bit flaky right now. See `skewer-proxy.el`.
 [CORS][cors] is a *much* better alternative if you can use it. It's
 supported by Skewer.
 
-## Rationalization
+## Motivation
 
 I wanted something like [swank-js][swank-js] but without all the
 painful setup. Having already written an Emacs web server I was
 halfway there. It took relatively little code to accomplish.
+
+I also didn't want to rely a browser-specific feature, like MozRepl or
+WebKit's remote debugger ([kite][kite]).
 
 The name refers to the idea that Emacs is *skewering* the browser from
 server-side.
@@ -113,3 +116,4 @@ server-side.
 [swank-js]: https://github.com/swank-js/swank-js
 [strict-mode]: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/Strict_mode
 [cors]: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+[kite]: https://github.com/jscheid/kite
