@@ -113,4 +113,10 @@ skewer.log = function(message) {
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
 };
 
+/* Register for error events. */
+window.onerror = function(error, url, line) {
+    var log = {type: "error", callback: "skewer-post-log", value: error};
+    $.post(skewer.host + "/skewer/post", JSON.stringify(log));
+};
+
 $("document").ready(skewer);

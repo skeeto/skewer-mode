@@ -72,11 +72,16 @@
         (comint-output-filter (skewer-repl-process)
                               (concat output "\n" skewer-repl-prompt))))))
 
+(defvar skewer-repl-types
+  '(("log" . skewer-repl-log-face)
+    ("error" . skewer-error-face))
+  "Faces to use for different types of log messages.")
+
 (defun skewer-post-log (log)
   "Callback for logging messages to the REPL."
-  (let ((buffer (get-buffer "*skewer-repl*"))
-        (output (propertize (cdr (assoc 'value log))
-                            'font-lock-face 'skewer-repl-log-face)))
+  (let* ((buffer (get-buffer "*skewer-repl*"))
+         (face (cdr (assoc (cdr (assoc 'type log)) skewer-repl-types)))
+         (output (propertize (cdr (assoc 'value log)) 'font-lock-face face)))
     (when buffer
       (with-current-buffer buffer
         (save-excursion
