@@ -8,17 +8,21 @@ Lisp modes.
 * Watch the [demo video on YouTube](http://youtu.be/4tyTgyzUJqM)
   ([webm](http://nullprogram.s3.amazonaws.com/skewer/demo.webm))
 
-This package and its dependencies are pure Elisp, meaning setup is a
-breeze and the whole thing is highly portable.
+Skewer is available from [MELPA][melpa], which will install the
+dependencies for you. This package and its dependencies are pure
+Elisp, meaning setup is a breeze and the whole thing is highly
+portable.
 
 Dependencies:
 
- * [simple-httpd][simple-httpd] (available on [MELPA][melpa])
+ * [simple-httpd][simple-httpd] (available on MELPA)
  * [js2-mode][js2-mode] (available on ELPA)
 
 ## Usage
 
 ### Quick version
+
+If the package was installed from MELPA, skip to step 3.
 
  1. Place dependencies in your `load-path` or load them directly
  2. Load `skewer-mode.el`
