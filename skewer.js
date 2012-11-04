@@ -80,15 +80,15 @@ skewer.safeStringify = function (object, verbose) {
                     return circular;
                 else
                     seen.push(obj);
-                var output = "{";
+                var pairs = [];
                 for (var key in obj) {
                     if (obj.hasOwnProperty(key)) {
-                        output += JSON.stringify(key) + ":";
-                        output += stringify(obj[key]);
-                        output += ",";
+                        var pair = JSON.stringify(key) + ":";
+                        pair += stringify(obj[key]);
+                        pairs.push(pair);
                     }
                 }
-                return output.slice(0, -1) + "}";
+                return "{" + pairs.join(',') + "}";
             } else {
                 return "Object";
             }
