@@ -106,6 +106,29 @@ trust. These whitelisted functions are considered safe.")
       (if (not sent) (push message skewer-queue)))
     (skewer-process-queue)))
 
+(defun skewer-clients-tabulate ()
+  "Prepare client list for tabulated-list-mode."
+  (loop for client in skewer-clients collect
+        (let ((proc (skewer-client-proc client))
+              (agent (skewer-client-agent client)))
+          (destructuring-bind (host port) (process-contact proc)
+            `(,client [,host ,(format "%d" port) ,agent])))))
+
+(define-derived-mode skewer-clients-mode tabulated-list-mode "skewer-clients"
+  "Mode for listing browsers attached to Emacs for skewer-mode."
+  (setq tabulated-list-format [("Host" 12 t)
+                               ("Port" 5 t)
+                               ("User Agent" 0 t)])
+  (setq tabulated-list-entries #' skewer-clients-tabulate)
+  (tabulated-list-init-header))
+
+(defun list-skewer-clients ()
+  "List the attached browsers in a buffer."
+  (interactive)
+  (switch-to-buffer (get-buffer-create "*skewer-clients*"))
+  (skewer-clients-mode)
+  (tabulated-list-print))
+
 ;; Servlets
 
 (defservlet skewer text/javascript ()
