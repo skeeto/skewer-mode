@@ -83,6 +83,10 @@ trust. These whitelisted functions are considered safe.")
 (defvar skewer-queue ()
   "Queued messages for the browser.")
 
+(defstruct skewer-client
+  "A client connection awaiting a response."
+  proc agent)
+
 (defun skewer-process-queue ()
   "Send all queued messages to clients."
   (when (and skewer-queue skewer-clients)
@@ -91,7 +95,7 @@ trust. These whitelisted functions are considered safe.")
       (while skewer-clients
         (condition-case error-case
             (progn
-              (let ((proc (pop skewer-clients)))
+              (let ((proc (skewer-client-proc (pop skewer-clients))))
                 (with-temp-buffer
                   (insert (json-encode message))
                   (httpd-send-header proc "text/plain" 200
@@ -107,8 +111,9 @@ trust. These whitelisted functions are considered safe.")
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
 
-(defun httpd/skewer/get (proc path &rest args)
-  (push proc skewer-clients)
+(defun httpd/skewer/get (proc path query req &rest args)
+  (let ((agent (second (assoc "User-Agent" req))))
+    (push (make-skewer-client :proc proc :agent agent) skewer-clients))
   (skewer-process-queue))
 
 (defservlet skewer/post text/plain (path args req)
