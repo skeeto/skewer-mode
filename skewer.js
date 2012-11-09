@@ -34,7 +34,7 @@ function skewer() {
  * Host of the skewer script (CORS support).
  * @type string
  */
-skewer.host = $('script').get(-1).src.match(/[a-z]+:\/\/[^/]+/)[0];
+skewer.host = $('script[src$="/skewer"]').prop('src').match(/\w+:\/\/[^/]+/)[0];
 
 /**
  * Stringify a potentially circular object without throwing an exception.
@@ -113,10 +113,21 @@ skewer.log = function(message) {
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
 };
 
-/* Register for error events. */
-window.onerror = function(error, url, line) {
-    var log = {type: "error", callback: "skewer-post-log", value: error};
+/**
+ * Report an error event to the REPL.
+ * @param event A jQuery event object.
+ */
+skewer.error = function(event) {
+    "use strict";
+    var log = {
+        type: "error",
+        callback: "skewer-post-log",
+        value: event.originalEvent.message
+    };
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
 };
 
-$("document").ready(skewer);
+/* Add the event listener. This doesn't work correctly in Firefox. */
+$(window).bind('error', skewer.error);
+
+$(document).ready(skewer);
