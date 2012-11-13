@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.0
+;; Version: 1.1
 ;; Package-Requires: ((simple-httpd "1.2.4") (js2-mode "20090723"))
 
 ;;; Commentary:
@@ -49,6 +49,14 @@
 ;; To work around the same origin policy, skewer can also be a proxy for
 ;; another site, where it will automatically inject it's own HTML. This
 ;; is experimental and a bit flaky right now. See skewer-proxy.el.
+
+;;; History:
+
+;; Version 1.1: features and fixes
+;;   * Added `list-skewer-clients'
+;;   * Reduce the number of HTTP requests needed
+;;   * Fix stringification issues
+;; Version 1.0: initial release
 
 ;;; Code:
 

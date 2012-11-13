@@ -1,7 +1,7 @@
 /**
  * @fileOverview Live browser interaction with Emacs
  * @requires jQuery
- * @version 1.0
+ * @version 1.1
  */
 
 /**
