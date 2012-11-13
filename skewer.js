@@ -17,7 +17,7 @@ function skewer() {
             callback: request.callback,
             strict: request.strict
         };
-        var start = new Date().getTime();
+        var start = new Date();
         try {
             var prefix = request.strict ? '"use strict";\n' : "";
             var value = (eval, eval)(prefix + request.eval); // global eval
@@ -30,7 +30,7 @@ function skewer() {
                             "type": error.type, "message": error.message,
                             "eval": request.eval};
         }
-        result.time = (new Date().getTime() - start) / 1000;
+        result.time = (new Date() - start) / 1000;
         result = JSON.stringify(result);
         $.post(skewer.host + "/skewer/post", result, callback, 'json');
     };
