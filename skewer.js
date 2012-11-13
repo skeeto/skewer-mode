@@ -10,7 +10,7 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    $.getJSON(skewer.host + "/skewer/get", function (request) {
+    function callback(request) {
         var result = {
             type: "eval",
             id: request.id,
@@ -31,8 +31,10 @@ function skewer() {
                             "eval": request.eval};
         }
         result.time = (new Date().getTime() - start) / 1000;
-        $.post(skewer.host + "/skewer/post", JSON.stringify(result), skewer);
-    });
+        result = JSON.stringify(result);
+        $.post(skewer.host + "/skewer/post", result, callback, 'json');
+    };
+    $.get(skewer.host + "/skewer/get", callback, 'json');
 }
 
 /**

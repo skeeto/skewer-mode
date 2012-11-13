@@ -129,21 +129,26 @@ trust. These whitelisted functions are considered safe.")
   (skewer-clients-mode)
   (tabulated-list-print))
 
+(defun skewer-queue-client (proc req)
+  "Add a client to the queue, given the HTTP header."
+  (let ((agent (second (assoc "User-Agent" req))))
+    (push (make-skewer-client :proc proc :agent agent) skewer-clients))
+  (skewer-process-queue))
+
 ;; Servlets
 
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
 
 (defun httpd/skewer/get (proc path query req &rest args)
-  (let ((agent (second (assoc "User-Agent" req))))
-    (push (make-skewer-client :proc proc :agent agent) skewer-clients))
-  (skewer-process-queue))
+  (skewer-queue-client proc req))
 
-(defservlet skewer/post text/plain (path args req)
+(defun httpd/skewer/post (prox path query req &rest args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (callback (intern-soft (cdr (assoc 'callback result)))))
     (when (and callback (member callback skewer-callbacks))
-      (funcall callback result))))
+      (funcall callback result))
+    (skewer-queue-client proc req)))
 
 (defservlet skewer/demo text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
