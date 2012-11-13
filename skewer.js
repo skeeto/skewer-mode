@@ -10,10 +10,14 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    $.get(skewer.host + "/skewer/get", function (str) {
-        var request = JSON.parse(str);
-        var result = {type: "eval", id: request.id,
-                      callback: request.callback, strict: request.strict};
+    $.getJSON(skewer.host + "/skewer/get", function (request) {
+        var result = {
+            type: "eval",
+            id: request.id,
+            callback: request.callback,
+            strict: request.strict
+        };
+        var start = new Date().getTime();
         try {
             var prefix = request.strict ? '"use strict";\n' : "";
             var value = (eval, eval)(prefix + request.eval); // global eval
@@ -26,8 +30,9 @@ function skewer() {
                             "type": error.type, "message": error.message,
                             "eval": request.eval};
         }
+        result.time = (new Date().getTime() - start) / 1000;
         $.post(skewer.host + "/skewer/post", JSON.stringify(result), skewer);
-    }, "text");
+    });
 }
 
 /**
