@@ -235,6 +235,12 @@ string. The callback function must be listed in `skewer-callbacks'."
                                                    (js2-node-abs-end node))))
         (and (member code stricts) t)))))
 
+(defun skewer-flash-region (start end &optional timeout)
+  "Temporarily highlight region from START to END."
+  (let ((overlay (make-overlay start end)))
+    (overlay-put overlay 'face 'secondary-selection)
+    (run-with-timer (or timeout 0.2) nil 'delete-overlay overlay)))
+
 (defun skewer-eval-last-expression ()
   "Evaluate the JavaScript expression before the point in the
 waiting browser."
@@ -251,8 +257,7 @@ waiting browser."
           (error "no expression found"))
         (let ((start (js2-node-abs-pos node))
               (end (js2-node-abs-end node)))
-          (when (fboundp 'slime-flash-region)
-            (slime-flash-region start end))
+          (skewer-flash-region start end)
           (skewer-eval (buffer-substring-no-properties start end)
                        #'skewer-post-minibuffer))))))
 
@@ -273,8 +278,7 @@ waiting browser."
           (setf node (js2-node-parent node)))
         (let ((start (js2-node-abs-pos node))
               (end (js2-node-abs-end node)))
-          (when (fboundp 'slime-flash-region)
-            (slime-flash-region start end))
+          (skewer-flash-region start end)
           (skewer-eval (buffer-substring-no-properties start end)
                        #'skewer-post-minibuffer))))))
 
