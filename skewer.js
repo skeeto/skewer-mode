@@ -97,7 +97,11 @@ skewer.safeStringify = function (object, verbose) {
                 }
                 return "{" + pairs.join(',') + "}";
             } else {
-                return "Object";
+                try {
+                    return obj.toString();
+                } catch (error) {
+                    return ({}).toString();
+                }
             }
         }
     };
