@@ -151,7 +151,7 @@ trust. These whitelisted functions are considered safe.")
 (defun httpd/skewer/get (proc path query req &rest args)
   (skewer-queue-client proc req))
 
-(defun httpd/skewer/post (prox path query req &rest args)
+(defun httpd/skewer/post (proc path query req &rest args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (callback (intern-soft (cdr (assoc 'callback result)))))
     (when (and callback (member callback skewer-callbacks))
