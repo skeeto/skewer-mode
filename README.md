@@ -43,6 +43,17 @@ Note: `run-skewer` uses `browse-url` to launch the browser. This may
 require further setup depending on your operating system and personal
 preferences.
 
+Multiple browsers and browser tabs can be attached to Emacs at once.
+JavaScript forms are sent to all attached clients simultaneously, and
+each will echo back the result individually. Use `list-skewer-clients`
+to see a list of all currently attached clients.
+
+Sometimes Skewer's long polls from the browser will timeout after a
+number of hours of inactivity. If you find the browser disconnected
+from Emacs for any reason, use the browser's console to call
+`skewer()` to reconnect. This avoids a page reload, which would lose
+any fragile browser state you might care about.
+
 ### Manual version
 
 To Skewer your own document rather than the provided blank one,
@@ -96,7 +107,7 @@ another site, where it will automatically inject it's own HTML. This
 is experimental and a bit flaky right now. See `skewer-proxy.el`.
 
 [CORS][cors] is a *much* better alternative if you can use it. It's
-supported by Skewer.
+supported by Skewer (in theory).
 
 ## Motivation
 
