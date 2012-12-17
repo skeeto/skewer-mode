@@ -48,9 +48,9 @@ expired. Behaves just like `gethash'."
 (defsetf get-cache-table (key cache-table) (value)
   "Put an entry in the hash table, like (setf (gethash key table) value)."
   `(progn
+     (cache-table-clear-expired ,cache-table)
      (puthash ,key (cons (float-time) ,value)
-              (cache-table-struct-table ,cache-table))
-     (cache-table-clear-expired ,cache-table)))
+              (cache-table-struct-table ,cache-table))))
 
 (provide 'cache-table)
 
