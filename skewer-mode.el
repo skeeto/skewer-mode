@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.1
+;; Version: 1.2
 ;; Package-Requires: ((simple-httpd "1.2.4") (js2-mode "20090723"))
 
 ;;; Commentary:
@@ -64,6 +64,11 @@
 
 ;;; History:
 
+;; Version 1.2: features
+;;   * Add a skewer-eval-print-last-expression
+;;   * Display evaluation time when it's long
+;;   * Flash the region on eval
+;;   * Improve JS stringification
 ;; Version 1.1: features and fixes
 ;;   * Added `list-skewer-clients'
 ;;   * Reduce the number of HTTP requests needed
