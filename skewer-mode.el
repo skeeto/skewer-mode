@@ -254,25 +254,46 @@ string. The callback function must be listed in `skewer-callbacks'."
     (overlay-put overlay 'face 'secondary-selection)
     (run-with-timer (or timeout 0.2) nil 'delete-overlay overlay)))
 
+(defun skewer-get-last-expression ()
+  "Return the JavaScript expression before the point as a
+list: (string start end)."
+  (save-excursion
+    (js2-backward-sws)
+    (backward-char)
+    (let ((node (js2-node-at-point nil t)))
+      (when (eq js2-FUNCTION (js2-node-type (js2-node-parent node)))
+        (setq node (js2-node-parent node)))
+      (when (js2-ast-root-p node)
+        (error "no expression found"))
+      (let ((start (js2-node-abs-pos node))
+            (end (js2-node-abs-end node)))
+        (list (buffer-substring-no-properties start end) start end)))))
+
 (defun skewer-eval-last-expression ()
   "Evaluate the JavaScript expression before the point in the
 waiting browser."
   (interactive)
   (if js2-mode-buffer-dirty-p
       (js2-mode-wait-for-parse #'skewer-eval-last-expression)
-    (save-excursion
-      (js2-backward-sws)
-      (backward-char)
-      (let ((node (js2-node-at-point nil t)))
-        (when (eq js2-FUNCTION (js2-node-type (js2-node-parent node)))
-          (setq node (js2-node-parent node)))
-        (when (js2-ast-root-p node)
-          (error "no expression found"))
-        (let ((start (js2-node-abs-pos node))
-              (end (js2-node-abs-end node)))
-          (skewer-flash-region start end)
-          (skewer-eval (buffer-substring-no-properties start end)
-                       #'skewer-post-minibuffer))))))
+    (destructuring-bind (string start end) (skewer-get-last-expression)
+      (skewer-flash-region start end)
+      (skewer-eval string #'skewer-post-minibuffer))))
+
+(defun skewer-get-defun ()
+  "Return the toplevel JavaScript expression around the point as
+a list: (string start end)."
+  (save-excursion
+    (js2-backward-sws)
+    (backward-char)
+    (let ((node (js2-node-at-point nil t)))
+      (when (js2-ast-root-p node)
+        (error "no expression found"))
+      (while (and (js2-node-parent node)
+                  (not (js2-ast-root-p (js2-node-parent node))))
+        (setf node (js2-node-parent node)))
+      (let ((start (js2-node-abs-pos node))
+            (end (js2-node-abs-end node)))
+        (list (buffer-substring-no-properties start end) start end)))))
 
 (defun skewer-eval-defun ()
   "Evaluate the JavaScript expression before the point in the
@@ -280,20 +301,9 @@ waiting browser."
   (interactive)
   (if js2-mode-buffer-dirty-p
       (js2-mode-wait-for-parse #'skewer-eval-last-expression)
-    (save-excursion
-      (js2-backward-sws)
-      (backward-char)
-      (let ((node (js2-node-at-point nil t)))
-        (when (js2-ast-root-p node)
-          (error "no expression found"))
-        (while (and (js2-node-parent node)
-                    (not (js2-ast-root-p (js2-node-parent node))))
-          (setf node (js2-node-parent node)))
-        (let ((start (js2-node-abs-pos node))
-              (end (js2-node-abs-end node)))
-          (skewer-flash-region start end)
-          (skewer-eval (buffer-substring-no-properties start end)
-                       #'skewer-post-minibuffer))))))
+    (destructuring-bind (string start end) (skewer-get-defun)
+      (skewer-flash-region start end)
+      (skewer-eval string #'skewer-post-minibuffer))))
 
 ;; Script loading
 
