@@ -332,7 +332,7 @@ waiting browser."
 waiting browser and insert the result in the buffer at point."
   (interactive)
   (if js2-mode-buffer-dirty-p
-      (js2-mode-wait-for-parse #'skewer-eval-last-expression)
+      (js2-mode-wait-for-parse #'skewer-eval-print-last-expression)
     (destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (insert "\n")
