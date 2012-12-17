@@ -194,6 +194,7 @@ trust. These whitelisted functions are considered safe.")
   :group 'skewer)
 
 (defun skewer--error (string)
+  "Return STRING propertized as an error message."
   (propertize string 'font-lock-face 'skewer-error-face))
 
 (defun skewer-post-minibuffer (result)
