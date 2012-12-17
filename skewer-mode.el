@@ -73,9 +73,10 @@
 ;;; Code:
 
 (require 'cl)
+(require 'json)
 (require 'simple-httpd)
 (require 'js2-mode)
-(require 'json)
+(require 'cache-table)
 
 (defgroup skewer nil
   "Live browser JavaScript interaction."
@@ -296,21 +297,19 @@ waiting browser."
 
 ;; Script loading
 
-(defvar skewer-hosted-scripts (make-hash-table)
+(defvar skewer-hosted-scripts (make-cache-table 3600)
   "Map of hosted scripts to IDs.")
 
 (defun skewer-host-script (string)
   "Host script STRING from the script servlet, returning the script ID."
   (let ((id (random most-positive-fixnum)))
     (prog1 id
-      (puthash id (cons (float-time) string) skewer-hosted-scripts)
-      (maphash (lambda (k v)
-                 (if (> (- (float-time) 3600) (car v))
-                     (remhash k skewer-hosted-scripts)))
-               skewer-hosted-scripts))))
+      (setf (get-cache-table id skewer-hosted-scripts) string))))
 
 (defun skewer-load-buffer ()
-  "Load the current buffer into the browser."
+  "Load the entire current buffer into the browser. A snapshot of
+the buffer is hosted so that browsers visiting late won't see an
+inconsistent buffer."
   (interactive)
   (let ((id (skewer-host-script (buffer-string))))
     (skewer-eval (format "$.getScript('/skewer/script/%d')" id)
@@ -318,7 +317,7 @@ waiting browser."
 
 (defservlet skewer/script text/javascript (path)
   (let ((id (string-to-number (file-name-nondirectory path))))
-    (insert (cdr (gethash id skewer-hosted-scripts)))))
+    (insert (get-cache-table id skewer-hosted-scripts ""))))
 
 ;; Define the minor mode
 
