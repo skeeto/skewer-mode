@@ -96,7 +96,7 @@
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
 
-(defvar skewer-callbacks '(skewer-post-minibuffer)
+(defvar skewer-callbacks '(skewer-post-minibuffer skewer-post-print)
   "A whitelist of valid callback functions. The browser hands
 back the name of the callback function, which we can't
 trust. These whitelisted functions are considered safe.")
@@ -304,6 +304,36 @@ waiting browser."
     (destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (skewer-eval string #'skewer-post-minibuffer))))
+
+;; Print last expression
+
+(defvar skewer-eval-print-map (make-cache-table 3600)
+  "A mapping of evaluation IDs to insertion points.")
+
+(defun skewer-post-print (result)
+  "Insert the result after its source expression."
+  (if (not (skewer-success-p result))
+      (skewer-post-minibuffer result)
+    (let* ((id (cdr (assoc 'id result)))
+           (pos (get-cache-table id skewer-eval-print-map)))
+      (when pos
+        (with-current-buffer (car pos)
+          (goto-char (cdr pos))
+          (insert (cdr (assoc 'value result)) "\n"))))))
+
+(defun skewer-eval-print-last-expression ()
+  "Evaluate the JavaScript expression before the point in the
+waiting browser and insert the result in the buffer at point."
+  (interactive)
+  (if js2-mode-buffer-dirty-p
+      (js2-mode-wait-for-parse #'skewer-eval-last-expression)
+    (destructuring-bind (string start end) (skewer-get-defun)
+      (skewer-flash-region start end)
+      (insert "\n")
+      (let* ((request (skewer-eval string #'skewer-post-print :verbose t))
+             (id (cdr (assoc 'id request)))
+             (pos (cons (current-buffer) (point))))
+        (setf (get-cache-table id skewer-eval-print-map) pos)))))
 
 ;; Script loading
 
