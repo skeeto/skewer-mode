@@ -231,7 +231,7 @@ CALLBACK. VERBOSE controls the verbosity of the returned
 string. The callback function must be listed in `skewer-callbacks'."
   (let ((request `((eval . ,string)
                    (callback . ,callback)
-                   (id . ,(random most-positive-fixnum))
+                   (id . ,(format "%x" (random most-positive-fixnum)))
                    (verbose . ,verbose)
                    (strict . ,strict))))
     (if (or (not callback) (member callback skewer-callbacks))
@@ -313,7 +313,7 @@ waiting browser."
 
 ;; Print last expression
 
-(defvar skewer-eval-print-map (make-cache-table 3600)
+(defvar skewer-eval-print-map (make-cache-table 3600 :test 'equal)
   "A mapping of evaluation IDs to insertion points.")
 
 (defun skewer-post-print (result)
