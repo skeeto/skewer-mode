@@ -5,7 +5,7 @@
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
 ;; Version: 1.2
-;; Package-Requires: ((simple-httpd "1.2.4") (js2-mode "20090723"))
+;; Package-Requires: ((simple-httpd "1.4.0") (js2-mode "20090723"))
 
 ;;; Commentary:
 
@@ -125,8 +125,7 @@ trust. These whitelisted functions are considered safe.")
                 (with-temp-buffer
                   (insert (json-encode message))
                   (httpd-send-header proc "text/plain" 200
-                                     '("Cache-Control" . "no-cache"))
-                  (httpd-send-buffer proc (current-buffer))))
+                                     :Cache-Control "no-cache")))
               (setq sent t))
           (error nil)))
       (if (not sent) (push message skewer-queue)))
