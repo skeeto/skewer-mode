@@ -98,13 +98,14 @@
 (defvar skewer-data-root (file-name-directory load-file-name)
   "Location of data files needed by impatient-mode.")
 
+(defvar skewer-timeout 3600
+  "Maximum time to wait on the browser to respond, in seconds.")
+
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
 
-(defvar skewer-callbacks '(skewer-post-minibuffer skewer-post-print)
-  "A whitelist of valid callback functions. The browser hands
-back the name of the callback function, which we can't
-trust. These whitelisted functions are considered safe.")
+(defvar skewer-callbacks (make-cache-table skewer-timeout :test 'equal)
+  "Maps evaluation IDs to local callbacks.")
 
 (defvar skewer-queue ()
   "Queued messages for the browser.")
@@ -170,8 +171,9 @@ trust. These whitelisted functions are considered safe.")
 
 (defun httpd/skewer/post (proc path query req &rest args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
-         (callback (intern-soft (cdr (assoc 'callback result)))))
-    (when (and callback (member callback skewer-callbacks))
+         (id (cdr (assoc 'id result)))
+         (callback (get-cache-table id skewer-callbacks)))
+    (when callback
       (funcall callback result))
     (skewer-queue-client proc req)))
 
@@ -226,18 +228,16 @@ trust. These whitelisted functions are considered safe.")
 
 (defun* skewer-eval (string &optional callback &key verbose strict)
   "Evaluate STRING in the waiting browsers, giving the result to
-CALLBACK. VERBOSE controls the verbosity of the returned
-string. The callback function must be listed in `skewer-callbacks'."
-  (let ((request `((eval . ,string)
-                   (callback . ,callback)
-                   (id . ,(format "%x" (random most-positive-fixnum)))
-                   (verbose . ,verbose)
-                   (strict . ,strict))))
-    (if (or (not callback) (member callback skewer-callbacks))
-        (prog1 request
-          (setq skewer-queue (append skewer-queue (list request)))
-          (skewer-process-queue))
-      (error "Provided callback is not whitelisted in `skewer-callbacks'."))))
+CALLBACK. VERBOSE controls the verbosity of the returned string."
+  (let* ((id (format "%x" (random most-positive-fixnum)))
+         (request `((eval . ,string)
+                    (id . ,id)
+                    (verbose . ,verbose)
+                    (strict . ,strict))))
+    (prog1 request
+      (setf (get-cache-table id skewer-callbacks) callback)
+      (setq skewer-queue (append skewer-queue (list request)))
+      (skewer-process-queue))))
 
 (defun skewer-mode-strict-p ()
   "Return T if buffer contents indicates strict mode."
@@ -312,7 +312,7 @@ waiting browser."
 
 ;; Print last expression
 
-(defvar skewer-eval-print-map (make-cache-table 3600 :test 'equal)
+(defvar skewer-eval-print-map (make-cache-table skewer-timeout :test 'equal)
   "A mapping of evaluation IDs to insertion points.")
 
 (defun skewer-post-print (result)
@@ -342,7 +342,7 @@ waiting browser and insert the result in the buffer at point."
 
 ;; Script loading
 
-(defvar skewer-hosted-scripts (make-cache-table 3600)
+(defvar skewer-hosted-scripts (make-cache-table skewer-timeout)
   "Map of hosted scripts to IDs.")
 
 (defun skewer-host-script (string)

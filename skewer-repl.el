@@ -41,8 +41,6 @@
   :syntax-table emacs-lisp-mode-syntax-table
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
   (setq comint-input-sender 'skewer-input-sender)
-  (add-to-list 'skewer-callbacks 'skewer-post-repl)
-  (add-to-list 'skewer-callbacks 'skewer-post-log)
   (unless (comint-check-proc (current-buffer))
     (start-process "ielm" (current-buffer) "hexl")
     (set-process-query-on-exit-flag (skewer-repl-process) nil)
