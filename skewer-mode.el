@@ -234,7 +234,8 @@
   "Evaluate STRING in the waiting browsers, giving the result to
 CALLBACK. VERBOSE controls the verbosity of the returned string."
   (let* ((id (format "%x" (random most-positive-fixnum)))
-         (request `((eval . ,string)
+         (request `((type . "eval")
+                    (eval . ,string)
                     (id . ,id)
                     (verbose . ,verbose)
                     (strict . ,strict))))

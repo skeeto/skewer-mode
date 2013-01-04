@@ -5,36 +5,48 @@
  */
 
 /**
- * Makes a request to Emacs for something to evaluate. Once done it
- * sends the results back and queues itself for another request.
+ * Connects to Emacs and waits for a request. After handling the
+ * request it sends back the results and queues itself for another
+ * request.
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
     function callback(request) {
-        var result = {
-            type: "eval",
-            id: request.id,
-            strict: request.strict
-        };
-        var start = new Date();
-        try {
-            var prefix = request.strict ? '"use strict";\n' : "";
-            var value = (eval, eval)(prefix + request.eval); // global eval
-            result.value = skewer.safeStringify(value, request.verbose);
-            result.status = "success";
-        } catch (error) {
-            result.value = error.toString();
-            result.status = "error";
-            result.error = {"name": error.name, "stack": error.stack,
-                            "type": error.type, "message": error.message,
-                            "eval": request.eval};
+        if (request.type === "eval") {
+            var result = JSON.stringify(skewer.eval(request));
+            $.post(skewer.host + "/skewer/post", result, callback, 'json');
         }
-        result.time = (new Date() - start) / 1000;
-        result = JSON.stringify(result);
-        $.post(skewer.host + "/skewer/post", result, callback, 'json');
     };
     $.get(skewer.host + "/skewer/get", callback, 'json');
 }
+
+/**
+ * Handles an code evaluation request from Emacs.
+ * @param request The request object sent by Emacs
+ * @returns The result object to be returned to Emacs
+ */
+skewer.eval = function(request) {
+    var result = {
+        type: "eval",
+        id: request.id,
+        strict: request.strict
+    };
+    var start = Date.now();
+    try {
+        var prefix = request.strict ? '"use strict";\n' : "";
+        var value = (eval, eval)(prefix + request.eval); // global eval
+        result.value = skewer.safeStringify(value, request.verbose);
+        result.status = "success";
+    } catch (error) {
+        result.value = error.toString();
+        result.status = "error";
+        result.error = {"name": error.name, "stack": error.stack,
+                        "type": error.type, "message": error.message,
+                        "eval": request.eval};
+    }
+    result.time = (Date.now() - start) / 1000;
+    return result;
+};
 
 /**
  * Host of the skewer script (CORS support).
