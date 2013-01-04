@@ -172,7 +172,11 @@
 (defun httpd/skewer/post (proc path query req &rest args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (id (cdr (assoc 'id result)))
+         (type (cdr (assoc 'type result)))
          (callback (get-cache-table id skewer-callbacks)))
+    (when (and (member type '("log" "error"))
+               (fboundp 'skewer-post-log))
+      (skewer-post-log result))
     (when callback
       (funcall callback result))
     (skewer-queue-client proc req)))

@@ -14,7 +14,6 @@ function skewer() {
         var result = {
             type: "eval",
             id: request.id,
-            callback: request.callback,
             strict: request.strict
         };
         var start = new Date();
@@ -119,8 +118,10 @@ skewer.safeStringify = function (object, verbose) {
  */
 skewer.log = function(message) {
     "use strict";
-    var log = {type: "log", callback: "skewer-post-log",
-               value: skewer.safeStringify(message, true)};
+    var log = {
+        type: "log",
+        value: skewer.safeStringify(message, true)
+    };
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
 };
 
@@ -132,7 +133,6 @@ skewer.error = function(event) {
     "use strict";
     var log = {
         type: "error",
-        callback: "skewer-post-log",
         value: event.originalEvent.message
     };
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
