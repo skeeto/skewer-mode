@@ -12,10 +12,13 @@
  */
 function skewer() {
     function callback(request) {
+        var result;
         if (request.type === "eval") {
-            var result = JSON.stringify(skewer.eval(request));
-            $.post(skewer.host + "/skewer/post", result, callback, 'json');
+            result = JSON.stringify(skewer.eval(request));
+        } else if (request.type === "complete") {
+            result = JSON.stringify(skewer.complete(request));
         }
+        $.post(skewer.host + "/skewer/post", result, callback, 'json');
     };
     $.get(skewer.host + "/skewer/get", callback, 'json');
 }
@@ -38,13 +41,50 @@ skewer.eval = function(request) {
         result.value = skewer.safeStringify(value, request.verbose);
         result.status = "success";
     } catch (error) {
-        result.value = error.toString();
-        result.status = "error";
-        result.error = {"name": error.name, "stack": error.stack,
-                        "type": error.type, "message": error.message,
-                        "eval": request.eval};
+        skewer.errorResult(error, result, request);
     }
     result.time = (Date.now() - start) / 1000;
+    return result;
+};
+
+/**
+ * Handles a completion request from Emacs.
+ * @param request The request object sent by Emacs
+ * @returns The result containing the completion candidates as keys
+ * and the function interface or init value as the values. Both keys and values are strings.
+ */
+skewer.complete = function(request) {
+    var value = {},
+        result =  {
+            type : request.type,
+            id : request.id,
+            strict : request.strict,
+            status : "success"
+        }, obj, type;
+    try {
+        obj = (eval, eval)(request.eval),
+        type = Object.prototype.toString.call(obj);
+        if (type === "[object Object]"){
+            for (var key in obj) {
+                if (Object.prototype.toString.call(obj[key]) === "[object Function]") {
+                    var str = obj[key].toString();
+                    var pos = str.indexOf(")");
+                    value [key] = str.substring(0, pos +1);
+                } else if (typeof obj[key] === "number" || typeof obj[key] === "string") {
+                    value[key] = obj[key].toString();
+                } else if(obj[key] === true) {
+                    value[key] = "true";
+                } else if (obj[key] === false) {
+                    value[key] = "false";
+                } else {
+                    value[key] = "";
+                }
+            }
+        }
+        result.value = value;
+    } catch (error){
+        skewer.errorResult(error, result, request);
+    }
     return result;
 };
 
@@ -148,6 +188,18 @@ skewer.error = function(event) {
         value: event.originalEvent.message
     };
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
+};
+
+/**
+ * Prepare a result when an error occurs evaluating Javascript code.
+ */
+skewer.errorResult = function(error, result, request) {
+    result.value = error.toString();
+    result.type = request.type,
+    result.status = "error";
+    result.error = {"name": error.name, "stack": error.stack,
+                    "type": error.type, "message": error.message,
+                    "eval": request.eval};
 };
 
 /* Add the event listener. This doesn't work correctly in Firefox. */
