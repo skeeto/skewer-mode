@@ -64,7 +64,7 @@ skewer.complete = function(request) {
     try {
         obj = (eval, eval)(request.eval),
         type = Object.prototype.toString.call(obj);
-        if (type === "[object Object]"){
+        if (type === "[object Object]" || type === "[object Function]"){
             for (var key in obj) {
                 if (Object.prototype.toString.call(obj[key]) === "[object Function]") {
                     var str = obj[key].toString();
