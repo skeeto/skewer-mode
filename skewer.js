@@ -12,20 +12,30 @@
  */
 function skewer() {
     function callback(request) {
-        if (request.type === "eval") {
-            var result = JSON.stringify(skewer.eval(request));
+        var result = skewer.fn[request.type](request);
+        if (result) {
+            result = JSON.stringify(result);
             $.post(skewer.host + "/skewer/post", result, callback, 'json');
+        } else {
+            $.get(skewer.host + "/skewer/get", callback, 'json');
         }
     };
     $.get(skewer.host + "/skewer/get", callback, 'json');
 }
 
 /**
+ * Handlers accept a request object from Emacs and return either a
+ * logical false (no response) or an object to return to Emacs.
+ * @namespace Request handlers.
+ */
+skewer.fn = {};
+
+/**
  * Handles an code evaluation request from Emacs.
  * @param request The request object sent by Emacs
  * @returns The result object to be returned to Emacs
  */
-skewer.eval = function(request) {
+skewer.fn.eval = function(request) {
     var result = {
         type: "eval",
         id: request.id,
