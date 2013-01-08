@@ -29,20 +29,16 @@ skewer.eval = function(request) {
     var result = {
         type: "eval",
         id: request.id,
-        strict: request.strict
+        strict: request.strict,
+        status: "success"
     };
     var start = Date.now();
     try {
         var prefix = request.strict ? '"use strict";\n' : "";
         var value = (eval, eval)(prefix + request.eval); // global eval
         result.value = skewer.safeStringify(value, request.verbose);
-        result.status = "success";
     } catch (error) {
-        result.value = error.toString();
-        result.status = "error";
-        result.error = {"name": error.name, "stack": error.stack,
-                        "type": error.type, "message": error.message,
-                        "eval": request.eval};
+        result = skewer.errorResult(error, result, request);
     }
     result.time = (Date.now() - start) / 1000;
     return result;
