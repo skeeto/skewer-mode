@@ -150,6 +150,28 @@ skewer.error = function(event) {
     $.post(skewer.host + "/skewer/post", JSON.stringify(log));
 };
 
+/**
+ * Prepare a result when an error occurs evaluating Javascript code.
+ * @param error The error object given by catch.
+ * @param result The resutl object to return to Emacs.
+ * @param request The request object from Emacs.
+ * @return The result object to send back to Emacs.
+ */
+skewer.errorResult = function(error, result, request) {
+    "use strict";
+    return $.extend({}, result, {
+        value: error.toString(),
+        status: "error",
+        error: {
+            name: error.name,
+            stack: error.stack,
+            type: error.type,
+            message: error.message,
+            eval: request.eval
+        }
+    });
+};
+
 /* Add the event listener. This doesn't work correctly in Firefox. */
 $(window).bind('error', skewer.error);
 
