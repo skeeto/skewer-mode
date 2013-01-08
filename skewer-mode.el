@@ -230,11 +230,12 @@
 
 ;; Evaluation functions
 
-(defun* skewer-eval (string &optional callback &key verbose strict)
+(defun* skewer-eval (string &optional callback
+                            &key verbose strict (type "eval"))
   "Evaluate STRING in the waiting browsers, giving the result to
 CALLBACK. VERBOSE controls the verbosity of the returned string."
   (let* ((id (format "%x" (random most-positive-fixnum)))
-         (request `((type . "eval")
+         (request `((type . ,type)
                     (eval . ,string)
                     (id . ,id)
                     (verbose . ,verbose)
