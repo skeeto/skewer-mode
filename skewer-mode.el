@@ -98,6 +98,16 @@
 (defvar skewer-data-root (file-name-directory load-file-name)
   "Location of data files needed by impatient-mode.")
 
+(defvar skewer-js-hook ()
+  "List of functions to be called when skewer.js is being served
+to the browser.
+
+When called, the current buffer is the buffer to be served to the
+client (a defservlet), with skewer.js script already
+inserted. This is the chance for other packages to insert their
+own JavaScript to extend skewer in the browser, such as adding a
+new type handler.")
+
 (defvar skewer-timeout 3600
   "Maximum time to wait on the browser to respond, in seconds.")
 
@@ -164,7 +174,9 @@
 ;; Servlets
 
 (defservlet skewer text/javascript ()
-  (insert-file-contents (expand-file-name "skewer.js" skewer-data-root)))
+  (insert-file-contents (expand-file-name "skewer.js" skewer-data-root))
+  (goto-char (point-max))
+  (run-hooks 'skewer-js-hook))
 
 (defun httpd/skewer/get (proc path query req &rest args)
   (skewer-queue-client proc req))
