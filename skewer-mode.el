@@ -243,15 +243,20 @@ new type handler.")
 ;; Evaluation functions
 
 (defun* skewer-eval (string &optional callback
-                            &key verbose strict (type "eval"))
-  "Evaluate STRING in the waiting browsers, giving the result to
-CALLBACK. VERBOSE controls the verbosity of the returned string."
+                            &key verbose strict (type "eval") extra)
+  "Evaluate STRING in the waiting browsers, giving the result to CALLBACK.
+
+:VERBOSE -- if T, the return will try to be JSON encoded
+:STRICT  -- if T, expression is evaluated with 'use strict'
+:TYPE    -- chooses the JavaScript handler (default: eval)
+:EXTRA   -- additional alist keys to append to the request object"
   (let* ((id (format "%x" (random most-positive-fixnum)))
          (request `((type . ,type)
                     (eval . ,string)
                     (id . ,id)
                     (verbose . ,verbose)
-                    (strict . ,strict))))
+                    (strict . ,strict)
+                    ,@extra)))
     (prog1 request
       (setf (get-cache-table id skewer-callbacks) callback)
       (setq skewer-queue (append skewer-queue (list request)))
