@@ -179,7 +179,7 @@ new type handler.")
   (run-hooks 'skewer-js-hook))
 
 (defservlet skewer/jquery text/javascript ()
-  (let ((pattern "^jquery.+\.js$"))
+  (let ((pattern "^jquery.+\\.js$"))
     (insert-file-contents (car (directory-files skewer-data-root t pattern)))))
 
 (defun httpd/skewer/get (proc path query req &rest args)
