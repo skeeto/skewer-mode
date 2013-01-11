@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.2
+;; Version: 1.3
 ;; Package-Requires: ((simple-httpd "1.4.0") (js2-mode "20090723"))
 
 ;;; Commentary:
@@ -77,6 +77,12 @@
 
 ;;; History:
 
+;; Version 1.3: features and fixes
+;;   * Full offline support
+;;   * No more callback registering
+;;   * Fix 64-bit support
+;;   * Two new hooks for improved extension support
+;;   * More uniform keybindings with other interactive modes
 ;; Version 1.2: features
 ;;   * Add a skewer-eval-print-last-expression
 ;;   * Display evaluation time when it's long
