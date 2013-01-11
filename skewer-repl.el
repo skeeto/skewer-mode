@@ -87,14 +87,12 @@
           (backward-char)
           (insert (concat "\n" output "")))))))
 
-(defun skewer-repl-response-hook (response)
+;;;###autoload
+(defun skewer-repl--response-hook (response)
   "Catches all browser messages logging some to the REPL."
   (let ((type (cdr (assoc 'type response))))
     (when (member type '("log" "error"))
       (skewer-post-log response))))
-
-(eval-when (load eval)
-  (add-hook 'skewer-response-hook #'skewer-repl-response-hook))
 
 ;;;###autoload
 (defun skewer-repl ()
@@ -103,7 +101,12 @@
   (when (not (get-buffer "*skewer-repl*"))
     (with-current-buffer (get-buffer-create "*skewer-repl*")
       (skewer-repl-mode)))
-  (switch-to-buffer (get-buffer "*skewer-repl*")))
+  (pop-to-buffer (get-buffer "*skewer-repl*")))
+
+;;;###autoload
+(eval-when (load eval)
+  (add-hook 'skewer-response-hook #'skewer-repl--response-hook)
+  (define-key skewer-mode-map (kbd "C-c C-z") #'skewer-repl))
 
 (provide 'skewer-repl)
 
