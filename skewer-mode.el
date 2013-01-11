@@ -301,15 +301,18 @@ list: (string start end)."
             (end (js2-node-abs-end node)))
         (list (buffer-substring-no-properties start end) start end)))))
 
-(defun skewer-eval-last-expression ()
+(defun skewer-eval-last-expression (&optional prefix)
   "Evaluate the JavaScript expression before the point in the
-waiting browser."
-  (interactive)
-  (if js2-mode-buffer-dirty-p
-      (js2-mode-wait-for-parse #'skewer-eval-last-expression)
-    (destructuring-bind (string start end) (skewer-get-last-expression)
-      (skewer-flash-region start end)
-      (skewer-eval string #'skewer-post-minibuffer))))
+waiting browser. If invoked with a prefix argument, insert the
+result into the current buffer."
+  (interactive "P")
+  (if prefix
+      (skewer-eval-print-last-expression)
+    (if js2-mode-buffer-dirty-p
+        (js2-mode-wait-for-parse #'skewer-eval-last-expression)
+      (destructuring-bind (string start end) (skewer-get-last-expression)
+        (skewer-flash-region start end)
+        (skewer-eval string #'skewer-post-minibuffer)))))
 
 (defun skewer-get-defun ()
   "Return the toplevel JavaScript expression around the point as
