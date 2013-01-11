@@ -62,6 +62,19 @@
 ;; another site, where it will automatically inject it's own HTML. This
 ;; is experimental and a bit flaky right now. See skewer-proxy.el.
 
+;; Extending Skewer:
+
+;; Skewer is flexible and open to extension. The REPL in
+;; skewer-repl.el is a partial example of this. You can extend
+;; skewer.js with your own request handlers and talk to them from
+;; Emacs using `skewer-eval' with your own custom :type. The :type
+;; string chooses the dispatch function under the skewer.fn object. To
+;; inject your own JavaScript into skewer.js, use `skewer-js-hook'.
+
+;; You can also catch messages sent from the browser not in response
+;; to an explicit request. Use `skewer-response-hook' to see all
+;; incoming objects.
+
 ;;; History:
 
 ;; Version 1.2: features
