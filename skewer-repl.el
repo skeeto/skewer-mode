@@ -87,6 +87,15 @@
           (backward-char)
           (insert (concat "\n" output "")))))))
 
+(defun skewer-repl-response-hook (response)
+  "Catches all browser messages logging some to the REPL."
+  (let ((type (cdr (assoc 'type response))))
+    (when (member type '("log" "error"))
+      (skewer-post-log response))))
+
+(eval-when (load eval)
+  (add-hook 'skewer-response-hook #'skewer-repl-response-hook))
+
 ;;;###autoload
 (defun skewer-repl ()
   "Start a JavaScript REPL to be evaluated in the visiting browser."
