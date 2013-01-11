@@ -107,6 +107,11 @@ already inserted. This is the chance for other packages to insert
 their own JavaScript to extend skewer in the browser, such as
 adding a new type handler.")
 
+(defvar skewer-response-hook ()
+  "Hook to run when a response arrives from the browser. Used for
+catching messages from the browser with no associated
+callback. The response object is passed to the hook function.")
+
 (defvar skewer-timeout 3600
   "Maximum time to wait on the browser to respond, in seconds.")
 
@@ -189,12 +194,11 @@ adding a new type handler.")
          (id (cdr (assoc 'id result)))
          (type (cdr (assoc 'type result)))
          (callback (get-cache-table id skewer-callbacks)))
-    (when (and (member type '("log" "error"))
-               (fboundp 'skewer-post-log))
-      (skewer-post-log result))
     (when callback
       (funcall callback result))
-    (skewer-queue-client proc req)))
+    (skewer-queue-client proc req)
+    (dolist (hook skewer-response-hook)
+      (funcall hook result))))
 
 (defservlet skewer/demo text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
