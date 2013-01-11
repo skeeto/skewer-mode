@@ -196,7 +196,9 @@ callback. The response object is passed to the hook function.")
          (callback (get-cache-table id skewer-callbacks)))
     (when callback
       (funcall callback result))
-    (skewer-queue-client proc req)
+    (if id
+        (skewer-queue-client proc req)
+      (with-httpd-buffer proc "text/plain")) ; empty response
     (dolist (hook skewer-response-hook)
       (funcall hook result))))
 
