@@ -103,9 +103,11 @@
       (skewer-repl-mode)))
   (pop-to-buffer (get-buffer "*skewer-repl*")))
 
-(eval-when (load eval)
-  (add-hook 'skewer-response-hook #'skewer-repl--response-hook)
-  (define-key skewer-mode-map (kbd "C-c C-z") #'skewer-repl))
+;;;###autoload
+(eval-after-load 'skewer-mode
+  '(progn
+     (add-hook 'skewer-response-hook #'skewer-repl--response-hook)
+     (define-key skewer-mode-map (kbd "C-c C-z") #'skewer-repl)))
 
 (provide 'skewer-repl)
 
