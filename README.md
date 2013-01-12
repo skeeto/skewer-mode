@@ -33,9 +33,12 @@ The keybindings for evaluating expressions in the browser are just
 like the Lisp modes. These are provided by the minor mode
 `skewer-mode`.
 
- * C-x C-e -- `skewer-eval-last-expression`
- * C-M-x   -- `skewer-eval-defun`
- * C-c C-k -- `skewer-load-buffer`
+ * <kbd>C-x C-e</kbd>: Evaluate the form before the point and display
+   the result in the minibuffer. If given a prefix argument, insert
+   the result into the current buffer.
+ * <kbd>C-M-x</kbd>:   Evaluate the top-level form around the point.
+ * <kbd>C-c C-k</kbd>: Load the current buffer.
+ * <kbd>C-c C-z</kbd>: Select the REPL buffer.
 
 The result of the expression is echoed in the minibuffer.
 
@@ -75,10 +78,9 @@ and Internet Explorer 9.
 
 ## REPL
 
-With `skewer-repl.el` loaded, a REPL into the browser can be created
-with `M-x skewer-repl`. This should work just like a console within
-the browser. Messages can be logged to this REPL with `skewer.log()`
-(just like `console.log()`).
+A REPL into the browser can be created with `M-x skewer-repl`. This
+should work just like a console within the browser. Messages can be
+logged to this REPL with `skewer.log()` (just like `console.log()`).
 
 Results of expressions evaluated in the REPL are printed more
 verbosely than in the minibuffer, when possible. This may help in
