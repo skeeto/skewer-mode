@@ -67,9 +67,10 @@
 ;; Skewer is flexible and open to extension. The REPL in
 ;; skewer-repl.el is a partial example of this. You can extend
 ;; skewer.js with your own request handlers and talk to them from
-;; Emacs using `skewer-eval' with your own custom :type. The :type
-;; string chooses the dispatch function under the skewer.fn object. To
-;; inject your own JavaScript into skewer.js, use `skewer-js-hook'.
+;; Emacs using `skewer-eval' (or `skewer-eval-sync') with your own
+;; custom :type. The :type string chooses the dispatch function under
+;; the skewer.fn object. To inject your own JavaScript into skewer.js,
+;; use `skewer-js-hook'.
 
 ;; You can also catch messages sent from the browser not in response
 ;; to an explicit request. Use `skewer-response-hook' to see all
@@ -289,6 +290,15 @@ callback. The response object is passed to the hook function.")
       (setf (get-cache-table id skewer-callbacks) callback)
       (setq skewer-queue (append skewer-queue (list request)))
       (skewer-process-queue))))
+
+(defun skewer-eval-sync (string &rest args)
+  "Just like `skewer-eval' but synchronously, so don't provide a
+callback. Use with caution."
+  (lexical-let ((result nil))
+    (apply #'skewer-eval string (lambda (v) (setq result v)) args)
+    (loop until result
+          do (accept-process-output nil 0.01)
+          finally (return result))))
 
 (defun skewer-mode-strict-p ()
   "Return T if buffer contents indicates strict mode."
