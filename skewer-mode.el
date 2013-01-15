@@ -186,6 +186,19 @@ callback. The response object is passed to the hook function.")
   (setq tabulated-list-entries #'skewer-clients-tabulate)
   (tabulated-list-init-header))
 
+(define-key skewer-clients-mode-map (kbd "g")
+  (lambda ()
+    (interactive)
+    (skewer-ping)
+    (revert-buffer)))
+
+(defun skewer-update-list-buffer ()
+  "Revert the client list, due to an update."
+  (let ((list-buffer (get-buffer "*skewer-clients*")))
+    (when list-buffer
+      (with-current-buffer list-buffer
+        (revert-buffer)))))
+
 (defun list-skewer-clients ()
   "List the attached browsers in a buffer."
   (interactive)
@@ -197,6 +210,7 @@ callback. The response object is passed to the hook function.")
   "Add a client to the queue, given the HTTP header."
   (let ((agent (second (assoc "User-Agent" req))))
     (push (make-skewer-client :proc proc :agent agent) skewer-clients))
+  (skewer-update-list-buffer)
   (skewer-process-queue))
 
 ;; Servlets
