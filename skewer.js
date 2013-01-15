@@ -55,6 +55,21 @@ skewer.fn.eval = function(request) {
 };
 
 /**
+ * A keep-alive and connecton testing handler.
+ * @param request The request object sent by Emacs
+ * @returns The result object to be returned to Emacs
+ */
+skewer.fn.ping = function(request) {
+    return {
+        type: 'pong',
+        id: request.id,
+        status: 'success',
+        date: Date.now() / 1000,
+        value: request.eval
+    };
+};
+
+/**
  * Host of the skewer script (CORS support).
  * @type string
  */

@@ -144,6 +144,10 @@ callback. The response object is passed to the hook function.")
 (defvar skewer-queue ()
   "Queued messages for the browser.")
 
+(defvar skewer--last-timestamp 0
+  "Timestamp of the last browser response. Use
+`skewer-last-seen-seconds' to access this.")
+
 (defstruct skewer-client
   "A client connection awaiting a response."
   proc agent)
@@ -214,6 +218,7 @@ callback. The response object is passed to the hook function.")
          (id (cdr (assoc 'id result)))
          (type (cdr (assoc 'type result)))
          (callback (get-cache-table id skewer-callbacks)))
+    (setq skewer--last-timestamp (float-time))
     (when callback
       (funcall callback result))
     (if id
@@ -299,6 +304,18 @@ callback. Use with caution."
     (loop until result
           do (accept-process-output nil 0.01)
           finally (return result))))
+
+(defun* skewer-ping ()
+  "Ping the browser to test that it's still alive."
+  (unless (null skewer-clients) ; don't queue pings
+    (skewer-eval (prin1-to-string (float-time)) nil :type "ping")))
+
+(defun skewer-last-seen-seconds ()
+  "Return the number of seconds since the browser was last seen."
+  (skewer-ping) ; make sure it's still alive next request
+  (if skewer-clients
+      0
+    (- (float-time) skewer--last-timestamp)))
 
 (defun skewer-mode-strict-p ()
   "Return T if buffer contents indicates strict mode."
