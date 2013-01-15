@@ -165,6 +165,7 @@ callback. The response object is passed to the hook function.")
                   (insert (json-encode message))
                   (httpd-send-header proc "text/plain" 200
                                      :Cache-Control "no-cache")))
+              (setq skewer--last-timestamp (float-time))
               (setq sent t))
           (error nil)))
       (if (not sent) (push message skewer-queue)))
@@ -328,9 +329,7 @@ callback. Use with caution."
 (defun skewer-last-seen-seconds ()
   "Return the number of seconds since the browser was last seen."
   (skewer-ping) ; make sure it's still alive next request
-  (if skewer-clients
-      0
-    (- (float-time) skewer--last-timestamp)))
+  (- (float-time) skewer--last-timestamp))
 
 (defun skewer-mode-strict-p ()
   "Return T if buffer contents indicates strict mode."
