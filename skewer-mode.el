@@ -199,6 +199,7 @@ callback. The response object is passed to the hook function.")
       (with-current-buffer list-buffer
         (revert-buffer)))))
 
+;;;###autoload
 (defun list-skewer-clients ()
   "List the attached browsers in a buffer."
   (interactive)
