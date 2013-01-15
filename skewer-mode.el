@@ -183,7 +183,7 @@ callback. The response object is passed to the hook function.")
   (setq tabulated-list-format [("Host" 12 t)
                                ("Port" 5 t)
                                ("User Agent" 0 t)])
-  (setq tabulated-list-entries #' skewer-clients-tabulate)
+  (setq tabulated-list-entries #'skewer-clients-tabulate)
   (tabulated-list-init-header))
 
 (defun list-skewer-clients ()
