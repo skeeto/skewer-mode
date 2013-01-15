@@ -189,7 +189,7 @@ callback. The response object is passed to the hook function.")
 (defun list-skewer-clients ()
   "List the attached browsers in a buffer."
   (interactive)
-  (switch-to-buffer (get-buffer-create "*skewer-clients*"))
+  (pop-to-buffer (get-buffer-create "*skewer-clients*"))
   (skewer-clients-mode)
   (tabulated-list-print))
 
