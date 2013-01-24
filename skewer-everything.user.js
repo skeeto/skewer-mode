@@ -16,7 +16,8 @@ var toggle = $('<div/>').bind('click', inject).css({
     "border-color": 'transparent #F00 transparent transparent',
     "position": 'absolute',
     "right": 0,
-    "top": 0
+    "top": 0,
+    "z-index": 100
 });
 
 var injected = false;
