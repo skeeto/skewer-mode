@@ -8,6 +8,8 @@
 // @require      http://code.jquery.com/jquery-latest.min.js
 // ==/UserScript==
 
+var host = 'http://localhost:8080';
+
 var toggle = $('<div/>').bind('click', inject).css({
     "width": '0px',
     "height": '0px',
@@ -24,9 +26,9 @@ var injected = false;
 
 function inject() {
     if (!injected) {
-        var script = $('<script/>').attr({src: 'http://localhost:8080/skewer'});
+        var script = $('<script/>').attr({src: host + '/skewer'});
         if (!unsafeWindow.jQuery) unsafeWindow.$ = $;
-        $('head').append(script);
+        $('body').append(script);
         toggle.css('border-right-color', '#0F0');
     } else {
         toggle.css('border-right-color', '#F00');

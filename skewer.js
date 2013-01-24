@@ -78,7 +78,7 @@ skewer.fn.ping = function(request) {
     if (src) {
         skewer.host = src.match(/\w+:\/\/[^/]+/)[0];
     } else {
-        skewer.host = 'http://localhost:8080';  // guess
+        skewer.host = '';  // default to the current host
     }
 }());
 
