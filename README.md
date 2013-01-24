@@ -59,7 +59,7 @@ any fragile browser state you might care about.
 
 ### Manual version
 
-To Skewer your own document rather than the provided blank one,
+To skewer your own document rather than the provided blank one,
 
  1. Load the dependencies
  2. Load `skewer-mode.el`
@@ -69,7 +69,7 @@ To Skewer your own document rather than the provided blank one,
  6. Visit the document from your browser
 
 If your document isn't a static page but is instead hosted by its own
-server, you can still Skewer the page. See the proxy below.
+server, you can still skewer the page. See CORS support below.
 
 ### Browser Support
 
@@ -102,14 +102,15 @@ to redefine loaded code in Skewer, make sure you disable strict mode.
 However, you *can* use strict *within* your functions since this
 doesn't effect Skewer's top-level `eval`.
 
-## Transparent Proxy
+## Skewering with CORS
 
-To work around the same origin policy, Skewer can also be a proxy for
-another site, where it will automatically inject it's own HTML. This
-is experimental and a bit flaky right now. See `skewer-proxy.el`.
-
-[CORS][cors] is a *much* better alternative if you can use it. It's
-supported by Skewer (in theory).
+Skewer supports [Cross-origin Resource Sharing (CORS)][cors], so you
+can skewer pages served from other servers. It works the same as
+skewering a page hosted by Emacs. If you don't control the server from
+which you want to skewer pages, the provided Greasemonkey userscript
+can be used to inject skewer.js into any page you visit. Note that
+skewer will assume you're running the Skewer server on port 8080
+(simple-httpd's default port).
 
 ## Motivation
 

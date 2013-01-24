@@ -52,15 +52,11 @@
 ;;  6. Visit the document from your browser
 
 ;; If your document isn't a static page but is instead hosted by its
-;; own server, you can still skewer the page. See the proxy below.
+;; own server, you can still skewer the page. It fully supports CORS.
 
 ;; With skewer-repl.el loaded, a REPL into the browser can be created
 ;; with M-x `skewer-repl'. This should work just like a REPL in
 ;; console within the browser.
-
-;; To work around the same origin policy, skewer can also be a proxy for
-;; another site, where it will automatically inject it's own HTML. This
-;; is experimental and a bit flaky right now. See skewer-proxy.el.
 
 ;; Extending Skewer:
 
