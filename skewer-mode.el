@@ -164,7 +164,8 @@ callback. The response object is passed to the hook function.")
                 (with-temp-buffer
                   (insert (json-encode message))
                   (httpd-send-header proc "text/plain" 200
-                                     :Cache-Control "no-cache")))
+                                     :Cache-Control "no-cache"
+                                     :Access-Control-Allow-Origin "*")))
               (setq skewer--last-timestamp (float-time))
               (setq sent t))
           (error nil)))
@@ -239,7 +240,9 @@ callback. The response object is passed to the hook function.")
       (funcall callback result))
     (if id
         (skewer-queue-client proc req)
-      (with-httpd-buffer proc "text/plain")) ; empty response
+      (with-temp-buffer
+        (httpd-send-header proc "text/plain" 200
+                           :Access-Control-Allow-Origin "*")))
     (dolist (hook skewer-response-hook)
       (funcall hook result))))
 

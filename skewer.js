@@ -73,7 +73,14 @@ skewer.fn.ping = function(request) {
  * Host of the skewer script (CORS support).
  * @type string
  */
-skewer.host = $('script[src$="/skewer"]').prop('src').match(/\w+:\/\/[^/]+/)[0];
+(function() {
+    var src = $('script[src$="/skewer"]').prop('src');
+    if (src) {
+        skewer.host = src.match(/\w+:\/\/[^/]+/)[0];
+    } else {
+        skewer.host = 'http://localhost:8080';  // guess
+    }
+}());
 
 /**
  * Stringify a potentially circular object without throwing an exception.
