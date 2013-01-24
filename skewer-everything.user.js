@@ -28,11 +28,17 @@ function inject() {
         if (!unsafeWindow.jQuery) unsafeWindow.$ = $;
         $('head').append(script);
         toggle.css('border-right-color', '#0F0');
-        injected = true;
+    } else {
+        toggle.css('border-right-color', '#F00');
     }
+    injected = !injected;
+    GM_setValue('auto-' + location, injected);
 }
 
 /* Don't use on iframes. */
 if (window.top === window.self) {
     $('body').append(toggle);
+    if (GM_getValue('auto-' + location)) {
+        inject();
+    }
 }
