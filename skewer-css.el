@@ -30,9 +30,7 @@
 
 (defun skewer-css-beginning-of-rule ()
   "Move to the beginning of the current rule and return point."
-  (if (eql (char-before) ?})
-      (backward-char))
-  (re-search-forward "}")
+  (skewer-css-end-of-rule)
   (let ((end (re-search-backward "{")))
     (when (re-search-backward "[}/]" nil 'start)
       (forward-char))
@@ -42,7 +40,22 @@
 
 (defun skewer-css-end-of-rule ()
   "Move to the end of the current rule and return point."
-  (re-search-forward "}"))
+  (if (eql (char-before) ?})
+      (point)
+    (re-search-forward "}")))
+
+(defun skewer-css-end-of-declaration ()
+  "Move to the end of the current declaration and return point."
+  (if (eql (char-before) ?\;)
+      (point)
+    (re-search-forward ";")))
+
+(defun skewer-css-beginning-of-declaration ()
+  "Move to the end of the current declaration and return point."
+  (skewer-css-end-of-declaration)
+  (re-search-backward ":")
+  (css-backward-sexp 1)
+  (point))
 
 (defun skewer-css-selectors ()
   "Return the selectors for the current rule."
@@ -55,12 +68,9 @@
 (defun skewer-css-declaration ()
   "Return the current declaration as a pair of strings."
   (save-excursion
-    (if (eql (char-before) ?\;)
-        (backward-char 1))
-    (let ((end (1- (re-search-forward ";"))))
-      (re-search-backward ":")
-      (css-backward-sexp 1)
-      (let* ((clip (buffer-substring-no-properties (point) end))
+    (let ((start (skewer-css-beginning-of-declaration))
+          (end (skewer-css-end-of-declaration)))
+      (let* ((clip (buffer-substring-no-properties start end))
              (pair (split-string clip ":")))
         (mapcar #'skewer-css-trim pair)))))
 
@@ -73,9 +83,13 @@
 (defun skewer-css-eval-current-declaration ()
   "Evaluate the declaration at the point."
   (interactive)
-  (let ((selectors (skewer-css-selectors))
-        (rule (skewer-css-declaration)))
-    (skewer-css (apply #'format "%s { %s: %s }" selectors rule))))
+  (save-excursion
+    (let ((selectors (skewer-css-selectors))
+          (rule (skewer-css-declaration))
+          (start (skewer-css-beginning-of-declaration))
+          (end (skewer-css-end-of-declaration)))
+      (skewer-flash-region start end)
+      (skewer-css (apply #'format "%s { %s: %s }" selectors rule)))))
 
 (defun skewer-css-eval-current-rule ()
   "Evaluate the rule at the point."
@@ -84,6 +98,7 @@
     (let* ((start (skewer-css-beginning-of-rule))
            (end (skewer-css-end-of-rule))
            (rule (buffer-substring-no-properties start end)))
+      (skewer-flash-region start end)
       (skewer-css (skewer-css-trim rule)))))
 
 (defun skewer-css-eval-buffer ()
