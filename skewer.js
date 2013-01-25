@@ -14,7 +14,12 @@ function skewer() {
     function callback(request) {
         var result = skewer.fn[request.type](request);
         if (result) {
-            result = JSON.stringify(result);
+            result = JSON.stringify($.extend({
+                id: request.id,
+                type: request.type,
+                status: 'success',
+                value: ''
+            }, result));
             $.post(skewer.host + "/skewer/post", result, callback, 'json');
         } else {
             $.get(skewer.host + "/skewer/get", callback, 'json');
@@ -37,10 +42,7 @@ skewer.fn = {};
  */
 skewer.fn.eval = function(request) {
     var result = {
-        type: "eval",
-        id: request.id,
-        strict: request.strict,
-        status: "success"
+        strict: request.strict
     };
     var start = Date.now();
     try {
@@ -62,8 +64,6 @@ skewer.fn.eval = function(request) {
 skewer.fn.ping = function(request) {
     return {
         type: 'pong',
-        id: request.id,
-        status: 'success',
         date: Date.now() / 1000,
         value: request.eval
     };
@@ -189,7 +189,7 @@ skewer.errorResult = function(error, result, request) {
     "use strict";
     return $.extend({}, result, {
         value: error.toString(),
-        status: "error",
+        status: 'error',
         error: {
             name: error.name,
             stack: error.stack,
