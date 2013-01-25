@@ -104,13 +104,20 @@ doesn't effect Skewer's top-level `eval`.
 
 ## Skewering with CORS
 
-Skewer supports [Cross-origin Resource Sharing (CORS)][cors], so you
-can skewer pages served from other servers. It works the same as
-skewering a page hosted by Emacs. If you don't control the server from
-which you want to skewer pages, the provided Greasemonkey userscript
-can be used to inject skewer.js into any page you visit. Note that
-skewer will assume you're running the Skewer server on port 8080
-(simple-httpd's default port).
+Skewer supports [Cross-origin Resource Sharing (CORS)][cors]. This
+means you can Skewer a document hosted from any server without needing
+any special changes on that server, except for including skewer.js as
+a script in that document.
+
+If you don't control the server from which you want to skewer pages --
+such that you can't add the skewer.js as a script -- the provided
+Greasemonkey userscript can be used to inject it into any page you
+visit. Note that this userscript will assume you're running the Skewer
+server at http://localhost:8080/ (simple-httpd's default port). If
+this isn't true, you need to edit the top of the userscript.
+
+The script isn't actually injected until you switch the toggle in the
+top-right corner, the red/green triangle.
 
 ## Motivation
 
