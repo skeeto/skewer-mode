@@ -34,13 +34,13 @@ function inject() {
         toggle.css('border-right-color', '#F00');
     }
     injected = !injected;
-    GM_setValue('auto-' + location, injected);
+    GM_setValue('auto.' + location, injected);
 }
 
 /* Don't use on iframes. */
 if (window.top === window.self) {
     $('body').append(toggle);
-    if (GM_getValue('auto-' + location)) {
+    if (GM_getValue('auto.' + location)) {
         inject();
     }
 }
