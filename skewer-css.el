@@ -4,12 +4,17 @@
 
 ;;; Commentary:
 
-;; This minor mode provides similar functionality to CSS as plain
-;; Skewer does to JavaScript.
+;; This minor mode provides functionality for CSS like plain Skewer
+;; does for JavaScript.
 
 ;; * C-x C-e -- `skewer-css-eval-current-declaration'
 ;; * C-M-x   -- `skewer-css-eval-current-rule'
 ;; * C-c C-k -- `skewer-css-eval-buffer'
+
+;; These functions assume there are no comments within a CSS rule,
+;; *especially* not within a declaration. In the former case, if you
+;; keep the comment free of CSS syntax it should be able to manage
+;; reasonably well. This may be fixed someday.
 
 ;;; Code:
 
