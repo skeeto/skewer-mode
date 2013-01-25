@@ -18,6 +18,9 @@
 
 ;;; Code:
 
+(require 'css-mode)
+(require 'skewer-mode)
+
 (defun skewer-css-trim (string)
   "Trim and compress whitespace in the string."
   (let ((cleaned (replace-regexp-in-string "[\t\n ]+" " " string)))
