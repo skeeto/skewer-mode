@@ -1,4 +1,4 @@
-;;; skewer-mode.el --- live browser JavaScript interaction
+;;; skewer-mode.el --- live browser JavaScript and CSS interaction
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -23,6 +23,10 @@
 ;;  * C-c C-k -- `skewer-load-buffer'
 
 ;; The result of the expression is echoed in the minibuffer.
+
+;; Additionally, `css-mode' gets a similar set of bindings for
+;; modifying the CSS rules on the current page. They operate on
+;; declarations and rules.
 
 ;; Note: `run-skewer' uses `browse-url' to launch the browser. This
 ;; may require further setup depending on your operating system and

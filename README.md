@@ -1,6 +1,6 @@
-# Skewer -- live Emacs JavaScript interaction
+# Skewer -- live Emacs JavaScript and CSS interaction
 
-Provides live interaction with JavaScript running in a browser.
+Provides live interaction with JavaScript and CSS in a web browser.
 Expressions are sent on-the-fly from an editing buffer to be evaluated
 in the browser, just like Emacs does with an inferior Lisp process in
 Lisp modes.
@@ -10,8 +10,8 @@ Lisp modes.
 
 **Skewer is available from [MELPA][melpa]**, which will install the
 dependencies for you. This package and its dependencies are pure
-Elisp, meaning setup is a breeze and the whole thing is highly
-portable.
+Elisp, meaning setup is a breeze, the whole thing is highly portable,
+and it works with many browsers.
 
 Dependencies:
 
@@ -41,6 +41,13 @@ like the Lisp modes. These are provided by the minor mode
  * <kbd>C-c C-z</kbd>: Select the REPL buffer.
 
 The result of the expression is echoed in the minibuffer.
+
+Additionally, `css-mode` gets a similar set of bindings for modifying
+the CSS rules on the current page.
+
+ * <kbd>C-x C-e</kbd>: Load the declaration at the point.
+ * <kbd>C-M-x</kbd>:   Load the entire rule around the point.
+ * <kbd>C-c C-k</kbd>: Load the current buffer as a stylesheet.
 
 Note: `run-skewer` uses `browse-url` to launch the browser. This may
 require further setup depending on your operating system and personal
@@ -74,7 +81,7 @@ server, you can still skewer the page. See CORS support below.
 ### Browser Support
 
 Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
-and Internet Explorer 9.
+and Internet Explorer 9+.
 
 ## REPL
 
