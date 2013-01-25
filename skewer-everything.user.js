@@ -31,6 +31,7 @@ function inject() {
         $('body').append(script);
         toggle.css('border-right-color', '#0F0');
     } else {
+        unsafeWindow.skewer.fn = null; // break skewer to disable it
         toggle.css('border-right-color', '#F00');
     }
     injected = !injected;
