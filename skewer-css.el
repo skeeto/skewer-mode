@@ -1,0 +1,106 @@
+;;; skewer-css.el --- skewer support for live-interaction CSS
+
+;; This is free and unencumbered software released into the public domain.
+
+;;; Commentary:
+
+;; This minor mode provides similar functionality to CSS as plain
+;; Skewer does to JavaScript.
+
+;; * C-x C-e -- `skewer-css-eval-current-declaration'
+;; * C-M-x   -- `skewer-css-eval-current-rule'
+;; * C-c C-k -- `skewer-css-eval-buffer'
+
+;;; Code:
+
+(defun skewer-css-trim (string)
+  "Trim and compress whitespace in the string."
+  (let ((cleaned (replace-regexp-in-string "[\t\n ]+" " " string)))
+    (replace-regexp-in-string "^[\t\n ]+\\|[\t\n ]+$" "" cleaned)))
+
+;; Parsing
+
+(defun skewer-css-beginning-of-rule ()
+  "Move to the beginning of the current rule and return point."
+  (if (eql (char-before) ?})
+      (backward-char))
+  (re-search-forward "}")
+  (let ((end (re-search-backward "{")))
+    (when (re-search-backward "[}/]" nil 'start)
+      (forward-char))
+    (re-search-forward "[^ \t\n]")
+    (backward-char)
+    (point)))
+
+(defun skewer-css-end-of-rule ()
+  "Move to the end of the current rule and return point."
+  (re-search-forward "}"))
+
+(defun skewer-css-selectors ()
+  "Return the selectors for the current rule."
+  (save-excursion
+    (let ((start (skewer-css-beginning-of-rule))
+          (end (1- (re-search-forward "{"))))
+      (skewer-css-trim
+       (buffer-substring-no-properties start end)))))
+
+(defun skewer-css-declaration ()
+  "Return the current declaration as a pair of strings."
+  (save-excursion
+    (if (eql (char-before) ?\;)
+        (backward-char 1))
+    (let ((end (1- (re-search-forward ";"))))
+      (re-search-backward ":")
+      (css-backward-sexp 1)
+      (let* ((clip (buffer-substring-no-properties (point) end))
+             (pair (split-string clip ":")))
+        (mapcar #'skewer-css-trim pair)))))
+
+;; Evaluation
+
+(defun skewer-css (rule)
+  "Add RULE as a new stylesheet."
+  (skewer-eval rule nil :type "css"))
+
+(defun skewer-css-eval-current-declaration ()
+  "Evaluate the declaration at the point."
+  (interactive)
+  (let ((selectors (skewer-css-selectors))
+        (rule (skewer-css-declaration)))
+    (skewer-css (apply #'format "%s { %s: %s }" selectors rule))))
+
+(defun skewer-css-eval-current-rule ()
+  "Evaluate the rule at the point."
+  (interactive)
+  (save-excursion
+    (let* ((start (skewer-css-beginning-of-rule))
+           (end (skewer-css-end-of-rule))
+           (rule (buffer-substring-no-properties start end)))
+      (skewer-css (skewer-css-trim rule)))))
+
+(defun skewer-css-eval-buffer ()
+  "Send the entire current buffer as a new stylesheet."
+  (interactive)
+  (skewer-css (buffer-substring-no-properties (point-min) (point-max))))
+
+;; Minor mode definition
+
+(defvar skewer-css-mode-map
+  (let ((map (make-sparse-keymap)))
+    (prog1 map
+      (define-key map (kbd "C-x C-e") 'skewer-css-eval-current-declaration)
+      (define-key map (kbd "C-M-x") 'skewer-css-eval-current-rule)
+      (define-key map (kbd "C-c C-k") 'skewer-css-eval-buffer)))
+  "Keymap for skewer-css-mode.")
+
+;;;###autoload
+(define-minor-mode skewer-css-mode
+  "Minor mode for interactively loading new CSS rules."
+  :lighter " skewer-css"
+  :keymap skewer-css-mode-map
+  :group 'skewer)
+
+;;;###autoload
+(add-hook 'css-mode-hook 'skewer-css-mode)
+
+;;; skewer-css.el ends here

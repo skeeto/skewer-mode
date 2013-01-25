@@ -70,6 +70,14 @@ skewer.fn.ping = function(request) {
 };
 
 /**
+ * Establish a new stylesheet with the provided value.
+ */
+skewer.fn.css = function(request) {
+    $('head').append($('<style/>').text(request.eval));
+    return {};
+};
+
+/**
  * Host of the skewer script (CORS support).
  * @type string
  */
