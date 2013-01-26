@@ -52,6 +52,12 @@ expired. Behaves just like `gethash'."
      (puthash ,key (cons (float-time) ,value)
               (cache-table-struct-table ,cache-table))))
 
+(defun cache-table-map (f cache-table)
+  "Like `maphash', call F for all non-expired entries in CACHE-TABLE."
+  (cache-table-clear-expired cache-table)
+  (maphash (lambda (k v) (funcall f k (cdr v)))
+           (cache-table-struct-table cache-table)))
+
 (provide 'cache-table)
 
 ;;; cache-table.el ends here
