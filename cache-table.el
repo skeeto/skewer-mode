@@ -58,6 +58,10 @@ expired. Behaves just like `gethash'."
   (maphash (lambda (k v) (funcall f k (cdr v)))
            (cache-table-struct-table cache-table)))
 
+(defun cache-table-count (cache-table)
+  "Like `hash-table-count', count the number of non-expired entries."
+  (hash-table-count (cache-table-struct-table cache-table)))
+
 (provide 'cache-table)
 
 ;;; cache-table.el ends here
