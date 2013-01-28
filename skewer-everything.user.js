@@ -2,7 +2,7 @@
 // @name         Skewer Everything
 // @description  Add a toggle button to run Skewer on the current page
 // @lastupdated  2013-01-24
-// @version      1.0.1
+// @version      1.0.2
 // @license      Public Domain
 // @include      http://*
 // @require      http://code.jquery.com/jquery-latest.min.js
@@ -27,7 +27,10 @@ var injected = false;
 function inject() {
     if (!injected) {
         var script = $('<script/>').attr({src: host + '/skewer'});
-        if (!unsafeWindow.jQuery) unsafeWindow.$ = $;
+        if (!unsafeWindow.jQuery || !unsafeWindow.$) {
+            var jquery = $('<script/>').attr({src: host + '/skewer/jquery'});
+            $('body').append(jquery);
+        }
         $('body').append(script);
         toggle.css('border-right-color', '#0F0');
     } else {
