@@ -4,7 +4,7 @@
 // @lastupdated  2013-01-24
 // @version      1.0.2
 // @license      Public Domain
-// @include      http://*
+// @include      /^https?:///
 // @require      http://code.jquery.com/jquery-latest.min.js
 // ==/UserScript==
 
@@ -19,7 +19,7 @@ var toggle = $('<div/>').bind('click', inject).css({
     "position": 'absolute',
     "right": 0,
     "top": 0,
-    "z-index": 100
+    "z-index": 2147483647
 });
 
 var injected = false;
