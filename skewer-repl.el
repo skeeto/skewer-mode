@@ -42,7 +42,7 @@
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
   (setq comint-input-sender 'skewer-input-sender)
   (unless (comint-check-proc (current-buffer))
-    (start-process "ielm" (current-buffer) "hexl")
+    (start-process "skewer-repl" (current-buffer) nil)
     (set-process-query-on-exit-flag (skewer-repl-process) nil)
     (goto-char (point-max))
     (set (make-local-variable 'comint-inhibit-carriage-motion) t)
