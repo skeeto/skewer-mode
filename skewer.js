@@ -128,6 +128,11 @@ skewer.safeStringify = function (object, verbose) {
                 return obj.toString();
             else
                 return "Function";
+        } else if (Object.prototype.toString.call(obj) === '[object Date]') {
+            if (verbose)
+                return JSON.stringify(obj);
+            else
+                return obj.toString();
         } else {
             if (verbose) {
                 if (seen.indexOf(obj) >= 0)
