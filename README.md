@@ -71,12 +71,14 @@ To skewer your own document rather than the provided blank one,
  1. Load the dependencies
  2. Load `skewer-mode.el`
  3. Start the HTTP server (`httpd-start`)
- 4. Put your HTML document under the root (`httpd-root`)
- 5. Include jQuery and `/skewer` as scripts (see `example.html`)
- 6. Visit the document from your browser
+ 4. Include jQuery and "http://localhost:8080/skewer" as scripts
+    (see example.html and check your `httpd-port`)
+ 5. Visit the document from your browser
 
-If your document isn't a static page but is instead hosted by its own
-server, you can still skewer the page. See CORS support below.
+Skewer fully supports CORS so the document need not be hosted by Emacs
+itself. A Greasemonkey userscript is provided for injecting Skewer
+into any arbitrary page you're visiting without needing to modify the
+page on the host. More information below.
 
 ### Browser Support
 
@@ -88,9 +90,10 @@ work with Skewer, please report it as an issue.
 
 ## REPL
 
-A REPL into the browser can be created with `M-x skewer-repl`. This
-should work just like a console within the browser. Messages can be
-logged to this REPL with `skewer.log()` (just like `console.log()`).
+A REPL into the browser can be created with `M-x skewer-repl`, or C-c
+C-z. This should work just like a console within the browser. Messages
+can be logged to this REPL with `skewer.log()` (just like
+`console.log()`).
 
 Results of expressions evaluated in the REPL are printed more
 verbosely than in the minibuffer, when possible. This may help in
@@ -116,11 +119,11 @@ doesn't effect Skewer's top-level `eval`.
 
 Skewer supports [Cross-origin Resource Sharing (CORS)][cors]. This
 means you can Skewer a document hosted from any server without needing
-any special changes on that server, except for including skewer.js as
+any special changes on that server, except for including `/skewer` as
 a script in that document.
 
 If you don't control the server from which you want to skewer pages --
-such that you can't add the skewer.js as a script -- the provided
+such that you can't add the Skewer's script -- the provided
 Greasemonkey userscript can be used to inject it into any page you
 visit. Note that this userscript will assume you're running the Skewer
 server at http://localhost:8080/ (simple-httpd's default port). If

@@ -51,16 +51,19 @@
 ;;  1. Load the dependencies
 ;;  2. Load skewer-mode.el
 ;;  3. Start the HTTP server (`httpd-start')
-;;  4. Put your HTML document under the root (`httpd-root')
-;;  5. Include jQuery and "/skewer" as scripts (see `example.html')
-;;  6. Visit the document from your browser
+;;  4. Include jQuery and "http://localhost:8080/skewer" as scripts
+;;     (see `example.html' and check your `httpd-port')
+;;  5. Visit the document from your browser
 
-;; If your document isn't a static page but is instead hosted by its
-;; own server, you can still skewer the page. It fully supports CORS.
+;; Skewer fully supports CORS so the document need not be hosted by
+;; Emacs itself. A Greasemonkey userscript is provided for injecting
+;; Skewer into any arbitrary page you're visiting without needing to
+;; modify the page on the host.
 
 ;; With skewer-repl.el loaded, a REPL into the browser can be created
-;; with M-x `skewer-repl'. This should work just like a REPL in
-;; console within the browser.
+;; with M-x `skewer-repl', or C-c C-z. This should work just like a
+;; console within the browser. Messages can be logged to this REPL
+;; with `skewer.log()` (just like `console.log()`).
 
 ;; Extending Skewer:
 
