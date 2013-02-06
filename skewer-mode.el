@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.3
+;; Version: 1.4
 ;; Package-Requires: ((simple-httpd "1.4.0") (js2-mode "20090723"))
 
 ;;; Commentary:
@@ -81,6 +81,11 @@
 
 ;;; History:
 
+;; Version 1.4: features
+;;   * Full CSS interaction
+;;   * Greasemonkey userscript for injection
+;;   * Full, working CORS support
+;;   * Better browser presence detection
 ;; Version 1.3: features and fixes
 ;;   * Full offline support
 ;;   * No more callback registering
