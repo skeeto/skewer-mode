@@ -98,7 +98,7 @@ skewer.fn.eval = function(request) {
     var start = Date.now();
     try {
         var prefix = request.strict ? '"use strict";\n' : "";
-        var value = (eval, eval)(prefix + request.eval); // global eval
+        var value = [eval][0](prefix + request.eval); // global eval
         result.value = skewer.safeStringify(value, request.verbose);
     } catch (error) {
         result = skewer.errorResult(error, result, request);
