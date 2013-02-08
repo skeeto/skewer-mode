@@ -80,6 +80,11 @@ itself. A Greasemonkey userscript is provided for injecting Skewer
 into any arbitrary page you're visiting without needing to modify the
 page on the host. More information below.
 
+**Don't copy `skewer.js` anywhere or use it directly**. Emacs hosts
+this script itself, manipulating it in memory before it reaches the
+browser. Always access it through the servlet on the Emacs webserver
+as `/skewer`.
+
 ### Browser Support
 
 Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
