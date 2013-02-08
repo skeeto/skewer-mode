@@ -57,7 +57,7 @@ skewer.postJSON = function(url, object, callback) {
         }
     };
     xhr.open('POST', url, true);
-    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
     xhr.send(JSON.stringify(object));
 };
 
