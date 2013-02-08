@@ -88,10 +88,10 @@ as `/skewer`.
 ### Browser Support
 
 Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
-and Internet Explorer 9+. Communication happens via XHR long polling,
-so it *should* work with virtually any browser that supports
-JavaScript. If you find a JavaScript-supported browser that doesn't
-work with Skewer, please report it as an issue.
+and IE8+. Except for CSS, Skewer will work in IE7 when
+`document.querySelector` and `JSON` are polyfilled. If you find any
+other JavaScript-supported browser that doesn't work with Skewer,
+please report it.
 
 ## REPL
 
