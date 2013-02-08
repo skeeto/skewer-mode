@@ -14,19 +14,51 @@ function skewer() {
     function callback(request) {
         var result = skewer.fn[request.type](request);
         if (result) {
-            result = JSON.stringify($.extend({
+            result = skewer.extend({
                 id: request.id,
                 type: request.type,
                 status: 'success',
                 value: ''
-            }, result));
-            $.post(skewer.host + "/skewer/post", result, callback, 'json');
+            }, result);
+            skewer.postJSON(skewer.host + "/skewer/post", result, callback);
         } else {
-            $.get(skewer.host + "/skewer/get", callback, 'json');
+            skewer.getJSON(skewer.host + "/skewer/get", callback);
         }
     };
-    $.get(skewer.host + "/skewer/get", callback, 'json');
+    skewer.getJSON(skewer.host + "/skewer/get", callback);
 }
+
+skewer.getJSON = function(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+        }
+    };
+    xhr.open('GET', url, true);
+    xhr.send();
+};
+
+skewer.postJSON = function(url, object, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        if (callback && xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+        }
+    };
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader("Content-type", "application/json");
+    xhr.send(JSON.stringify(object));
+};
+
+skewer.extend = function(target, object) {
+    for (var key in object) {
+        if (object.hasOwnProperty(key)) {
+            target[key] = object[key];
+        }
+    }
+    return target;
+};
 
 /**
  * Handlers accept a request object from Emacs and return either a
@@ -176,7 +208,7 @@ skewer.log = function(message) {
         type: "log",
         value: skewer.safeStringify(message, true)
     };
-    $.post(skewer.host + "/skewer/post", JSON.stringify(log));
+    skewer.postJSON(skewer.host + "/skewer/post", log);
 };
 
 /**
@@ -189,7 +221,7 @@ skewer.error = function(event) {
         type: "error",
         value: event.originalEvent.message
     };
-    $.post(skewer.host + "/skewer/post", JSON.stringify(log));
+    skewer.postJSON(skewer.host + "/skewer/post", log);
 };
 
 /**
@@ -201,7 +233,7 @@ skewer.error = function(event) {
  */
 skewer.errorResult = function(error, result, request) {
     "use strict";
-    return $.extend({}, result, {
+    return skewer.extend({}, result, {
         value: error.toString(),
         status: 'error',
         error: {
