@@ -27,6 +27,11 @@ function skewer() {
     skewer.getJSON(skewer.host + "/skewer/get", callback);
 }
 
+/**
+ * Get a JSON-encoded object from a server.
+ * @param {String} url The location of the remote server
+ * @param {Function} [callback] The callback to receive a response object
+ */
 skewer.getJSON = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
@@ -38,6 +43,12 @@ skewer.getJSON = function(url, callback) {
     xhr.send();
 };
 
+/**
+ * Send a JSON-encoded object to a server.
+ * @param {String} url The location of the remote server
+ * @param {Object} object The object to transmit to the server
+ * @param {Function} [callback] The callback to receive a response object
+ */
 skewer.postJSON = function(url, object, callback) {
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
@@ -50,6 +61,12 @@ skewer.postJSON = function(url, object, callback) {
     xhr.send(JSON.stringify(object));
 };
 
+/**
+ * Add the properties of an object to a target object (jQuery.extend).
+ * @param target The object to receive new properties
+ * @param object The source object for new properties
+ * @returns The target object
+ */
 skewer.extend = function(target, object) {
     for (var key in object) {
         if (object.hasOwnProperty(key)) {
