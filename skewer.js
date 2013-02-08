@@ -105,7 +105,9 @@ skewer.fn.ping = function(request) {
  * Establish a new stylesheet with the provided value.
  */
 skewer.fn.css = function(request) {
-    $('body').append($('<style/>').text(request.eval));
+    var style = document.createElement('style');
+    style.innerHTML = request.eval;
+    document.body.appendChild(style);
     return {};
 };
 
