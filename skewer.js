@@ -114,10 +114,9 @@ skewer.fn.css = function(request) {
  * @type string
  */
 (function() {
-    /* Avoiding using jQuery's new-ish prop() method. */
-    var src = $('script[src$="/skewer"]').get(0).src;
-    if (src) {
-        skewer.host = src.match(/\w+:\/\/[^/]+/)[0];
+    var script = document.querySelector('script[src$="/skewer"]');
+    if (script) {
+        skewer.host = script.src.match(/\w+:\/\/[^/]+/)[0];
     } else {
         skewer.host = '';  // default to the current host
     }
@@ -246,7 +245,5 @@ skewer.errorResult = function(error, result, request) {
     });
 };
 
-/* Add the event listener. This doesn't work correctly in Firefox. */
-$(window).bind('error', skewer.error);
-
-$(document).ready(skewer);
+window.addEventListener('error', skewer.error);
+window.addEventListener('load', skewer);

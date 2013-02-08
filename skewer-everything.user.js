@@ -26,12 +26,7 @@ var injected = false;
 
 function inject() {
     if (!injected) {
-        var script = $('<script/>').attr({src: host + '/skewer'});
-        if (!unsafeWindow.jQuery || !unsafeWindow.$) {
-            var jquery = $('<script/>').attr({src: host + '/skewer/jquery'});
-            $('body').append(jquery);
-        }
-        $('body').append(script);
+        $('body').append($('<script/>').attr({src: host + '/skewer'}));
         toggle.css('border-right-color', '#0F0');
     } else {
         /* break skewer to disable it */
