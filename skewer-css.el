@@ -126,4 +126,6 @@
 ;;;###autoload
 (add-hook 'css-mode-hook 'skewer-css-mode)
 
+(provide 'skewer-css)
+
 ;;; skewer-css.el ends here
