@@ -82,7 +82,8 @@ skewer.fn.css = function(request) {
  * @type string
  */
 (function() {
-    var src = $('script[src$="/skewer"]').prop('src');
+    /* Avoiding using jQuery's new-ish prop() method. */
+    var src = $('script[src$="/skewer"]').get(0).src;
     if (src) {
         skewer.host = src.match(/\w+:\/\/[^/]+/)[0];
     } else {
