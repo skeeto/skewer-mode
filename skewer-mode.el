@@ -51,7 +51,7 @@
 ;;  1. Load the dependencies
 ;;  2. Load skewer-mode.el
 ;;  3. Start the HTTP server (`httpd-start')
-;;  4. Include jQuery and "http://localhost:8080/skewer" as scripts
+;;  4. Include "http://localhost:8080/skewer" as a script
 ;;     (see `example.html' and check your `httpd-port')
 ;;  5. Visit the document from your browser
 
@@ -230,10 +230,6 @@ callback. The response object is passed to the hook function.")
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root))
   (goto-char (point-max))
   (run-hooks 'skewer-js-hook))
-
-(defservlet skewer/jquery text/javascript ()
-  (let ((pattern "^jquery.+\\.js$"))
-    (insert-file-contents (car (directory-files skewer-data-root t pattern)))))
 
 (defun httpd/skewer/get (proc path query req &rest args)
   (skewer-queue-client proc req))

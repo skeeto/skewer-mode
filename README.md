@@ -71,7 +71,7 @@ To skewer your own document rather than the provided blank one,
  1. Load the dependencies
  2. Load `skewer-mode.el`
  3. Start the HTTP server (`httpd-start`)
- 4. Include jQuery and "http://localhost:8080/skewer" as scripts
+ 4. Include "http://localhost:8080/skewer" as a script
     (see example.html and check your `httpd-port`)
  5. Visit the document from your browser
 

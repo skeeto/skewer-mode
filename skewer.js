@@ -1,6 +1,5 @@
 /**
  * @fileOverview Live browser interaction with Emacs
- * @requires jQuery
  * @version 1.1
  */
 
@@ -214,13 +213,13 @@ skewer.log = function(message) {
 
 /**
  * Report an error event to the REPL.
- * @param event A jQuery event object.
+ * @param event An error event object.
  */
 skewer.error = function(event) {
     "use strict";
     var log = {
         type: "error",
-        value: event.originalEvent.message
+        value: event.message
     };
     skewer.postJSON(skewer.host + "/skewer/post", log);
 };
