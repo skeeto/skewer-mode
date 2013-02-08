@@ -108,6 +108,18 @@ skewer.fn.eval = function(request) {
 };
 
 /**
+ * Load a hosted script named by the request.
+ * @param request The request object sent by Emacs
+ * @returns The result object to be returned to Emacs
+ */
+skewer.fn.script = function(request) {
+    var script = document.createElement('script');
+    script.src = skewer.host + request.eval;
+    document.body.appendChild(script);
+    return {value: JSON.stringify(request.eval)};
+};
+
+/**
  * A keep-alive and connecton testing handler.
  * @param request The request object sent by Emacs
  * @returns The result object to be returned to Emacs

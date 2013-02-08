@@ -458,9 +458,11 @@ waiting browser and insert the result in the buffer at point."
 the buffer is hosted so that browsers visiting late won't see an
 inconsistent buffer."
   (interactive)
-  (let ((id (skewer-host-script (buffer-string))))
-    (skewer-eval (format "$.getScript('/skewer/script/%d')" id)
-                 'skewer-post-minibuffer)))
+  (lexical-let ((id (skewer-host-script (buffer-string)))
+                (buffer-name (buffer-name)))
+    (skewer-eval (format "/skewer/script/%d" id)
+                 (lambda (_) (message "%s loaded" buffer-name))
+                 :type "script")))
 
 (defservlet skewer/script text/javascript (path)
   (let ((id (string-to-number (file-name-nondirectory path))))
