@@ -1,6 +1,6 @@
 /**
  * @fileOverview Live browser interaction with Emacs
- * @version 1.1
+ * @version 1.4
  */
 
 /**
