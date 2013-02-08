@@ -34,8 +34,8 @@ function skewer() {
  */
 skewer.getJSON = function(url, callback) {
     var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        if (xhr.status === 200) {
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
             callback(JSON.parse(xhr.responseText));
         }
     };
@@ -51,8 +51,8 @@ skewer.getJSON = function(url, callback) {
  */
 skewer.postJSON = function(url, object, callback) {
     var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        if (callback && xhr.status === 200) {
+    xhr.onreadystatechange = function() {
+        if (callback && xhr.readyState === 4 && xhr.status === 200) {
             callback(JSON.parse(xhr.responseText));
         }
     };
@@ -137,7 +137,12 @@ skewer.fn.ping = function(request) {
  */
 skewer.fn.css = function(request) {
     var style = document.createElement('style');
-    style.innerHTML = request.eval;
+    style.type = 'text/css';
+    if (style.styleSheet) { // < IE9
+        style.styleSheet.cssText = request.eval;
+    } else {
+        style.appendChild(document.createTextNode(request.eval));
+    }
     document.body.appendChild(style);
     return {};
 };
@@ -278,5 +283,10 @@ skewer.errorResult = function(error, result, request) {
     });
 };
 
-window.addEventListener('error', skewer.error);
-window.addEventListener('load', skewer);
+if (window.addEventListener) {
+    window.addEventListener('error', skewer.error);
+    window.addEventListener('load', skewer);
+} else { // < IE9
+    window.attachEvent('onerror', skewer.error);
+    window.attachEvent('onload', skewer);
+}
