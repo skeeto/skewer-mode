@@ -62,15 +62,18 @@ skewer.postJSON = function(url, object, callback) {
 };
 
 /**
- * Add the properties of an object to a target object (jQuery.extend).
- * @param target The object to receive new properties
- * @param object The source object for new properties
+ * Add the properties other objects to a target object (jQuery.extend).
+ * @param {Object} target The object to receive new properties
+ * @param {...Object} objects Source objects for properties
  * @returns The target object
  */
-skewer.extend = function(target, object) {
-    for (var key in object) {
-        if (object.hasOwnProperty(key)) {
-            target[key] = object[key];
+skewer.extend = function(target) {
+    for (var i = 1; i < arguments.length; i++) {
+        var object = arguments[i];
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                target[key] = object[key];
+            }
         }
     }
     return target;
