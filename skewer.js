@@ -80,6 +80,36 @@ skewer.extend = function(target) {
 };
 
 /**
+ * Globally evaluate an expression and return the result. This
+ * <i>only</i> works when the implementation's indirect eval performs
+ * a global eval. If not, there's no alternative, since a return value
+ * is essential.
+ *
+ * @see http://perfectionkills.com/global-eval-what-are-the-options/
+ *
+ * @param expression A string containing an expression to evaluate
+ * @returns The result of the evaluation
+ */
+skewer.globalEval = (function() {
+    var eval0 = (function(original, Object) {
+        try {
+            return [eval][0]('Object') === original;
+        } catch (e) {
+            return false;
+        }
+    }(Object, false));
+    if (eval0) {
+        return function(expression) {
+            return [eval][0](expression);
+        };
+    } else {
+        return function(expression) { // Safari
+            return eval.call(window, expression);
+        };
+    }
+}());
+
+/**
  * Handlers accept a request object from Emacs and return either a
  * logical false (no response) or an object to return to Emacs.
  * @namespace Request handlers.
@@ -98,7 +128,7 @@ skewer.fn.eval = function(request) {
     var start = Date.now();
     try {
         var prefix = request.strict ? '"use strict";\n' : "";
-        var value = [eval][0](prefix + request.eval); // global eval
+        var value = skewer.globalEval(prefix + request.eval);
         result.value = skewer.safeStringify(value, request.verbose);
     } catch (error) {
         result = skewer.errorResult(error, result, request);
