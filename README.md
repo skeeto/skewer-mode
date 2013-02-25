@@ -137,6 +137,12 @@ this isn't true, you need to edit the top of the userscript.
 The script isn't actually injected until you switch the toggle in the
 top-right corner, the red/green triangle.
 
+Alternatively, the following bookmarklet will load skewer on demand:
+
+```js
+javascript:(function(){var d=document;var s=d.createElement('script');s.src='http://localhost:8080/skewer';s.onload=function(){skewer()};d.getElementsByTagName('head')[0].appendChild(s);})()
+```
+
 ## Motivation
 
 I wanted something like [swank-js][swank-js] but without all the
