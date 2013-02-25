@@ -83,6 +83,7 @@
     (when buffer
       (with-current-buffer buffer
         (save-excursion
+          (goto-char (point-max))
           (forward-line 0)
           (backward-char)
           (insert (concat "\n" output "")))))))
