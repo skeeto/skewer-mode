@@ -23,6 +23,14 @@
   :type 'string
   :group 'skewer)
 
+(defvar skewer-repl-welcome
+  (propertize "*** Welcome to Skewer ***\n"
+              'font-lock-face 'font-lock-comment-face)
+  "Header line to show at the top of the REPL buffer. Hack
+notice: this allows log messages to appear before anything is
+evaluated because it provides insertable space at the top of the
+buffer.")
+
 (defun skewer-repl-process ()
   "Return the process for the skewer REPL."
   (get-buffer-process (current-buffer)))
@@ -42,6 +50,7 @@
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
   (setq comint-input-sender 'skewer-input-sender)
   (unless (comint-check-proc (current-buffer))
+    (insert skewer-repl-welcome)
     (start-process "skewer-repl" (current-buffer) nil)
     (set-process-query-on-exit-flag (skewer-repl-process) nil)
     (goto-char (point-max))
