@@ -95,10 +95,10 @@ please report it.
 
 ## REPL
 
-A REPL into the browser can be created with `M-x skewer-repl`, or C-c
-C-z. This should work just like a console within the browser. Messages
-can be logged to this REPL with `skewer.log()` (just like
-`console.log()`).
+A REPL into the browser can be created with `M-x skewer-repl`, or
+<kbd>C-c C-z</kbd>. This should work just like a console within the
+browser. Messages can be logged to this REPL with `skewer.log()` (just
+like `console.log()`).
 
 Results of expressions evaluated in the REPL are printed more
 verbosely than in the minibuffer, when possible. This may help in
