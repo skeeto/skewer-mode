@@ -156,7 +156,7 @@ The name refers to the idea that Emacs is *skewering* the browser from
 server-side.
 
 [simple-httpd]: https://github.com/skeeto/emacs-http-server
-[js2-mode]: http://code.google.com/p/js2-mode/
+[js2-mode]: https://github.com/mooz/js2-mode
 [melpa]: http://melpa.milkbox.net/
 [swank-js]: https://github.com/swank-js/swank-js
 [strict-mode]: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/Strict_mode
