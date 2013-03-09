@@ -315,8 +315,16 @@ skewer.errorResult = function(error, result, request) {
 
 if (window.addEventListener) {
     window.addEventListener('error', skewer.error);
-    window.addEventListener('load', skewer);
+    if (document.readyState === 'complete') {
+        skewer();
+    } else {
+        window.addEventListener('load', skewer);
+    }
 } else { // < IE9
     window.attachEvent('onerror', skewer.error);
-    window.attachEvent('onload', skewer);
+    if (document.readyState === 'complete') {
+        skewer();
+    } else {
+        window.attachEvent('onload', skewer);
+    }
 }
