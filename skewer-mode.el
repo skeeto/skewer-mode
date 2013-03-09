@@ -274,7 +274,7 @@ callback. The response object is passed to the hook function.")
 
 (defun skewer--error (string)
   "Return STRING propertized as an error message."
-  (propertize string 'font-lock-face 'skewer-error-face))
+  (propertize (or string "<unknown>") 'font-lock-face 'skewer-error-face))
 
 (defun skewer-post-minibuffer (result)
   "Report results in the minibuffer or the error buffer."
@@ -290,7 +290,7 @@ callback. The response object is passed to the hook function.")
         (erase-buffer)
         (skewer-error-mode)
         (insert (skewer--error (cdr (assoc 'name error))) ": ")
-        (insert (cdr (assoc 'message error)) "\n\n")
+        (insert (or (cdr (assoc 'message error)) "") "\n\n")
         (insert (or (cdr (assoc 'stack error)) "") "\n\n")
         (insert (format "Expression: %s\n\n"
                         (if (cdr (assoc 'strict result)) "(strict)" ""))
