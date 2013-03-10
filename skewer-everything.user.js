@@ -5,29 +5,30 @@
 // @version      1.0.2
 // @license      Public Domain
 // @include      /^https?:///
-// @require      http://code.jquery.com/jquery-latest.min.js
 // ==/UserScript==
 
 var host = 'http://localhost:8080';
 
-var toggle = $('<div/>').bind('click', inject).css({
-    "width": '0px',
-    "height": '0px',
-    "border-style": 'solid',
-    "border-width": '0 12px 12px 0',
-    "border-color": 'transparent #F00 transparent transparent',
-    "position": 'absolute',
-    "right": 0,
-    "top": 0,
-    "z-index": 2147483647
-});
+var toggle = document.createElement('div');
+toggle.onclick = inject;
+toggle.style.width = '0px';
+toggle.style.height = '0px';
+toggle.style.borderStyle = 'solid';
+toggle.style.borderWidth = '0 12px 12px 0';
+toggle.style.borderColor = 'transparent #F00 transparent transparent';
+toggle.style.position = 'absolute';
+toggle.style.right = 0;
+toggle.style.top = 0;
+toggle.style.zIndex = 214748364;
 
 var injected = false;
 
 function inject() {
     if (!injected) {
-        $('body').append($('<script/>').attr({src: host + '/skewer'}));
-        toggle.css('border-right-color', '#0F0');
+        var script = document.createElement('script');
+        script.src = host + '/skewer';
+        document.body.appendChild(script);
+        toggle.style.borderRightColor = '#0F0';
     } else {
         /* break skewer to disable it */
         if (unsafeWindow.skewer) { // Greasemonkey
@@ -35,7 +36,7 @@ function inject() {
         } else if (unsafeWindow.window.skewer) { // Tampermonkey
             unsafeWindow.window.skewer.fn = null;
         }
-        toggle.css('border-right-color', '#F00');
+        toggle.style.borderRightColor = '#F00';
     }
     injected = !injected;
     GM_setValue('auto.' + location, injected);
@@ -43,7 +44,7 @@ function inject() {
 
 /* Don't use on iframes. */
 if (window.top === window.self) {
-    $('body').append(toggle);
+    document.body.appendChild(toggle);
     if (GM_getValue('auto.' + location)) {
         inject();
     }
