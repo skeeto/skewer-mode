@@ -2,7 +2,7 @@
 // @name         Skewer Everything
 // @description  Add a toggle button to run Skewer on the current page
 // @lastupdated  2013-01-24
-// @version      1.0.2
+// @version      1.1
 // @license      Public Domain
 // @include      /^https?:///
 // ==/UserScript==
