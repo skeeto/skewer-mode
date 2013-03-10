@@ -140,7 +140,7 @@ top-right corner, the red/green triangle.
 Alternatively, the following bookmarklet will load skewer on demand:
 
 ```js
-javascript:(function(){var d=document;var s=d.createElement('script');s.src='http://localhost:8080/skewer';s.onload=function(){skewer()};d.getElementsByTagName('head')[0].appendChild(s);})()
+javascript:(function(){var d=document;var s=d.createElement('script');s.src='http://localhost:8080/skewer';d.body.appendChild(s);})()
 ```
 
 ## Motivation
