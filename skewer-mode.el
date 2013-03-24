@@ -107,6 +107,7 @@
 
 (require 'cl)
 (require 'json)
+(require 'url-util)
 (require 'simple-httpd)
 (require 'js2-mode)
 (require 'cache-table)
@@ -460,12 +461,13 @@ inconsistent buffer."
   (interactive)
   (lexical-let ((id (skewer-host-script (buffer-string)))
                 (buffer-name (buffer-name)))
-    (skewer-eval (format "/skewer/script/%d" id)
+    (skewer-eval (format "/skewer/script/%d/%s"
+                         id (url-hexify-string buffer-name))
                  (lambda (_) (message "%s loaded" buffer-name))
                  :type "script")))
 
 (defservlet skewer/script text/javascript (path)
-  (let ((id (string-to-number (file-name-nondirectory path))))
+  (let ((id (string-to-number (nth 3 (split-string path "/")))))
     (insert (get-cache-table id skewer-hosted-scripts ""))))
 
 ;; Define the minor mode
