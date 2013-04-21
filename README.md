@@ -1,6 +1,6 @@
-# Skewer -- live Emacs JavaScript and CSS interaction
+# Skewer -- live Emacs JavaScript, CSS, and HTML interaction
 
-Provides live interaction with JavaScript and CSS in a web browser.
+Provides live interaction with JavaScript, CSS, and HTML in a web browser.
 Expressions are sent on-the-fly from an editing buffer to be evaluated
 in the browser, just like Emacs does with an inferior Lisp process in
 Lisp modes.
