@@ -28,7 +28,7 @@
 
 ;; Helpers
 
-(defun skewer-html-get-eval-options (prefix)
+(defun skewer-html-get-eval-options (&optional prefix)
   "Return options for eval. Maybe prompt a user, if prefixed is true."
   (values
    (if prefix
@@ -62,7 +62,7 @@
   (skewer-eval string nil :type "html" :extra `((selector . ,selector)
                                                 (append   . ,append))))
 
-(defun skewer-html-eval-region (prefix)
+(defun skewer-html-eval-region (&optional prefix)
   "Load HTML from region or buffer. When prefixed, prompt for options."
   (interactive "P")
   (multiple-value-bind (selector append) (skewer-html-get-eval-options prefix)
@@ -73,7 +73,7 @@
       (skewer-flash-region beg end) ; check region
       (skewer-html-eval region selector append))))
 
-(defun skewer-html-eval-tag (prefix)
+(defun skewer-html-eval-tag (&optional prefix)
   "Load HTML from the surrounding tag. When prefixed, prompt for options."
   (interactive "P")
   (save-excursion
