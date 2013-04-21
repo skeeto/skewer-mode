@@ -16,6 +16,7 @@
 
 ;;; Code:
 
+(require 'cl)
 (require 'sgml-mode)
 (require 'skewer-mode)
 
@@ -29,7 +30,7 @@
 
 (defun skewer-html-get-eval-options (prefix)
   "Return options for eval. Maybe prompt a user, if prefixed is true."
-  (cons
+  (values
    (if prefix
        (read-string "Selector: ")
      skewer-html-options-selector)
@@ -64,30 +65,24 @@
 (defun skewer-html-eval-region (prefix)
   "Load HTML from region or buffer. When prefixed, prompt for options."
   (interactive "P")
-  (let* ((options (skewer-html-get-eval-options prefix))
-         (region-active (region-active-p))
-         (beg (if region-active (region-beginning) (point-min)))
-         (end (if region-active (region-end) (point-max))))
-    (skewer-flash-region beg end) ; check region
-    (skewer-html-eval
-     (buffer-substring-no-properties beg end)
-     (car options) ; selector
-     (cdr options) ; append?
-     )))
+  (multiple-value-bind (selector append) (skewer-html-get-eval-options prefix)
+    (let* ((region-active (region-active-p))
+           (beg (if region-active (region-beginning) (point-min)))
+           (end (if region-active (region-end) (point-max)))
+           (region (buffer-substring-no-properties beg end)))
+      (skewer-flash-region beg end) ; check region
+      (skewer-html-eval region selector append))))
 
 (defun skewer-html-eval-tag (prefix)
   "Load HTML from the surrounding tag. When prefixed, prompt for options."
   (interactive "P")
   (save-excursion
-   (let ((beg (progn (sgml-skip-tag-backward 1) (point)))
-         (end (progn (sgml-skip-tag-forward 1) (point)))
-         (options (skewer-html-get-eval-options prefix)))
-     (skewer-flash-region beg end)
-     (skewer-html-eval
-      (buffer-substring-no-properties beg end)
-      (car options) ; selector
-      (cdr options) ; append?
-      ))))
+    (multiple-value-bind (selector append) (skewer-html-get-eval-options prefix)
+      (let* ((beg (progn (sgml-skip-tag-backward 1) (point)))
+             (end (progn (sgml-skip-tag-forward 1) (point)))
+             (region (buffer-substring-no-properties beg end)))
+        (skewer-flash-region beg end)
+        (skewer-html-eval region selector append)))))
 
 ;; Minor mode definition
 
