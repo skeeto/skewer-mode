@@ -42,12 +42,20 @@ like the Lisp modes. These are provided by the minor mode
 
 The result of the expression is echoed in the minibuffer.
 
-Additionally, `css-mode` gets a similar set of bindings for modifying
-the CSS rules on the current page.
+Additionally, `css-mode` and `html-mode` get similar sets of bindings for modifying
+the CSS rules and HTML on the current page.
+
+#### CSS
 
  * <kbd>C-x C-e</kbd>: Load the declaration at the point.
  * <kbd>C-M-x</kbd>:   Load the entire rule around the point.
  * <kbd>C-c C-k</kbd>: Load the current buffer as a stylesheet.
+
+#### HTML
+
+ * <kbd>C-M-x</kbd>:   Load the HTML tag around the point.
+ * <kbd>C-c C-k</kbd>: Load the HTML at region (or buffer).
+ * <kbd>C-c C-g</kbd>: Fetch the HTML of a selector and insert it at the point.
 
 Note: `run-skewer` uses `browse-url` to launch the browser. This may
 require further setup depending on your operating system and personal
