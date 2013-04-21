@@ -181,23 +181,21 @@ skewer.fn.css = function(request) {
  HTML evaluator, appends or replaces a selector with given HTML.
  */
 skewer.fn.html = function(request) {
-  var container = document.querySelector(request.selector);
-
-  if (request.append) {
-    container.insertAdjacentHTML('beforeend', request.eval);
-  } else {
-    container.innerHTML = request.eval;
-  }
-
-  return {};
+    var container = document.querySelector(request.selector);
+    if (request.append) {
+        container.insertAdjacentHTML('beforeend', request.eval);
+    } else {
+        container.innerHTML = request.eval;
+    }
+    return {};
 };
 
 /**
  Fetch the HTML contents of selector.
  */
 skewer.fn.fetchselector = function(request) {
-  var element = document.querySelector(request.eval);
-  return { value: element.innerHTML };
+    var element = document.querySelector(request.eval);
+    return { value: element.innerHTML };
 };
 
 /**
