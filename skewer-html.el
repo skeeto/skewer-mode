@@ -52,7 +52,7 @@
   (save-excursion
     (let ((start (sgml-tag-name (car (last (sgml-get-context)))))
           (stop (save-excursion (sgml-get-context) (point))))
-      (loop with n = 0
+      (loop with n = 1
             do (sgml-skip-tag-backward 1)
             while (> (point) stop)
             when (equal start (sgml-tag-name (skewer-html--tag-after-point)))
@@ -63,7 +63,7 @@
   "Compute the selector for exactly the tag around point."
   (let ((ancestry (skewer-html-compute-tag-ancestry))
         (nth (skewer-html-compute-tag-nth)))
-    (format "%s:nth-child(%d)" (mapconcat 'identity ancestry " > ") nth)))
+    (format "%s:nth-of-type(%d)" (mapconcat 'identity ancestry " > ") nth)))
 
 ;; Helpers
 
