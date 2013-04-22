@@ -181,11 +181,15 @@ skewer.fn.css = function(request) {
  HTML evaluator, appends or replaces a selector with given HTML.
  */
 skewer.fn.html = function(request) {
-    var container = document.querySelector(request.selector);
-    if (request.append) {
-        container.insertAdjacentHTML('beforeend', request.eval);
+    var target = document.querySelector(request.selector);
+    if (target != null) {
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = request.eval;
+        var replacement = wrapper.firstChild;
+        target.parentNode.replaceChild(replacement, target);
     } else {
-        container.innerHTML = request.eval;
+        // TODO append/insert
+        // container.insertAdjacentHTML('beforeend', request.eval);
     }
     return {};
 };

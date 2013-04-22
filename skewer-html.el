@@ -8,7 +8,6 @@
 ;; does for JavaScript.
 
 ;; * C-M-x   -- `skewer-html-eval-tag'
-;; * C-c C-k -- `skewer-html-eval-region'
 ;; * C-c C-g -- `skewer-html-fetch-selector-into-buffer'
 
 ;; HTML is by default, appended to the "body" selector, but this can
@@ -19,12 +18,6 @@
 (require 'cl)
 (require 'sgml-mode)
 (require 'skewer-mode)
-
-(defvar skewer-html-options-selector "body"
-  "Default CSS selector to be used when evaluating HTML.")
-
-(defvar skewer-html-options-append t
-  "True if skewer-html should append HTML by default.")
 
 ;; Selector computation
 
@@ -65,17 +58,7 @@
         (nth (skewer-html-compute-tag-nth)))
     (format "%s:nth-of-type(%d)" (mapconcat 'identity ancestry " > ") nth)))
 
-;; Helpers
 
-(defun skewer-html-get-eval-options (&optional prefix)
-  "Return options for eval. Maybe prompt a user, if prefixed is true."
-  (values
-   (if prefix
-       (read-string "Selector: ")
-     skewer-html-options-selector)
-   (if prefix
-       (y-or-n-p "Append?")
-     skewer-html-options-append)))
 
 ;; Fetching
 
@@ -96,32 +79,21 @@
 
 ;; Evaluation
 
-(defun skewer-html-eval (string selector append)
+(defun skewer-html-eval (string selector &optional append)
   "Load HTML into a selector, optionally appending."
   (skewer-eval string nil :type "html" :extra `((selector . ,selector)
                                                 (append   . ,append))))
-
-(defun skewer-html-eval-region (&optional prefix)
-  "Load HTML from region or buffer. When prefixed, prompt for options."
-  (interactive "P")
-  (multiple-value-bind (selector append) (skewer-html-get-eval-options prefix)
-    (let* ((region-active (region-active-p))
-           (beg (if region-active (region-beginning) (point-min)))
-           (end (if region-active (region-end) (point-max)))
-           (region (buffer-substring-no-properties beg end)))
-      (skewer-flash-region beg end) ; check region
-      (skewer-html-eval region selector append))))
 
 (defun skewer-html-eval-tag (&optional prefix)
   "Load HTML from the surrounding tag. When prefixed, prompt for options."
   (interactive "P")
   (save-excursion
-    (multiple-value-bind (selector append) (skewer-html-get-eval-options prefix)
-      (let* ((beg (progn (sgml-skip-tag-backward 1) (point)))
-             (end (progn (sgml-skip-tag-forward 1) (point)))
-             (region (buffer-substring-no-properties beg end)))
-        (skewer-flash-region beg end)
-        (skewer-html-eval region selector append)))))
+    (let* ((selector (skewer-html-compute-selector))
+           (beg (progn (sgml-skip-tag-backward 1) (point)))
+           (end (progn (sgml-skip-tag-forward 1) (point)))
+           (region (buffer-substring-no-properties beg end)))
+      (skewer-flash-region beg end)
+      (skewer-html-eval region selector nil))))
 
 ;; Minor mode definition
 
@@ -129,7 +101,6 @@
   (let ((map (make-sparse-keymap)))
     (prog1 map
       (define-key map (kbd "C-M-x") 'skewer-html-eval-tag)
-      (define-key map (kbd "C-c C-k") 'skewer-html-eval-region)
       (define-key map (kbd "C-c C-g") 'skewer-html-fetch-selector-into-buffer)))
   "Keymap for skewer-html-mode")
 
