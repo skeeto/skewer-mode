@@ -26,6 +26,45 @@
 (defvar skewer-html-options-append t
   "True if skewer-html should append HTML by default.")
 
+;; Selector computation
+
+(defun skewer-html--tag-name-cleanup (name)
+  "Cleanup tag names provided by sgml-mode."
+  (replace-regexp-in-string "/$" "" name))
+
+(defun skewer-html-compute-tag-ancestry ()
+  "Compute the ancestry chain at point."
+  (save-excursion
+    (nreverse
+     (loop for next = (sgml-get-context)
+           while next
+           collect (skewer-html--tag-name-cleanup
+                    (sgml-tag-name (car (last next))))))))
+
+(defun skewer-html--tag-after-point ()
+  "Return the tag struct for the tag immediately following point."
+  (save-excursion
+    (forward-char 1)
+    (sgml-parse-tag-backward)))
+
+(defun skewer-html-compute-tag-nth ()
+  "Compute the position of this tag within its parent."
+  (save-excursion
+    (let ((start (sgml-tag-name (car (last (sgml-get-context)))))
+          (stop (save-excursion (sgml-get-context) (point))))
+      (loop with n = 0
+            do (sgml-skip-tag-backward 1)
+            while (> (point) stop)
+            when (equal start (sgml-tag-name (skewer-html--tag-after-point)))
+            do (incf n)
+            finally (return n)))))
+
+(defun skewer-html-compute-selector ()
+  "Compute the selector for exactly the tag around point."
+  (let ((ancestry (skewer-html-compute-tag-ancestry))
+        (nth (skewer-html-compute-tag-nth)))
+    (format "%s:nth-child(%d)" (mapconcat 'identity ancestry " > ") nth)))
+
 ;; Helpers
 
 (defun skewer-html-get-eval-options (&optional prefix)
