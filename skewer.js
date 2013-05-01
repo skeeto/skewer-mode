@@ -181,18 +181,40 @@ skewer.fn.css = function(request) {
  HTML evaluator, appends or replaces a selector with given HTML.
  */
 skewer.fn.html = function(request) {
-    var selector = request.ancestry.map(function(tag) {
-        return tag[0] + ':nth-of-type(' + tag[1] + ')';
-    }).join(' > ');
-    var target = document.querySelector(selector);
-    if (target != null) {
+    function buildSelector(ancestry) {
+        return ancestry.map(function(tag) {
+            return tag[0] + ':nth-of-type(' + tag[1] + ')';
+        }).join(' > ');
+    }
+    function query(ancestry) {
+        return document.querySelector(buildSelector(ancestry));
+    }
+    function wrap(html) {
         var wrapper = document.createElement('div');
-        wrapper.innerHTML = request.eval;
-        var replacement = wrapper.firstChild;
-        target.parentNode.replaceChild(replacement, target);
+        wrapper.innerHTML = html;
+        return wrapper.firstChild;
+    }
+
+    var target = query(request.ancestry);
+    if (target != null) {
+        target.parentNode.replaceChild(wrap(request.eval), target);
     } else {
-        // TODO append/insert
-        // container.insertAdjacentHTML('beforeend', request.eval);
+        /* Determine missing elements. */
+        var path = request.ancestry.slice(0, -1);
+        var missing = [];
+        while (query(path) == null) {
+            missing.push(path.pop());
+        }
+        /* Build up missing elements. */
+        target = query(path);
+        while (missing.length > 0) {
+            var tag = missing.pop();
+            var empty = document.createElement(tag[0]);
+            // TODO create up to tag[1] tags
+            target.appendChild(empty);
+            target = empty;
+        }
+        target.appendChild(wrap(request.eval));
     }
     return {};
 };
