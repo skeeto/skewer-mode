@@ -85,15 +85,16 @@
 
 ;; Evaluation
 
-(defun skewer-html-eval (string selector &optional append)
+(defun skewer-html-eval (string ancestry &optional append)
   "Load HTML into a selector, optionally appending."
-  (skewer-eval string nil :type "html" :extra `((selector . ,selector)
-                                                (append   . ,append))))
+  (let ((ancestry* (coerce ancestry 'vector)))  ; for JSON
+    (skewer-eval string nil :type "html" :extra `((ancestry . ,ancestry*)
+                                                  (append   . ,append)))))
 
 (defun skewer-html-eval-tag (&optional prefix)
   "Load HTML from the surrounding tag. When prefixed, prompt for options."
   (interactive "P")
-  (let ((selector (skewer-html-compute-selector)))
+  (let ((ancestry (skewer-html-compute-tag-ancestry)))
     (save-excursion
       ;; Move to beginning of opening tag
       (loop for tag = (car (last (sgml-get-context)))
@@ -102,7 +103,7 @@
              (end (progn (sgml-skip-tag-forward 1) (point)))
              (region (buffer-substring-no-properties beg end)))
         (skewer-flash-region beg end)
-        (skewer-html-eval region selector nil)))))
+        (skewer-html-eval region ancestry nil)))))
 
 ;; Minor mode definition
 

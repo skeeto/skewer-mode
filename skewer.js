@@ -181,7 +181,10 @@ skewer.fn.css = function(request) {
  HTML evaluator, appends or replaces a selector with given HTML.
  */
 skewer.fn.html = function(request) {
-    var target = document.querySelector(request.selector);
+    var selector = request.ancestry.map(function(tag) {
+        return tag[0] + ':nth-of-type(' + tag[1] + ')';
+    }).join(' > ');
+    var target = document.querySelector(selector);
     if (target != null) {
         var wrapper = document.createElement('div');
         wrapper.innerHTML = request.eval;
