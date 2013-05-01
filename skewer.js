@@ -178,7 +178,7 @@ skewer.fn.css = function(request) {
 };
 
 /**
- HTML evaluator, appends or replaces a selector with given HTML.
+ * HTML evaluator, appends or replaces a selection with given HTML.
  */
 skewer.fn.html = function(request) {
     function buildSelector(ancestry) {
@@ -196,31 +196,37 @@ skewer.fn.html = function(request) {
     }
 
     var target = query(request.ancestry);
-    if (target != null) {
-        target.parentNode.replaceChild(wrap(request.eval), target);
-    } else {
-        /* Determine missing elements. */
-        var path = request.ancestry.slice(0, -1);
+
+    if (target == null) {
+        /* Determine missing part of the ancestry. */
+        var path = request.ancestry.slice(0);  // copy
         var missing = [];
         while (query(path) == null) {
             missing.push(path.pop());
         }
-        /* Build up missing elements. */
+
+        /* Build up the missing elements. */
         target = query(path);
         while (missing.length > 0) {
-            var tag = missing.pop();
-            var empty = document.createElement(tag[0]);
-            // TODO create up to tag[1] tags
-            target.appendChild(empty);
+            var tag = missing.pop(),
+                name = tag[0],
+                nth = tag[1];
+            var empty = null;
+            var count = target.querySelectorAll(name).length;
+            for (; count < nth; count++) {
+                empty = document.createElement(tag[0]);
+                target.appendChild(empty);
+            }
             target = empty;
         }
-        target.appendChild(wrap(request.eval));
     }
+
+    target.parentNode.replaceChild(wrap(request.eval), target);
     return {};
 };
 
 /**
- Fetch the HTML contents of selector.
+ * Fetch the HTML contents of selector.
  */
 skewer.fn.fetchselector = function(request) {
     var element = document.querySelector(request.eval);
