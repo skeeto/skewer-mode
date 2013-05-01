@@ -21,18 +21,9 @@
 
 ;; Selector computation
 
-(defun skewer-html--tag-name-cleanup (name)
+(defun skewer-html--cleanup (name)
   "Cleanup tag names provided by sgml-mode."
   (replace-regexp-in-string "/$" "" name))
-
-(defun skewer-html-compute-tag-ancestry ()
-  "Compute the ancestry chain at point."
-  (save-excursion
-    (nreverse
-     (loop for next = (sgml-get-context)
-           while next
-           collect (skewer-html--tag-name-cleanup
-                    (sgml-tag-name (car (last next))))))))
 
 (defun skewer-html--tag-after-point ()
   "Return the tag struct for the tag immediately following point."
@@ -43,22 +34,37 @@
 (defun skewer-html-compute-tag-nth ()
   "Compute the position of this tag within its parent."
   (save-excursion
-    (let ((start (sgml-tag-name (car (last (sgml-get-context)))))
-          (stop (save-excursion (sgml-get-context) (point))))
-      (loop with n = 1
-            do (sgml-skip-tag-backward 1)
-            while (> (point) stop)
-            when (equal start (sgml-tag-name (skewer-html--tag-after-point)))
-            do (incf n)
-            finally (return n)))))
+    (let ((tag (car (last (sgml-get-context)))))
+      (if (null tag)
+          1
+        (loop with start = (sgml-tag-name tag)
+              with stop = (save-excursion (sgml-get-context) (point))
+              with n = 1
+              do (sgml-skip-tag-backward 1)
+              while (> (point) stop)
+              when (equal start (sgml-tag-name (skewer-html--tag-after-point)))
+              do (incf n)
+              finally (return n))))))
+
+(defun skewer-html-compute-tag-ancestry ()
+  "Compute the ancestry chain at point."
+  (save-excursion
+    (nreverse
+     (loop for nth = (skewer-html-compute-tag-nth)
+           for tag = (car (last (sgml-get-context)))
+           while tag
+           for name = (skewer-html--cleanup (sgml-tag-name tag))
+           for type = (sgml-tag-type tag)
+           when (not (or (string= name "html")
+                         (eq type 'close)))
+           collect (list name nth)))))
 
 (defun skewer-html-compute-selector ()
   "Compute the selector for exactly the tag around point."
-  (let ((ancestry (skewer-html-compute-tag-ancestry))
-        (nth (skewer-html-compute-tag-nth)))
-    (format "%s:nth-of-type(%d)" (mapconcat 'identity ancestry " > ") nth)))
-
-
+  (let ((ancestry (skewer-html-compute-tag-ancestry)))
+    (mapconcat (lambda (tag)
+                 (format "%s:nth-of-type(%d)" (first tag) (second tag)))
+               ancestry " > ")))
 
 ;; Fetching
 
