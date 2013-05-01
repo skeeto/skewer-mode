@@ -93,13 +93,16 @@
 (defun skewer-html-eval-tag (&optional prefix)
   "Load HTML from the surrounding tag. When prefixed, prompt for options."
   (interactive "P")
-  (save-excursion
-    (let* ((selector (skewer-html-compute-selector))
-           (beg (progn (sgml-skip-tag-backward 1) (point)))
-           (end (progn (sgml-skip-tag-forward 1) (point)))
-           (region (buffer-substring-no-properties beg end)))
-      (skewer-flash-region beg end)
-      (skewer-html-eval region selector nil))))
+  (let ((selector (skewer-html-compute-selector)))
+    (save-excursion
+      ;; Move to beginning of opening tag
+      (loop for tag = (car (last (sgml-get-context)))
+            while (and tag (eq 'close (sgml-tag-type tag))))
+      (let* ((beg (progn (point)))
+             (end (progn (sgml-skip-tag-forward 1) (point)))
+             (region (buffer-substring-no-properties beg end)))
+        (skewer-flash-region beg end)
+        (skewer-html-eval region selector nil)))))
 
 ;; Minor mode definition
 
