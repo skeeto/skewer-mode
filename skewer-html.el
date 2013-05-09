@@ -8,7 +8,6 @@
 ;; does for JavaScript.
 
 ;; * C-M-x   -- `skewer-html-eval-tag'
-;; * C-c C-g -- `skewer-html-fetch-selector-into-buffer'
 
 ;; HTML is by default, appended to the "body" selector, but this can
 ;; be overriden by prefixing (C-u) the above interactions.
@@ -112,8 +111,7 @@
 (defvar skewer-html-mode-map
   (let ((map (make-sparse-keymap)))
     (prog1 map
-      (define-key map (kbd "C-M-x") 'skewer-html-eval-tag)
-      (define-key map (kbd "C-c C-g") 'skewer-html-fetch-selector-into-buffer)))
+      (define-key map (kbd "C-M-x") 'skewer-html-eval-tag)))
   "Keymap for skewer-html-mode")
 
 ;;;###autoload

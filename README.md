@@ -53,9 +53,7 @@ the CSS rules and HTML on the current page.
 
 #### HTML
 
- * <kbd>C-M-x</kbd>:   Load the HTML tag around the point.
- * <kbd>C-c C-k</kbd>: Load the HTML at region (or buffer).
- * <kbd>C-c C-g</kbd>: Fetch the HTML of a selector and insert it at the point.
+ * <kbd>C-M-x</kbd>:   Load the HTML tag immediately around the point.
 
 Note: `run-skewer` uses `browse-url` to launch the browser. This may
 require further setup depending on your operating system and personal
