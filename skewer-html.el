@@ -5,12 +5,14 @@
 ;;; Commentary:
 
 ;; This minor mode provides functionality for HTML like plain Skewer
-;; does for JavaScript.
+;; does for JavaScript. There's no clean way to replace the body and
+;; head elements of a live document, so "evaluating" these elements is
+;; not supported.
 
 ;; * C-M-x   -- `skewer-html-eval-tag'
 
-;; HTML is by default, appended to the "body" selector, but this can
-;; be overriden by prefixing (C-u) the above interactions.
+;; See also `skewer-html-fetch-selector-into-buffer' for grabbing the
+;; page as it current exists.
 
 ;;; Code:
 
