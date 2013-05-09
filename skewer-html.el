@@ -90,8 +90,8 @@
     (skewer-eval string nil :type "html" :extra `((ancestry . ,ancestry*)
                                                   (append   . ,append)))))
 
-(defun skewer-html-eval-tag (&optional prefix)
-  "Load HTML from the surrounding tag. When prefixed, prompt for options."
+(defun skewer-html-eval-tag ()
+  "Load HTML from the immediately surrounding tag."
   (interactive "P")
   (let ((ancestry (skewer-html-compute-tag-ancestry)))
     (save-excursion
