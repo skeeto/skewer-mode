@@ -78,11 +78,8 @@
 
 (defun skewer-html-fetch-selector-into-buffer (selector)
   "Fetch the innerHTML of a selector and insert it into the active buffer."
-  (interactive "P")
-  (let ((sel (if selector
-                 (read-string "Selector: ")
-               skewer-html-options-selector)))
-    (insert (skewer-html-fetch-selector sel))))
+  (interactive "sSelector: ")
+  (insert (skewer-html-fetch-selector selector)))
 
 ;; Evaluation
 
