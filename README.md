@@ -42,8 +42,8 @@ like the Lisp modes. These are provided by the minor mode
 
 The result of the expression is echoed in the minibuffer.
 
-Additionally, `css-mode` and `html-mode` get similar sets of bindings for modifying
-the CSS rules and HTML on the current page.
+Additionally, `css-mode` and `html-mode` get similar sets of bindings
+for modifying the CSS rules and HTML on the current page.
 
 #### CSS
 
