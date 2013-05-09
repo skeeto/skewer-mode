@@ -189,7 +189,7 @@ skewer.fn.html = function(request) {
     function query(ancestry) {
         return document.querySelector(buildSelector(ancestry));
     }
-    function wrap(html) {
+    function htmlToNode(html) {
         var wrapper = document.createElement('div');
         wrapper.innerHTML = html;
         return wrapper.firstChild;
@@ -221,7 +221,7 @@ skewer.fn.html = function(request) {
         }
     }
 
-    target.parentNode.replaceChild(wrap(request.eval), target);
+    target.parentNode.replaceChild(htmlToNode(request.eval), target);
     return {};
 };
 
