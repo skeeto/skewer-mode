@@ -1,9 +1,9 @@
-# Skewer -- live Emacs JavaScript, CSS, and HTML interaction
+# Skewer: live web development with Emacs
 
-Provides live interaction with JavaScript, CSS, and HTML in a web browser.
-Expressions are sent on-the-fly from an editing buffer to be evaluated
-in the browser, just like Emacs does with an inferior Lisp process in
-Lisp modes.
+Provides live interaction with JavaScript, CSS, and HTML in a web
+browser. Expressions are sent on-the-fly from an editing buffer to be
+evaluated in the browser, just like Emacs does with an inferior Lisp
+process in Lisp modes.
 
 * Watch the [**demo video** on YouTube](http://youtu.be/4tyTgyzUJqM)
   ([webm](http://nullprogram.s3.amazonaws.com/skewer/demo.webm))
@@ -94,7 +94,7 @@ as `/skewer`.
 ### Browser Support
 
 Skewer is known to work properly with Firefox, Chrome, Safari, Opera,
-and IE8+. Except for CSS, Skewer will work in IE7 when
+and IE8+. Except for CSS and HTML, Skewer will work in IE7 when
 `document.querySelector` and `JSON` are polyfilled. If you find any
 other JavaScript-supported browser that doesn't work with Skewer,
 please report it.
