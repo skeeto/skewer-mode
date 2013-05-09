@@ -103,7 +103,9 @@
              (end (progn (sgml-skip-tag-forward 1) (point)))
              (region (buffer-substring-no-properties beg end)))
         (skewer-flash-region beg end)
-        (skewer-html-eval region ancestry nil)))))
+        (if (= (length ancestry) 1)
+            (error "Error: cannot eval body and head tags.")
+          (skewer-html-eval region ancestry nil))))))
 
 ;; Minor mode definition
 
