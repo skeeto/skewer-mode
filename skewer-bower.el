@@ -114,7 +114,8 @@ them from hitting the network frequently.")
 ;; Bower functions
 
 (defun skewer-bower-package-ensure (package)
-  "Ensure a package is installed in the cache and up to date."
+  "Ensure a package is installed in the cache and up to date.
+Emit an error if the package could not be ensured."
   (let ((url (cdr (assoc package skewer-bower-packages))))
     (when (null url)
       (error "Unknown package: %s" package))
@@ -123,13 +124,15 @@ them from hitting the network frequently.")
     t))
 
 (defun skewer-bower-package-versions (package)
-  "List the available versions for a package."
+  "List the available versions for a package. Always returns at
+least one version."
   (skewer-bower-package-ensure package)
   (or (sort (skewer-bower-git-tag package) #'string<)
       (list "master")))
 
 (defun skewer-bower-get-config (package &optional version)
-  "Get the configuration alist for PACKAGE at VERSION."
+  "Get the configuration alist for PACKAGE at VERSION. Return nil
+if no configuration could be found."
   (skewer-bower-package-ensure package)
   (unless version (setf version "master"))
   (json-read-from-string
@@ -141,10 +144,10 @@ them from hitting the network frequently.")
 ;; Serving the library
 
 (defvar skewer-bower-history ()
-  "Library selection history.")
+  "Library selection history for `completing-read'.")
 
 (defun skewer-bowser--path (package version main)
-  "Return the hosted path for PACKAGE."
+  "Return the simple-httpd hosted path for PACKAGE."
   (format "/skewer/bower/%s/%s/%s" package (or version "master") main))
 
 (defun skewer-bower-prompt-package ()
@@ -177,7 +180,7 @@ them from hitting the network frequently.")
       (skewer-eval path nil :type "script"))))
 
 (defservlet skewer/bower application/javascript (path)
-  "Serve a file from the local repository cache."
+  "Serve a script from the local bower repository cache."
   (destructuring-bind (_ skewer bower package version . parts)
       (split-string path "/")
     (let* ((file (mapconcat #'identity parts "/"))
