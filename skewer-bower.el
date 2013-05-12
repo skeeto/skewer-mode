@@ -1,8 +1,27 @@
-;;; skewer-bower.el --- -*- lexical-binding: t; -*-
+;;; skewer-bower.el --- dynamic library loading -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;;; Commentary:
+
+;; This package loads libraries into the current page using the bower
+;; infrastructure. Note: bower is not actually used by this package
+;; and so does *not* need to be installed. Only git is required (see
+;; `skewer-bower-git-executable'). It will try to learn how to run git
+;; from Magit if available.
+
+;; The interactive command for loading libraries is
+;; `skewer-bower-load'. It will prompt for a library and a version,
+;; automatically fetching it from the bower infrastructure if needed.
+;; For example, I often find it handy to load some version of jQuery
+;; when poking around at a page that doesn't already have it loaded.
+
+;; Caveat: unfortunately the bower infrastructure is a mess; many
+;; packages are in some sort of broken state -- missing dependencies,
+;; missing metadata, broken metadata, or an invalid repository URL.
+;; Some of this is due to under-specification of the metadata by the
+;; bower project. Broken packages are unlikely to be loadable by
+;; skewer-bower.
 
 ;;; Code:
 
