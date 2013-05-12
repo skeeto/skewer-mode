@@ -91,7 +91,7 @@
 
 (defun skewer-html-eval-tag ()
   "Load HTML from the immediately surrounding tag."
-  (interactive "P")
+  (interactive)
   (let ((ancestry (skewer-html-compute-tag-ancestry)))
     (save-excursion
       ;; Move to beginning of opening tag
