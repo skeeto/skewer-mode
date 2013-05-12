@@ -33,6 +33,7 @@ them from hitting the network frequently.")
 ;;;###autoload
 (defun skewer-bower-refresh ()
   "Update the package listing and packages synchronously."
+  (interactive)
   (setf skewer-bower-refreshed nil)
   (with-current-buffer
       (url-retrieve-synchronously (concat skewer-bower-endpoint "/packages"))
@@ -120,14 +121,16 @@ them from hitting the network frequently.")
 (defun skewer-bower-load (package &optional version)
   "Dynamically load a library from bower into the current page."
   (interactive
-   (let* ((packages (mapcar #'car skewer-bower-packages))
-          (selection (delete-duplicates
-                      (append skewer-bower-history packages) :from-end t))
-          (package (completing-read "Library: " selection nil t nil
-                                    'skewer-bower-history))
-          (versions (skewer-bower-package-versions package))
-          (version (completing-read "Version: " (reverse versions))))
-     (list package version)))
+   (progn
+     (when (null skewer-bower-packages) (skewer-bower-refresh))
+     (let* ((packages (mapcar #'car skewer-bower-packages))
+            (selection (delete-duplicates
+                        (append skewer-bower-history packages) :from-end t))
+            (package (completing-read "Library: " selection nil t nil
+                                      'skewer-bower-history))
+            (versions (skewer-bower-package-versions package))
+            (version (completing-read "Version: " (reverse versions))))
+       (list package version))))
   (let* ((config (skewer-bower-get-config package))
          (deps (cdr (assoc 'dependencies config)))
          (main (cdr (assoc 'main config))))
