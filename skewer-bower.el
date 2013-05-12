@@ -30,17 +30,28 @@
 (require 'simple-httpd)
 (require 'magit nil t) ; optional
 
-(defvar skewer-bower-cache-dir (locate-user-emacs-file "skewer-cache")
-  "Location of library cache (git repositories).")
+(defcustom skewer-bower-cache-dir (locate-user-emacs-file "skewer-cache")
+  "Location of library cache (git repositories)."
+  :type 'string
+  :group 'skewer)
 
-(defvar skewer-bower-endpoint "https://bower.herokuapp.com"
-  "Endpoint for accessing package information.")
+(defcustom skewer-bower-endpoint "https://bower.herokuapp.com"
+  "Endpoint for accessing package information."
+  :type 'string
+  :group 'skewer)
+
+(defcustom skewer-bower-json '("bower.json" "package.json" "component.json")
+  "Files to search for package metadata."
+  :type 'list
+  :group 'skewer)
 
 ; Try to match Magit's configuration if available
 (if (boundp 'magit-git-executable)
     (defvaralias 'skewer-bower-git-executable 'magit-git-executable)
-  (defvar skewer-bower-git-executable "git"
-    "Name of the git executable."))
+  (defcustom skewer-bower-git-executable "git"
+    "Name of the git executable."
+    :type 'string
+    :group 'skewer))
 
 (defvar skewer-bower-packages nil
   "Alist of all packages known to bower.")
@@ -122,10 +133,10 @@ them from hitting the network frequently.")
   (skewer-bower-package-ensure package)
   (unless version (setf version "master"))
   (json-read-from-string
-   (or (skewer-bower-git-show package version "bower.json")
-       (skewer-bower-git-show package version "package.json")
-       (skewer-bower-git-show package version "component.json")
-       "null")))
+   (loop for file in skewer-bower-json
+         for config = (skewer-bower-git-show package version file)
+         when config return it
+         finally (return "null"))))
 
 ;; Serving the library
 
