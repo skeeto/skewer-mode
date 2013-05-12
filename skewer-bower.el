@@ -164,8 +164,11 @@ them from hitting the network frequently.")
   (let* ((config (skewer-bower-get-config package))
          (deps (cdr (assoc 'dependencies config)))
          (main (cdr (assoc 'main config))))
-    (unless main
-      (error "Could not load %s (%s)" package version))
+    (when (null main)
+      (setf main (concat package ".js"))
+      (when (null (skewer-bower-git-show package version main))
+        (error "Could not load %s (%s): no \"main\" script specified"
+               package version)))
     (loop for (dep . version) in deps
           do (skewer-bower-load (format "%s" dep) version))
     (let ((path (skewer-bowser--path package version main)))
