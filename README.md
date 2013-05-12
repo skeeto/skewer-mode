@@ -151,6 +151,20 @@ Alternatively, the following bookmarklet will load skewer on demand:
 javascript:(function(){var d=document;var s=d.createElement('script');s.src='http://localhost:8080/skewer';d.body.appendChild(s);})()
 ```
 
+## bower
+
+Also provided are some functions for loading libraries from the bower
+infrastructure on the fly. This is accessed with `skewer-bower-load`.
+For example, I often find it useful to load jQuery when skewering a
+page that doesn't have jQuery installed.
+
+Note: to use this **bower does *not* need to be installed**, only git.
+It's just the bower infrastructure being used. Unfortunately this
+infrastructure is a mess right now; many packages are in some sort of
+broken state -- missing dependencies, missing metadata, broken
+metadata, or an invalid repository URL. Some of this is due to
+under-specification of the metadata by the bower project.
+
 ## Motivation
 
 I wanted something like [swank-js][swank-js] but without all the
