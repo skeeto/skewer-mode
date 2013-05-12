@@ -147,25 +147,27 @@ them from hitting the network frequently.")
   "Return the hosted path for PACKAGE."
   (format "/skewer/bower/%s/%s/%s" package (or version "master") main))
 
+(defun skewer-bower-prompt-package ()
+  "Prompt for a package and version from the user."
+  (when (null skewer-bower-packages) (skewer-bower-refresh))
+  (let* ((packages (mapcar #'car skewer-bower-packages))
+         (selection (delete-duplicates
+                     (append skewer-bower-history packages) :from-end t))
+         (package (completing-read "Library: " selection nil t nil
+                                   'skewer-bower-history))
+         (versions (skewer-bower-package-versions package))
+         (version (completing-read "Version: " (reverse versions))))
+    (list package version)))
+
 ;;;###autoload
 (defun skewer-bower-load (package &optional version)
   "Dynamically load a library from bower into the current page."
-  (interactive
-   (progn
-     (when (null skewer-bower-packages) (skewer-bower-refresh))
-     (let* ((packages (mapcar #'car skewer-bower-packages))
-            (selection (delete-duplicates
-                        (append skewer-bower-history packages) :from-end t))
-            (package (completing-read "Library: " selection nil t nil
-                                      'skewer-bower-history))
-            (versions (skewer-bower-package-versions package))
-            (version (completing-read "Version: " (reverse versions))))
-       (list package version))))
+  (interactive (skewer-bower-prompt-package))
   (let* ((config (skewer-bower-get-config package))
          (deps (cdr (assoc 'dependencies config)))
          (main (cdr (assoc 'main config))))
     (when (null main)
-      (setf main (concat package ".js"))
+      (setf main (concat package ".js")) ; guess
       (when (null (skewer-bower-git-show package version main))
         (error "Could not load %s (%s): no \"main\" script specified"
                package version)))
