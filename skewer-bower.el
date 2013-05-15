@@ -163,18 +163,25 @@ if no configuration could be found."
          (version (completing-read "Version: " (reverse versions))))
     (list package version)))
 
+(defun skewer-bower-guess-main (package version config)
+  "Attempt to determine the main entrypoint from a potentially
+incomplete or incorrect bower configuration. Returns nil if
+guessing failed."
+  (find-if (apply-partially #'skewer-bower-git-show package version)
+           (list (cdr (assoc 'main config))
+                 (concat package ".js")
+                 package)))
+
 ;;;###autoload
 (defun skewer-bower-load (package &optional version)
   "Dynamically load a library from bower into the current page."
   (interactive (skewer-bower-prompt-package))
   (let* ((config (skewer-bower-get-config package))
          (deps (cdr (assoc 'dependencies config)))
-         (main (cdr (assoc 'main config))))
+         (main (skewer-bower-guess-main package version config)))
     (when (null main)
-      (setf main (concat package ".js")) ; guess
-      (when (null (skewer-bower-git-show package version main))
-        (error "Could not load %s (%s): no \"main\" script specified"
-               package version)))
+      (error "Could not load %s (%s): no \"main\" entrypoint specified"
+             package version))
     (loop for (dep . version) in deps
           do (skewer-bower-load (format "%s" dep) version))
     (let ((path (skewer-bowser--path package version main)))
