@@ -116,6 +116,7 @@ them from hitting the network frequently.")
 (defun skewer-bower-package-ensure (package)
   "Ensure a package is installed in the cache and up to date.
 Emit an error if the package could not be ensured."
+  (when (null skewer-bower-packages) (skewer-bower-refresh))
   (let ((url (cdr (assoc package skewer-bower-packages))))
     (when (null url)
       (error "Unknown package: %s" package))
