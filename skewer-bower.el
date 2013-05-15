@@ -105,6 +105,8 @@ them from hitting the network frequently.")
 
 (defun skewer-bower-git-show (package version file)
   "Grab FILE from PACKAGE at version VERSION."
+  (when (string-match-p "^\\./" file) ; avoid relative paths
+    (setf file (substring file 2)))
   (skewer-bower-git package "show" (format "%s:%s" version file)))
 
 (defun skewer-bower-git-tag (package)
