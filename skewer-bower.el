@@ -191,7 +191,7 @@ guessing failed."
 
 (defservlet skewer/bower application/javascript (path)
   "Serve a script from the local bower repository cache."
-  (destructuring-bind (_ skewer bower package version . parts)
+  (destructuring-bind (_ _skewer _bower package version . parts)
       (split-string path "/")
     (let* ((file (mapconcat #'identity parts "/"))
            (contents (skewer-bower-git-show package version file)))
