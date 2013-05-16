@@ -408,7 +408,7 @@ a list: (string start end)."
 waiting browser."
   (interactive)
   (if js2-mode-buffer-dirty-p
-      (js2-mode-wait-for-parse #'skewer-eval-last-expression)
+      (js2-mode-wait-for-parse #'skewer-eval-defun)
     (destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (skewer-eval string #'skewer-post-minibuffer))))
