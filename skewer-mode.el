@@ -329,6 +329,14 @@ callback. Use with caution."
           do (accept-process-output nil 0.01)
           finally (return result))))
 
+(defun skewer--save-point (f &rest args)
+  "Return a function that calls F with point at the current point."
+  (let ((saved-point (point)))
+    (lambda (&rest more)
+      (save-excursion
+        (goto-char saved-point)
+        (apply f (append args more))))))
+
 (defun* skewer-ping ()
   "Ping the browser to test that it's still alive."
   (unless (null skewer-clients) ; don't queue pings
@@ -382,7 +390,8 @@ result into the current buffer."
   (if prefix
       (skewer-eval-print-last-expression)
     (if js2-mode-buffer-dirty-p
-        (js2-mode-wait-for-parse #'skewer-eval-last-expression)
+        (js2-mode-wait-for-parse
+         (skewer--save-point #'skewer-eval-last-expression))
       (destructuring-bind (string start end) (skewer-get-last-expression)
         (skewer-flash-region start end)
         (skewer-eval string #'skewer-post-minibuffer)))))
@@ -408,7 +417,7 @@ a list: (string start end)."
 waiting browser."
   (interactive)
   (if js2-mode-buffer-dirty-p
-      (js2-mode-wait-for-parse #'skewer-eval-defun)
+      (js2-mode-wait-for-parse (skewer--save-point #'skewer-eval-defun))
     (destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (skewer-eval string #'skewer-post-minibuffer))))
@@ -434,7 +443,8 @@ waiting browser."
 waiting browser and insert the result in the buffer at point."
   (interactive)
   (if js2-mode-buffer-dirty-p
-      (js2-mode-wait-for-parse #'skewer-eval-print-last-expression)
+      (js2-mode-wait-for-parse
+       (skewer--save-point #'skewer-eval-print-last-expression))
     (destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (insert "\n")
@@ -489,6 +499,10 @@ inconsistent buffer."
   (interactive)
   (httpd-start)
   (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port)))
+
+;; Local Variables:
+;; lexical-binding: t
+;; End:
 
 (provide 'skewer-mode)
 
