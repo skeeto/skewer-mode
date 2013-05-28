@@ -24,10 +24,21 @@ Dependencies:
 
 If Skewer was installed from MELPA, skip to step 3.
 
- 1. Place dependencies in your `load-path` or load them directly
- 2. Load `skewer-mode.el`
- 3. `M-x run-skewer` to attach a browser to Emacs
- 4. From a `js2-mode` buffer, send forms to the browser to evaluate
+ 1. Put this repository directory in your `load-path`
+ 2. Load skewer-mode.el
+ 3. M-x `run-skewer` to attach a browser to Emacs
+ 4. From a `js2-mode` buffer with `skewer-mode` minor mode enabled,
+    send forms to the browser to evaluate
+
+The function `skewer-setup` can be used to configure all of mode hooks
+(previously this was the default). This can also be done manually like
+so,
+
+```el
+(add-hook 'js2-mode-hook 'skewer-mode)
+(add-hook 'css-mode-hook 'skewer-css-mode)
+(add-hook 'html-mode-hook 'skewer-html-mode)
+```
 
 The keybindings for evaluating expressions in the browser are just
 like the Lisp modes. These are provided by the minor mode

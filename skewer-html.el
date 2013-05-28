@@ -120,9 +120,6 @@
   :keymap skewer-html-mode-map
   :group 'skewer)
 
-;;;###autoload
-(add-hook 'html-mode-hook 'skewer-html-mode)
-
 (provide 'skewer-html)
 
 ;;; skewer-html.el ends here
