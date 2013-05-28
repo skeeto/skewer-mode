@@ -113,29 +113,13 @@ please report it.
 ## REPL
 
 A REPL into the browser can be created with `M-x skewer-repl`, or
-<kbd>C-c C-z</kbd>. This should work just like a console within the
-browser. Messages can be logged to this REPL with `skewer.log()` (just
-like `console.log()`).
+<kbd>C-c C-z</kbd>. This should work like a console within the
+browser. Messages can be logged to this REPL with `skewer.log()` (like
+`console.log()`).
 
 Results of expressions evaluated in the REPL are printed more
 verbosely than in the minibuffer, when possible. This may help in
 debugging.
-
-Use `M-x skewer-repl-toggle-strict-mode` to toggle strict evaluation
-for expressions in the REPL. However, be aware of the
-[consequences of using strict mode][strict-mode].
-
-## Strict mode
-
-Evaluation can be done in [strict mode][strict-mode] but,
-unfortunately, because strict mode `eval` is neutered the results are
-completely at odds with Skewer. It's not possible to create new global
-bindings in strict mode, so functions and variables defined in strict
-mode evaluations can't be accessed by Skewer again later. If you want
-to redefine loaded code in Skewer, make sure you disable strict mode.
-
-However, you *can* use strict *within* your functions since this
-doesn't effect Skewer's top-level `eval`.
 
 ## Skewering with CORS
 
@@ -190,6 +174,5 @@ server-side.
 [js2-mode]: https://github.com/mooz/js2-mode
 [melpa]: http://melpa.milkbox.net/
 [swank-js]: https://github.com/swank-js/swank-js
-[strict-mode]: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/Strict_mode
 [cors]: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
 [kite]: https://github.com/jscheid/kite

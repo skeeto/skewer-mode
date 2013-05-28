@@ -35,9 +35,9 @@
 
 ;; The result of the expression is echoed in the minibuffer.
 
-;; Additionally, `css-mode' gets a similar set of bindings for
-;; modifying the CSS rules on the current page. They operate on
-;; declarations and rules.
+;; Additionally, `css-mode' and `html-mode' get a similar set of
+;; bindings for modifying the CSS rules and updating HTML on the
+;; current page.
 
 ;; Note: `run-skewer' uses `browse-url' to launch the browser. This
 ;; may require further setup depending on your operating system and
@@ -55,9 +55,7 @@
 ;; skewer() to reconnect. This avoids a page reload, which would lose
 ;; any fragile browser state you might care about.
 
-;; Manual version:
-
-;; To skewer your own document rather than the provided blank one,
+;; To skewer your own document rather than the provided blank page,
 
 ;;  1. Load the dependencies
 ;;  2. Load skewer-mode.el
@@ -66,20 +64,20 @@
 ;;     (see `example.html' and check your `httpd-port')
 ;;  5. Visit the document from your browser
 
-;; Skewer fully supports CORS so the document need not be hosted by
-;; Emacs itself. A Greasemonkey userscript is provided for injecting
-;; Skewer into any arbitrary page you're visiting without needing to
-;; modify the page on the host.
+;; Skewer fully supports CORS, so the document need not be hosted by
+;; Emacs itself. A Greasemonkey userscript and a bookmarklet are
+;; provided for injecting Skewer into any arbitrary page you're
+;; visiting without needing to modify the page on the host.
 
 ;; With skewer-repl.el loaded, a REPL into the browser can be created
-;; with M-x `skewer-repl', or C-c C-z. This should work just like a
-;; console within the browser. Messages can be logged to this REPL
-;; with `skewer.log()` (just like `console.log()`).
+;; with M-x `skewer-repl', or C-c C-z. This should work like a console
+;; within the browser. Messages can be logged to this REPL with
+;; skewer.log() (just like console.log()).
 
 ;; Extending Skewer:
 
-;; Skewer is flexible and open to extension. The REPL in
-;; skewer-repl.el is a partial example of this. You can extend
+;; Skewer is flexible and open to extension. The REPL and the CSS and
+;; HTML minor modes are a partial examples of this. You can extend
 ;; skewer.js with your own request handlers and talk to them from
 ;; Emacs using `skewer-eval' (or `skewer-eval-synchronously') with
 ;; your own custom :type. The :type string chooses the dispatch
