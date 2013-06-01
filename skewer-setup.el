@@ -9,6 +9,8 @@
 
 ;;; Code:
 
+(load "skewer-mode-autoloads" nil t)
+
 ;;;###autoload
 (defun skewer-setup ()
   "Fully integrate Skewer into js2-mode, css-mode, and html-mode buffers."
