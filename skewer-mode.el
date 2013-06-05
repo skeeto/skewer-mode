@@ -344,6 +344,39 @@ callback. Use with caution."
           do (accept-process-output nil 0.01)
           finally (return result))))
 
+(defun skewer-apply (function args)
+  "Synchronously apply FUNCTION in the browser with the supplied
+arguments, returning the result. All ARGS must be printable by
+`json-encode'. For example,
+
+    (skewer-apply \"Math.atan2\" '(1 -2)) ; => 2.677945044588987
+
+Uncaught exceptions propagate to Emacs as an error."
+  (let ((specials '(("undefined" . nil)
+                    ("NaN" . 0.0e+NaN)
+                    ("Infinity" . 1.0e+INF)
+                    ("-Infinity" . -1.0e+INF))))
+    (let* ((expr (concat function "(" (mapconcat #'json-encode args ", ") ")"))
+           (result (skewer-eval-synchronously expr :verbose t))
+           (value (cdr (assoc 'value result))))
+      (if (skewer-success-p result)
+          (if (assoc value specials)
+              (cdr (assoc value specials))
+            (condition-case _
+                (json-read-from-string value)
+              (json-readtable-error value)))
+        (signal 'javascript
+                (list (cdr (assoc 'message (cdr (assoc'error result))))))))))
+
+(defun skewer-funcall (function &rest args)
+  "Synchronously call FUNCTION with the supplied ARGS. All ARGS
+must be printable by `json-read-from-string. For example,
+
+    (skewer-funcall \"Math.sin\" 0.5)  ; => 0.479425538604203
+
+Uncaught exceptions propagate to Emacs as an error."
+  (skewer-apply function args))
+
 (defun skewer--save-point (f &rest args)
   "Return a function that calls F with point at the current point."
   (let ((saved-point (point)))
