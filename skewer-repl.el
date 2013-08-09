@@ -88,7 +88,8 @@ buffer.")
   "Callback for logging messages to the REPL."
   (let* ((buffer (get-buffer "*skewer-repl*"))
          (face (cdr (assoc (cdr (assoc 'type log)) skewer-repl-types)))
-         (output (propertize (cdr (assoc 'value log)) 'font-lock-face face)))
+         (value (or (cdr (assoc 'value log)) "<unspecified error>"))
+         (output (propertize value 'font-lock-face face)))
     (when buffer
       (with-current-buffer buffer
         (save-excursion
