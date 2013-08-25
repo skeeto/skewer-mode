@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Wellons <mosquitopsu@gmail.com>
 ;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.5.0
+;; Version: 1.5.2
 ;; Package-Requires: ((simple-httpd "1.4.0") (js2-mode "20090723"))
 
 ;;; Commentary:
@@ -90,8 +90,11 @@
 
 ;;; History:
 
-;; Version 1.5.0: features
-;;   * No more automatic hook setup (see `skewer-setup').
+;; Version 1.5.2: small cleanup
+;;   * Add `skewer-apply' and `skewer-funall'
+;;   * Improved safeStringify
+;; Version 1.5.1: features
+;;   * No more automatic hook setup (see `skewer-setup')
 ;;   * Support for HTML interaction
 ;;   * Support for loading Bower packages
 ;;   * Drop jQuery dependency
