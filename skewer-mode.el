@@ -548,6 +548,41 @@ inconsistent buffer."
   (httpd-start)
   (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port)))
 
+;; PhantomJS
+
+(defvar phantomjs-program-name "/usr/bin/phantomjs"
+  "Path to the phantomjs executable.")
+
+(defvar skewer-phantomjs-processes ()
+  "List of phantomjs processes connected to Skewer.")
+
+(defun skewer-phantomjs-sentinel (proc event)
+  "Cleanup after phantomjs exits."
+  (setf foo event)
+  (when (some (lambda (s) (string-match-p s event))
+              '("finished" "abnormal" "killed"))
+    (delete-file (process-get proc 'tempfile))))
+
+;;;###autoload
+(defun skewer-run-phantomjs ()
+  "Connect an inferior PhantomJS process to Skewer, returning the process."
+  (interactive)
+  (let ((script (make-temp-file "phantomjs-"))
+        (url (format "http://0:%d/skewer/demo" httpd-port)))
+    (with-temp-buffer
+      (insert (format "require('webpage').create().open('%s')" url))
+      (write-region (point-min) (point-max) script)
+      (let ((proc (start-process "phantomjs" nil phantomjs-program-name script)))
+        (prog1 proc
+          (push proc skewer-phantomjs-processes)
+          (process-put proc 'tempfile script)
+          (set-process-sentinel proc 'skewer-phantomjs-sentinel))))))
+
+(defun skewer-phantomjs-kill ()
+  "Kill all inferior phantomjs processes connected to Skewer."
+  (interactive)
+  (mapc #'kill-process skewer-phantomjs-processes))
+
 ;; Local Variables:
 ;; lexical-binding: t
 ;; End:
