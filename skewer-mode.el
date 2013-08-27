@@ -567,12 +567,14 @@ inconsistent buffer."
 (defun skewer-run-phantomjs ()
   "Connect an inferior PhantomJS process to Skewer, returning the process."
   (interactive)
+  (httpd-start)
   (let ((script (make-temp-file "phantomjs-"))
         (url (format "http://0:%d/skewer/demo" httpd-port)))
     (with-temp-buffer
       (insert (format "require('webpage').create().open('%s')" url))
       (write-region (point-min) (point-max) script)
-      (let ((proc (start-process "phantomjs" nil phantomjs-program-name script)))
+      (let ((proc (start-process "phantomjs" nil
+                                 phantomjs-program-name script)))
         (prog1 proc
           (push proc skewer-phantomjs-processes)
           (process-put proc 'tempfile script)
