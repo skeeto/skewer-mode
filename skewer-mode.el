@@ -572,7 +572,7 @@ inconsistent buffer."
         (url (format "http://0:%d/skewer/demo" httpd-port)))
     (with-temp-buffer
       (insert (format "require('webpage').create().open('%s')" url))
-      (write-region (point-min) (point-max) script)
+      (write-region nil nil script nil 0)
       (let ((proc (start-process "phantomjs" nil
                                  phantomjs-program-name script)))
         (prog1 proc
