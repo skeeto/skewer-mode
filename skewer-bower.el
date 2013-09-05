@@ -170,9 +170,9 @@ if no configuration could be found."
 incomplete or incorrect bower configuration. Returns nil if
 guessing failed."
   (find-if (apply-partially #'skewer-bower-git-show package version)
-           (list (cdr (assoc 'main config))
-                 (concat package ".js")
-                 package)))
+           (remove nil (list (cdr (assoc 'main config))
+                             (concat package ".js")
+                             package))))
 
 ;;;###autoload
 (defun skewer-bower-load (package &optional version)
