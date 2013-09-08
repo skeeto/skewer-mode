@@ -1,11 +1,9 @@
-;;; skewer-mode.el --- live browser JavaScript and CSS interaction
+;;; skewer-mode.el --- live browser JavaScript, CSS, and HTML interaction
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Author: Christopher Wellons <mosquitopsu@gmail.com>
+;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/skewer-mode
-;; Version: 1.5.2
-;; Package-Requires: ((simple-httpd "1.4.0") (js2-mode "20090723"))
 
 ;;; Commentary:
 
