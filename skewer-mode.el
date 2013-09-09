@@ -88,6 +88,8 @@
 
 ;;; History:
 
+;; Version 1.5.3: features
+;;   * Add `skewer-run-phantomjs'
 ;; Version 1.5.2: small cleanup
 ;;   * Add `skewer-apply' and `skewer-funall'
 ;;   * Improved safeStringify
