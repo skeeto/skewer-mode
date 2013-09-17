@@ -223,10 +223,11 @@ callback. The response object is passed to the hook function.")
 
 (defun skewer-update-list-buffer ()
   "Revert the client list, due to an update."
-  (let ((list-buffer (get-buffer "*skewer-clients*")))
-    (when list-buffer
-      (with-current-buffer list-buffer
-        (revert-buffer)))))
+  (save-window-excursion
+    (let ((list-buffer (get-buffer "*skewer-clients*")))
+      (when list-buffer
+        (with-current-buffer list-buffer
+          (revert-buffer))))))
 
 ;;;###autoload
 (defun list-skewer-clients ()
