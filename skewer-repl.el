@@ -84,6 +84,15 @@ buffer.")
     ("error" . skewer-error-face))
   "Faces to use for different types of log messages.")
 
+(defun skewer-log-filename (log)
+  "Create log string for file if present"
+  (let ((fname (cdr (assoc 'filename log)))
+        (fline (cdr (assoc 'line log)))
+        (fcol (cdr (assoc 'column log))))
+    (if fname
+        (concat (format "\n    at %s:%s" fname fline) 
+                (if fcol (format ":%s" fcol))))))
+
 (defun skewer-post-log (log)
   "Callback for logging messages to the REPL."
   (let* ((buffer (get-buffer "*skewer-repl*"))
@@ -96,7 +105,22 @@ buffer.")
           (goto-char (point-max))
           (forward-line 0)
           (backward-char)
-          (insert (concat "\n" output "")))))))
+          (insert (concat "\n" output "" (skewer-log-filename log))))))))
+
+(defcustom skewer-path-strip-level 1
+  "Number of folders which will be stripped from url when discovering paths. 
+Use this to limit path matching to files in your filesystem. You may want to
+add some folders to `compilation-search-path', so matched files can be found."
+  :type 'number
+  :group 'skewer)
+
+(defun skewer-repl-mode-compilation-shell-hook ()
+  "Setup compilation shell minor mode for highlighting files"
+  (let ((error-re (format "^[ ]*at https?://[[:alpha:].-]+/\\(?:[^/]+/\\)\\{%d\\}\\([^:?#]+\\)\\(?:[?#][^:]*\\)?:\\([[:digit:]]+\\)\\(?::\\([[:digit:]]+\\)\\)?$" skewer-path-strip-level)))
+    (setq-local compilation-error-regexp-alist
+                (list (list error-re 1 2 3 2))))
+  (message "Local hook called %s" compilation-error-regexp-alist)
+  (compilation-shell-minor-mode 1))
 
 ;;;###autoload
 (defun skewer-repl--response-hook (response)
@@ -118,6 +142,7 @@ buffer.")
 (eval-after-load 'skewer-mode
   '(progn
      (add-hook 'skewer-response-hook #'skewer-repl--response-hook)
+     (add-hook 'skewer-repl-mode-hook #'skewer-repl-mode-compilation-shell-hook)
      (define-key skewer-mode-map (kbd "C-c C-z") #'skewer-repl)))
 
 (provide 'skewer-repl)

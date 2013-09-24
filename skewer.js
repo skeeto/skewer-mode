@@ -344,7 +344,10 @@ skewer.error = function(event) {
     "use strict";
     var log = {
         type: "error",
-        value: event.message
+        value: event.message,
+        filename: event.filename,
+        line: event.lineno,
+        column: event.column
     };
     skewer.postJSON(skewer.host + "/skewer/post", log);
 };
