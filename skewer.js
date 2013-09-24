@@ -10,6 +10,25 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
+    var timer,
+        connection;
+    function watch(xhr) {
+        connection = xhr;
+        connection.onerror = onerror;
+        clearTimeout(timer);
+        timer = setTimeout(ontimeout, 5000);
+    }
+    function ontimeout() {
+        connection.abort();
+        watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
+    };
+    function onerror(e) {
+        skewer.error(new Error('REPL long polling connection lost. Retry after 20 sec:' + e.target.status));
+        setTimeout(function() {
+            skewer.log('Trying to restore REPL polling connection');
+            watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
+        }, 20000);
+    }
     function callback(request) {
         var result = skewer.fn[request.type](request);
         if (result) {
@@ -19,12 +38,12 @@ function skewer() {
                 status: 'success',
                 value: ''
             }, result);
-            skewer.postJSON(skewer.host + "/skewer/post", result, callback);
+            watch(skewer.postJSON(skewer.host + "/skewer/post", result, callback));
         } else {
-            skewer.getJSON(skewer.host + "/skewer/get", callback);
+            watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
         }
     };
-    skewer.getJSON(skewer.host + "/skewer/get", callback);
+    watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
 }
 
 /**
@@ -41,6 +60,7 @@ skewer.getJSON = function(url, callback) {
     };
     xhr.open('GET', url, true);
     xhr.send();
+    return xhr;
 };
 
 /**
@@ -59,6 +79,7 @@ skewer.postJSON = function(url, object, callback) {
     xhr.open('POST', url, true);
     xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
     xhr.send(JSON.stringify(object));
+    return xhr;
 };
 
 /**
