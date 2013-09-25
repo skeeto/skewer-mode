@@ -54,7 +54,7 @@
   "Move to the end of the current declaration and return point."
   (skewer-css-end-of-declaration)
   (re-search-backward ":")
-  (css-backward-sexp 1)
+  (backward-sexp 1)
   (point))
 
 (defun skewer-css-selectors ()
