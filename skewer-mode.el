@@ -559,7 +559,6 @@ inconsistent buffer."
 
 (defun skewer-phantomjs-sentinel (proc event)
   "Cleanup after phantomjs exits."
-  (setf foo event)
   (when (some (lambda (s) (string-match-p s event))
               '("finished" "abnormal" "killed"))
     (delete-file (process-get proc 'tempfile))))
