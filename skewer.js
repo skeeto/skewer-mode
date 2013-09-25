@@ -10,25 +10,6 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    var timer,
-        connection;
-    function watch(xhr) {
-        connection = xhr;
-        connection.onerror = onerror;
-        clearTimeout(timer);
-        timer = setTimeout(ontimeout, 5000);
-    }
-    function ontimeout() {
-        connection.abort();
-        watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
-    };
-    function onerror(e) {
-        skewer.error(new Error('REPL long polling connection lost. Retry after 20 sec:' + e.target.status));
-        setTimeout(function() {
-            skewer.log('Trying to restore REPL polling connection');
-            watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
-        }, 20000);
-    }
     function callback(request) {
         var result = skewer.fn[request.type](request);
         if (result) {
@@ -38,13 +19,28 @@ function skewer() {
                 status: 'success',
                 value: ''
             }, result);
-            watch(skewer.postJSON(skewer.host + "/skewer/post", result, callback));
+            skewer.postJSON(skewer.host + "/skewer/post", result, callback);
         } else {
-            watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
+            skewer.getJSON(skewer.host + "/skewer/get", callback);
         }
     };
-    watch(skewer.getJSON(skewer.host + "/skewer/get", callback));
+    skewer.getJSON(skewer.host + "/skewer/get", callback);
 }
+
+skewer.createXhr = function(callback) {
+   var xhr = new XMLHttpRequest();
+   xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+         if (xhr.status === 200) {
+            callback && callback(JSON.parse(xhr.responseText));
+         } else {
+            callback && skewer.getJSON(skewer.host + "/skewer/get", callback);
+         }
+      }
+   };
+   skewer.lastRequest = xhr;
+   return xhr;
+};
 
 /**
  * Get a JSON-encoded object from a server.
@@ -52,15 +48,9 @@ function skewer() {
  * @param {Function} [callback] The callback to receive a response object
  */
 skewer.getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            callback(JSON.parse(xhr.responseText));
-        }
-    };
+    var xhr = skewer.createXhr(callback);
     xhr.open('GET', url, true);
     xhr.send();
-    return xhr;
 };
 
 /**
@@ -70,16 +60,10 @@ skewer.getJSON = function(url, callback) {
  * @param {Function} [callback] The callback to receive a response object
  */
 skewer.postJSON = function(url, object, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (callback && xhr.readyState === 4 && xhr.status === 200) {
-            callback(JSON.parse(xhr.responseText));
-        }
-    };
+    var xhr = skewer.createXhr(callback);
     xhr.open('POST', url, true);
     xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
     xhr.send(JSON.stringify(object));
-    return xhr;
 };
 
 /**
