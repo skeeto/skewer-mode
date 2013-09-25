@@ -185,17 +185,16 @@ callback. The response object is passed to the hook function.")
     (let ((message (pop skewer-queue))
           (sent nil))
       (while skewer-clients
-        (condition-case error-case
-            (progn
-              (let ((proc (skewer-client-proc (pop skewer-clients))))
-                (with-temp-buffer
-                  (insert (json-encode message))
-                  (httpd-send-header proc "text/plain" 200
-                                     :Cache-Control "no-cache"
-                                     :Access-Control-Allow-Origin "*")))
-              (setq skewer--last-timestamp (float-time))
-              (setq sent t))
-          (error nil)))
+        (ignore-errors
+          (progn
+            (let ((proc (skewer-client-proc (pop skewer-clients))))
+              (with-temp-buffer
+                (insert (json-encode message))
+                (httpd-send-header proc "text/plain" 200
+                                   :Cache-Control "no-cache"
+                                   :Access-Control-Allow-Origin "*")))
+            (setq skewer--last-timestamp (float-time))
+            (setq sent t))))
       (if (not sent) (push message skewer-queue)))
     (skewer-process-queue)))
 
@@ -251,13 +250,12 @@ callback. The response object is passed to the hook function.")
   (goto-char (point-max))
   (run-hooks 'skewer-js-hook))
 
-(defun httpd/skewer/get (proc path query req &rest args)
+(defun httpd/skewer/get (proc _path _query req &rest _args)
   (skewer-queue-client proc req))
 
-(defun httpd/skewer/post (proc path query req &rest args)
+(defun httpd/skewer/post (proc _path _query req &rest _args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (id (cdr (assoc 'id result)))
-         (type (cdr (assoc 'type result)))
          (callback (get-cache-table id skewer-callbacks)))
     (setq skewer--last-timestamp (float-time))
     (when callback
