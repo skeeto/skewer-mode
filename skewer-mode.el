@@ -262,11 +262,7 @@ callback. The response object is passed to the hook function.")
     (setq skewer--last-timestamp (float-time))
     (when callback
       (funcall callback result))
-    (if id
-        (skewer-queue-client proc req)
-      (with-temp-buffer
-        (httpd-send-header proc "text/plain" 200
-                           :Access-Control-Allow-Origin "*")))
+    (skewer-queue-client proc req)
     (dolist (hook skewer-response-hook)
       (funcall hook result))))
 

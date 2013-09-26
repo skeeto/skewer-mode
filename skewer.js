@@ -10,7 +10,9 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    function callback(request) {
+    var polling, reading;
+
+    function handleReqestFromEmacs(request) {
         var result = skewer.fn[request.type](request);
         if (result) {
             result = skewer.extend({
@@ -19,51 +21,84 @@ function skewer() {
                 status: 'success',
                 value: ''
             }, result);
-            skewer.postJSON(skewer.host + "/skewer/post", result, callback);
-        } else {
-            skewer.getJSON(skewer.host + "/skewer/get", callback);
+            skewer.send(result);
         }
-    };
-    skewer.getJSON(skewer.host + "/skewer/get", callback);
+    }
+
+    function onstatechange(event) {
+        var xhr = event.target;
+        switch (xhr.readyState) {
+        case 1:
+            polling = true;
+            break;
+        case 2:
+            polling = false;
+            break;
+        case 4:
+            if (xhr.status === 200) {
+                if (xhr.responseText) {
+                    handleReqestFromEmacs(JSON.parse(xhr.responseText));
+                }
+            } else if (!xhr.aborted) {
+                if (xhr.status < 500 ) { // No point of retrying on 40x and 30x errors
+                    return;
+                } else if (xhr.status !== 504) { // On all errors from 50x, except 504 retry after a minute.
+                    setTimeout(flush, 1000);     // On 504 retry automatically, because browser was already waiting its timeout.
+                    return;
+                }
+            }
+            flush();
+        }
+    }
+
+    function get() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = onstatechange;
+        xhr.open('GET', skewer.host + "/skewer/get", true);
+        xhr.send();
+    }
+
+    function post(message) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = onstatechange;
+        xhr.open('POST', skewer.host + "/skewer/post", true);
+        xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
+        xhr.send(message);
+    }
+
+    function flush() {
+        var message = skewer._queue.shift();
+
+        if (!polling) {
+            if (message) {
+                post(message);
+            } else {
+                get(); // There is no reason to fire empty get if there is already some connection polling
+            }
+        }
+    }
+
+    function sendWithFlush(object) {
+        skewer._queue.push(JSON.stringify(object));
+        flush();
+    }
+
+    skewer.send = sendWithFlush;
+    get();
 }
 
-skewer.createXhr = function(callback) {
-   var xhr = new XMLHttpRequest();
-   xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-         if (xhr.status === 200) {
-            callback && callback(JSON.parse(xhr.responseText));
-         } else {
-            callback && skewer.getJSON(skewer.host + "/skewer/get", callback);
-         }
-      }
-   };
-   skewer.lastRequest = xhr;
-   return xhr;
-};
-
 /**
- * Get a JSON-encoded object from a server.
- * @param {String} url The location of the remote server
- * @param {Function} [callback] The callback to receive a response object
+ * Queue with messages to server. You should not use it directly, rather use {@link send} method
+ * @private
  */
-skewer.getJSON = function(url, callback) {
-    var xhr = skewer.createXhr(callback);
-    xhr.open('GET', url, true);
-    xhr.send();
-};
+skewer._queue = [];
 
 /**
- * Send a JSON-encoded object to a server.
- * @param {String} url The location of the remote server
+ * Send a JSON-encoded object to a server
  * @param {Object} object The object to transmit to the server
- * @param {Function} [callback] The callback to receive a response object
  */
-skewer.postJSON = function(url, object, callback) {
-    var xhr = skewer.createXhr(callback);
-    xhr.open('POST', url, true);
-    xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
-    xhr.send(JSON.stringify(object));
+skewer.send = function(object) {
+    skewer._queue.push(JSON.stringify(object));
 };
 
 /**
@@ -334,11 +369,10 @@ skewer.safeStringify = function (object, verbose) {
  */
 skewer.log = function(message) {
     "use strict";
-    var log = {
+    skewer.send({
         type: "log",
         value: skewer.safeStringify(message, true)
-    };
-    skewer.postJSON(skewer.host + "/skewer/post", log);
+    });
 };
 
 /**
@@ -347,11 +381,10 @@ skewer.log = function(message) {
  */
 skewer.error = function(event) {
     "use strict";
-    var log = {
-        type: "error",
+    skewer.send({
+        type: "error",              
         value: event.message
-    };
-    skewer.postJSON(skewer.host + "/skewer/post", log);
+    });
 };
 
 /**
