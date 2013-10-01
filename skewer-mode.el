@@ -177,7 +177,15 @@ callback. The response object is passed to the hook function.")
 
 (defstruct skewer-client
   "A client connection awaiting a response."
-  proc agent)
+  proc cid agent)
+
+(defmacro skewer--with-response-buffer (proc status &rest body)
+  `(with-temp-buffer
+     ,@body
+     (httpd-send-header ,proc "text/plain" ,status
+                        :Cache-Control "no-cache"
+                        :Keep-Alive: "timeout=300, max=2"
+                        :Access-Control-Allow-Origin "*")))
 
 (defun skewer-process-queue ()
   "Send all queued messages to clients."
@@ -188,11 +196,8 @@ callback. The response object is passed to the hook function.")
         (condition-case error-case
             (progn
               (let ((proc (skewer-client-proc (pop skewer-clients))))
-                (with-temp-buffer
-                  (insert (json-encode message))
-                  (httpd-send-header proc "text/plain" 200
-                                     :Cache-Control "no-cache"
-                                     :Access-Control-Allow-Origin "*")))
+                (skewer--with-response-buffer proc 200
+                  (insert (json-encode message))))
               (setq skewer--last-timestamp (float-time))
               (setq sent t))
           (error nil)))
@@ -237,10 +242,25 @@ callback. The response object is passed to the hook function.")
   (skewer-clients-mode)
   (tabulated-list-print))
 
+(defun skewer-close-client (cid)
+  "Close all active connections from client with given id"
+  (setq skewer-clients
+    (delq nil
+      (mapcar
+        (lambda (client)
+          (if (equal (skewer-client-cid client) cid)
+              (condition-case error-case
+                  (skewer--with-response-buffer (skewer-client-proc client) 200 (progn ()))
+                (error nil))
+            client))
+        skewer-clients))))
+
 (defun skewer-queue-client (proc req)
   "Add a client to the queue, given the HTTP header."
-  (let ((agent (second (assoc "User-Agent" req))))
-    (push (make-skewer-client :proc proc :agent agent) skewer-clients))
+  (let ((agent (second (assoc "User-Agent" req)))
+        (cid (second (assoc "X-Skewer-Client-Id" req))))
+    (skewer-close-client cid)
+    (push (make-skewer-client :proc proc :cid cid :agent agent) skewer-clients))
   (skewer-update-list-buffer)
   (skewer-process-queue))
 

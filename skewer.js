@@ -10,7 +10,8 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    var polling, reading;
+    var polling = 0,
+        cid = (Math.random() * Math.pow(16, 8)).toString(16);
 
     function handleReqestFromEmacs(request) {
         var result = skewer.fn[request.type](request);
@@ -29,12 +30,10 @@ function skewer() {
         var xhr = event.target;
         switch (xhr.readyState) {
         case 1:
-            polling = true;
-            break;
-        case 2:
-            polling = false;
+            polling += 1;
             break;
         case 4:
+            polling -= 1;
             if (xhr.status === 200) {
                 if (xhr.responseText) {
                     handleReqestFromEmacs(JSON.parse(xhr.responseText));
@@ -55,6 +54,7 @@ function skewer() {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('GET', skewer.host + "/skewer/get", true);
+        xhr.setRequestHeader("X-Skewer-Client-Id", cid);
         xhr.send();
     }
 
@@ -62,19 +62,18 @@ function skewer() {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('POST', skewer.host + "/skewer/post", true);
+        xhr.setRequestHeader("X-Skewer-Client-Id", cid);
         xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
-        xhr.send(message);
+         xhr.send(message);
     }
 
     function flush() {
-        var message = skewer._queue.shift();
-
-        if (!polling) {
-            if (message) {
-                post(message);
-            } else {
-                get(); // There is no reason to fire empty get if there is already some connection polling
+        if (skewer._queue.length > 0) {
+            if (polling <= 1) {
+                post(skewer._queue.shift());
             }
+        } else if (!polling) {
+            get(); // There is no reason to fire empty get if there is already some connection polling
         }
     }
 
