@@ -1,4 +1,4 @@
-;;; skewer-mode.el --- live browser JavaScript, CSS, and HTML interaction
+;;; skewer-mode.el --- live browser JavaScript, CSS, and HTML interaction -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -582,10 +582,6 @@ inconsistent buffer."
   "Kill all inferior phantomjs processes connected to Skewer."
   (interactive)
   (mapc #'kill-process skewer-phantomjs-processes))
-
-;; Local Variables:
-;; lexical-binding: t
-;; End:
 
 (provide 'skewer-mode)
 
