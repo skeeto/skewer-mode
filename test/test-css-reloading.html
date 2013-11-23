@@ -1,0 +1,29 @@
+<!-- A very simple testbed for Skewer's stylesheet reloading feature.
+
+Pop this open in your browser of choice and try live-editing the stylesheets.
+
+Note that subdir/base.css is there to verify that we get the right link tag,
+even in the face of matching filenames.
+
+ -->
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="base.css" />
+        <link rel="stylesheet" type="text/css" href="subdir/base.css" />
+        <link rel="stylesheet" type="text/css" href="overrides.css" />
+    </head>
+
+    <body>
+        <div class="base-styles">
+            <p>This should be boring.</p>
+        </div>
+
+        <div class="base-styles subdir-base-styles">
+            <p>This should get the subdir's styles.</p>
+        </div>
+
+        <div class="base-styles overrides">
+            <p>This, on the other hand, should be customized.</p>
+        </div>
+    </body>
+</html>

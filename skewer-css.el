@@ -10,6 +10,7 @@
 ;; * C-x C-e -- `skewer-css-eval-current-declaration'
 ;; * C-M-x   -- `skewer-css-eval-current-rule'
 ;; * C-c C-k -- `skewer-css-eval-buffer'
+;; * C-c C-r -- `skewer-css-reload-buffer'
 
 ;; These functions assume there are no comments within a CSS rule,
 ;; *especially* not within a declaration. In the former case, if you
@@ -106,6 +107,23 @@
   (interactive)
   (skewer-css (buffer-substring-no-properties (point-min) (point-max))))
 
+(defun skewer-css-reload-buffer ()
+  "Reload the current buffer IF it is already included as a link tag."
+  (interactive)
+
+  (save-buffer)
+
+  ;; TODO I tried to use skewer-apply, but it said skewer.reloadStylesheet was
+  ;; not a valid function.
+  (skewer-eval (concat "skewer.reloadStylesheet(\"" (buffer-file-name) "\");")))
+
+(defun skewer-css-add-reload-stylesheet-js ()
+  "Hook function to insert JS needed to reload a CSS file on demand."
+  (insert-file-contents
+   (expand-file-name "skewer-reload-stylesheet.js" skewer-data-root)))
+
+(add-hook 'skewer-js-hook 'skewer-css-add-reload-stylesheet-js)
+
 ;; Minor mode definition
 
 (defvar skewer-css-mode-map
@@ -113,7 +131,8 @@
     (prog1 map
       (define-key map (kbd "C-x C-e") 'skewer-css-eval-current-declaration)
       (define-key map (kbd "C-M-x") 'skewer-css-eval-current-rule)
-      (define-key map (kbd "C-c C-k") 'skewer-css-eval-buffer)))
+      (define-key map (kbd "C-c C-k") 'skewer-css-eval-buffer)
+      (define-key map (kbd "C-c C-r") 'skewer-css-reload-buffer)))
   "Keymap for skewer-css-mode.")
 
 ;;;###autoload
