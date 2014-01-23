@@ -88,6 +88,9 @@
 
 ;;; History:
 
+;; Version 1.6.0: fixes
+;;   * Bring up to speed with Emacs 24.3
+;;   * Switch to cl-lib from cl
 ;; Version 1.5.3: features
 ;;   * Add `skewer-run-phantomjs'
 ;; Version 1.5.2: small cleanup
