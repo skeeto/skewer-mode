@@ -1,4 +1,4 @@
-;;; skewer-html.el --- skewer support for live-interaction HTML
+;;; skewer-html.el --- skewer support for live-interaction HTML -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

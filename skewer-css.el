@@ -1,4 +1,4 @@
-;;; skewer-css.el --- skewer support for live-interaction CSS
+;;; skewer-css.el --- skewer support for live-interaction CSS -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

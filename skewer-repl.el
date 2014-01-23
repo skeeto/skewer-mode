@@ -1,4 +1,4 @@
-;;; skewer-repl.el --- create a REPL in a visiting browser
+;;; skewer-repl.el --- create a REPL in a visiting browser -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

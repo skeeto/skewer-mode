@@ -1,4 +1,4 @@
-;;; cache-table.el --- a hash table with expiring entries
+;;; cache-table.el --- a hash table with expiring entries -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
