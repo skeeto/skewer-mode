@@ -123,7 +123,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'json)
 (require 'url-util)
 (require 'simple-httpd)
@@ -165,7 +165,7 @@ callback. The response object is passed to the hook function.")
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
 
-(defvar skewer-callbacks (make-cache-table skewer-timeout :test 'equal)
+(defvar skewer-callbacks (cache-table-create skewer-timeout :test 'equal)
   "Maps evaluation IDs to local callbacks.")
 
 (defvar skewer-queue ()
@@ -175,7 +175,7 @@ callback. The response object is passed to the hook function.")
   "Timestamp of the last browser response. Use
 `skewer-last-seen-seconds' to access this.")
 
-(defstruct skewer-client
+(cl-defstruct skewer-client
   "A client connection awaiting a response."
   proc agent)
 
@@ -200,11 +200,11 @@ callback. The response object is passed to the hook function.")
 
 (defun skewer-clients-tabulate ()
   "Prepare client list for tabulated-list-mode."
-  (loop for client in skewer-clients collect
-        (let ((proc (skewer-client-proc client))
-              (agent (skewer-client-agent client)))
-          (destructuring-bind (host port) (process-contact proc)
-            `(,client [,host ,(format "%d" port) ,agent])))))
+  (cl-loop for client in skewer-clients collect
+           (let ((proc (skewer-client-proc client))
+                 (agent (skewer-client-agent client)))
+             (cl-destructuring-bind (host port) (process-contact proc)
+               `(,client [,host ,(format "%d" port) ,agent])))))
 
 (define-derived-mode skewer-clients-mode tabulated-list-mode "skewer-clients"
   "Mode for listing browsers attached to Emacs for skewer-mode."
@@ -238,7 +238,7 @@ callback. The response object is passed to the hook function.")
 
 (defun skewer-queue-client (proc req)
   "Add a client to the queue, given the HTTP header."
-  (let ((agent (second (assoc "User-Agent" req))))
+  (let ((agent (cl-second (assoc "User-Agent" req))))
     (push (make-skewer-client :proc proc :agent agent) skewer-clients))
   (skewer-update-list-buffer)
   (skewer-process-queue))
@@ -256,7 +256,7 @@ callback. The response object is passed to the hook function.")
 (defun httpd/skewer/post (proc _path _query req &rest _args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
          (id (cdr (assoc 'id result)))
-         (callback (get-cache-table id skewer-callbacks)))
+         (callback (cache-table-get id skewer-callbacks)))
     (setq skewer--last-timestamp (float-time))
     (when callback
       (funcall callback result))
@@ -317,7 +317,7 @@ callback. The response object is passed to the hook function.")
 
 ;; Evaluation functions
 
-(defun* skewer-eval (string &optional callback
+(cl-defun skewer-eval (string &optional callback
                             &key verbose strict (type "eval") extra)
   "Evaluate STRING in the waiting browsers, giving the result to CALLBACK.
 
@@ -333,18 +333,18 @@ callback. The response object is passed to the hook function.")
                     (strict . ,strict)
                     ,@extra)))
     (prog1 request
-      (setf (get-cache-table id skewer-callbacks) callback)
+      (setf (cache-table-get id skewer-callbacks) callback)
       (setq skewer-queue (append skewer-queue (list request)))
       (skewer-process-queue))))
 
 (defun skewer-eval-synchronously (string &rest args)
   "Just like `skewer-eval' but synchronously, so don't provide a
 callback. Use with caution."
-  (lexical-let ((result nil))
+  (let ((result nil))
     (apply #'skewer-eval string (lambda (v) (setq result v)) args)
-    (loop until result
-          do (accept-process-output nil 0.01)
-          finally (return result))))
+    (cl-loop until result
+             do (accept-process-output nil 0.01)
+             finally (return result))))
 
 (defun skewer-apply (function args)
   "Synchronously apply FUNCTION in the browser with the supplied
@@ -387,7 +387,7 @@ Uncaught exceptions propagate to Emacs as an error."
         (goto-char saved-point)
         (apply f (append args more))))))
 
-(defun* skewer-ping ()
+(defun skewer-ping ()
   "Ping the browser to test that it's still alive."
   (unless (null skewer-clients) ; don't queue pings
     (skewer-eval (prin1-to-string (float-time)) nil :type "ping")))
@@ -442,7 +442,7 @@ result into the current buffer."
     (if js2-mode-buffer-dirty-p
         (js2-mode-wait-for-parse
          (skewer--save-point #'skewer-eval-last-expression))
-      (destructuring-bind (string start end) (skewer-get-last-expression)
+      (cl-destructuring-bind (string start end) (skewer-get-last-expression)
         (skewer-flash-region start end)
         (skewer-eval string #'skewer-post-minibuffer)))))
 
@@ -468,13 +468,13 @@ waiting browser."
   (interactive)
   (if js2-mode-buffer-dirty-p
       (js2-mode-wait-for-parse (skewer--save-point #'skewer-eval-defun))
-    (destructuring-bind (string start end) (skewer-get-defun)
+    (cl-destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (skewer-eval string #'skewer-post-minibuffer))))
 
 ;; Print last expression
 
-(defvar skewer-eval-print-map (make-cache-table skewer-timeout :test 'equal)
+(defvar skewer-eval-print-map (cache-table-create skewer-timeout :test 'equal)
   "A mapping of evaluation IDs to insertion points.")
 
 (defun skewer-post-print (result)
@@ -482,7 +482,7 @@ waiting browser."
   (if (not (skewer-success-p result))
       (skewer-post-minibuffer result)
     (let* ((id (cdr (assoc 'id result)))
-           (pos (get-cache-table id skewer-eval-print-map)))
+           (pos (cache-table-get id skewer-eval-print-map)))
       (when pos
         (with-current-buffer (car pos)
           (goto-char (cdr pos))
@@ -495,32 +495,32 @@ waiting browser and insert the result in the buffer at point."
   (if js2-mode-buffer-dirty-p
       (js2-mode-wait-for-parse
        (skewer--save-point #'skewer-eval-print-last-expression))
-    (destructuring-bind (string start end) (skewer-get-defun)
+    (cl-destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
       (insert "\n")
       (let* ((request (skewer-eval string #'skewer-post-print :verbose t))
              (id (cdr (assoc 'id request)))
              (pos (cons (current-buffer) (point))))
-        (setf (get-cache-table id skewer-eval-print-map) pos)))))
+        (setf (cache-table-get id skewer-eval-print-map) pos)))))
 
 ;; Script loading
 
-(defvar skewer-hosted-scripts (make-cache-table skewer-timeout)
+(defvar skewer-hosted-scripts (cache-table-create skewer-timeout)
   "Map of hosted scripts to IDs.")
 
 (defun skewer-host-script (string)
   "Host script STRING from the script servlet, returning the script ID."
   (let ((id (random most-positive-fixnum)))
     (prog1 id
-      (setf (get-cache-table id skewer-hosted-scripts) string))))
+      (setf (cache-table-get id skewer-hosted-scripts) string))))
 
 (defun skewer-load-buffer ()
   "Load the entire current buffer into the browser. A snapshot of
 the buffer is hosted so that browsers visiting late won't see an
 inconsistent buffer."
   (interactive)
-  (lexical-let ((id (skewer-host-script (buffer-string)))
-                (buffer-name (buffer-name)))
+  (let ((id (skewer-host-script (buffer-string)))
+        (buffer-name (buffer-name)))
     (skewer-eval (format "/skewer/script/%d/%s"
                          id (url-hexify-string buffer-name))
                  (lambda (_) (message "%s loaded" buffer-name))
@@ -528,7 +528,7 @@ inconsistent buffer."
 
 (defservlet skewer/script text/javascript (path)
   (let ((id (string-to-number (nth 3 (split-string path "/")))))
-    (insert (get-cache-table id skewer-hosted-scripts ""))))
+    (insert (cache-table-get id skewer-hosted-scripts ""))))
 
 ;; Define the minor mode
 
@@ -557,8 +557,8 @@ inconsistent buffer."
 
 (defun skewer-phantomjs-sentinel (proc event)
   "Cleanup after phantomjs exits."
-  (when (some (lambda (s) (string-match-p s event))
-              '("finished" "abnormal" "killed"))
+  (when (cl-some (lambda (s) (string-match-p s event))
+                 '("finished" "abnormal" "killed"))
     (delete-file (process-get proc 'tempfile))))
 
 ;;;###autoload

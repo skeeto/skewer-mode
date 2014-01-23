@@ -71,7 +71,7 @@ buffer.")
   (message "REPL strict mode %s"
            (if skewer-repl-strict-p "enabled" "disabled")))
 
-(defun skewer-input-sender (proc input)
+(defun skewer-input-sender (_ input)
   "REPL comint handler."
   (skewer-eval input 'skewer-post-repl
                :verbose t :strict skewer-repl-strict-p))
