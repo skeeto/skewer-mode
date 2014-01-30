@@ -18,6 +18,8 @@ Dependencies:
  * [simple-httpd][simple-httpd] (available on MELPA)
  * [js2-mode][js2-mode] (available on ELPA)
 
+Skewer requires Emacs 24.3 or later.
+
 ## Usage
 
 ### Quick version

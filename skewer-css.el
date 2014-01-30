@@ -1,4 +1,4 @@
-;;; skewer-css.el --- skewer support for live-interaction CSS
+;;; skewer-css.el --- skewer support for live-interaction CSS -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -31,12 +31,12 @@
 (defun skewer-css-beginning-of-rule ()
   "Move to the beginning of the current rule and return point."
   (skewer-css-end-of-rule)
-  (let ((end (re-search-backward "{")))
-    (when (re-search-backward "[}/]" nil 'start)
-      (forward-char))
-    (re-search-forward "[^ \t\n]")
-    (backward-char)
-    (point)))
+  (re-search-backward "{")
+  (when (re-search-backward "[}/]" nil 'start)
+    (forward-char))
+  (re-search-forward "[^ \t\n]")
+  (backward-char)
+  (point))
 
 (defun skewer-css-end-of-rule ()
   "Move to the end of the current rule and return point."
@@ -54,7 +54,7 @@
   "Move to the end of the current declaration and return point."
   (skewer-css-end-of-declaration)
   (re-search-backward ":")
-  (css-backward-sexp 1)
+  (backward-sexp 1)
   (point))
 
 (defun skewer-css-selectors ()

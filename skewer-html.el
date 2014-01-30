@@ -1,4 +1,4 @@
-;;; skewer-html.el --- skewer support for live-interaction HTML
+;;; skewer-html.el --- skewer support for live-interaction HTML -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -16,7 +16,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'sgml-mode)
 (require 'skewer-mode)
 
@@ -38,33 +38,34 @@
     (let ((tag (car (last (sgml-get-context)))))
       (if (null tag)
           1
-        (loop with start = (sgml-tag-name tag)
-              with stop = (save-excursion (sgml-get-context) (point))
-              with n = 1
-              do (sgml-skip-tag-backward 1)
-              while (> (point) stop)
-              when (equal start (sgml-tag-name (skewer-html--tag-after-point)))
-              do (incf n)
-              finally (return n))))))
+        (cl-loop with start = (sgml-tag-name tag)
+                 with stop = (save-excursion (sgml-get-context) (point))
+                 with n = 1
+                 do (sgml-skip-tag-backward 1)
+                 while (> (point) stop)
+                 when (equal start (sgml-tag-name
+                                    (skewer-html--tag-after-point)))
+                 do (cl-incf n)
+                 finally (return n))))))
 
 (defun skewer-html-compute-tag-ancestry ()
   "Compute the ancestry chain at point."
   (save-excursion
     (nreverse
-     (loop for nth = (skewer-html-compute-tag-nth)
-           for tag = (car (last (sgml-get-context)))
-           while tag
-           for name = (skewer-html--cleanup (sgml-tag-name tag))
-           for type = (sgml-tag-type tag)
-           when (not (or (string= name "html")
-                         (eq type 'close)))
-           collect (list name nth)))))
+     (cl-loop for nth = (skewer-html-compute-tag-nth)
+              for tag = (car (last (sgml-get-context)))
+              while tag
+              for name = (skewer-html--cleanup (sgml-tag-name tag))
+              for type = (sgml-tag-type tag)
+              when (not (or (string= name "html")
+                            (eq type 'close)))
+              collect (list name nth)))))
 
 (defun skewer-html-compute-selector ()
   "Compute the selector for exactly the tag around point."
   (let ((ancestry (skewer-html-compute-tag-ancestry)))
     (mapconcat (lambda (tag)
-                 (format "%s:nth-of-type(%d)" (first tag) (second tag)))
+                 (format "%s:nth-of-type(%d)" (cl-first tag) (cl-second tag)))
                ancestry " > ")))
 
 ;; Fetching
@@ -85,7 +86,7 @@
 
 (defun skewer-html-eval (string ancestry &optional append)
   "Load HTML into a selector, optionally appending."
-  (let ((ancestry* (coerce ancestry 'vector)))  ; for JSON
+  (let ((ancestry* (cl-coerce ancestry 'vector)))  ; for JSON
     (skewer-eval string nil :type "html" :extra `((ancestry . ,ancestry*)
                                                   (append   . ,append)))))
 
@@ -95,8 +96,8 @@
   (let ((ancestry (skewer-html-compute-tag-ancestry)))
     (save-excursion
       ;; Move to beginning of opening tag
-      (loop for tag = (car (last (sgml-get-context)))
-            while (and tag (eq 'close (sgml-tag-type tag))))
+      (cl-loop for tag = (car (last (sgml-get-context)))
+               while (and tag (eq 'close (sgml-tag-type tag))))
       (let* ((beg (progn (point)))
              (end (progn (sgml-skip-tag-forward 1) (point)))
              (region (buffer-substring-no-properties beg end)))

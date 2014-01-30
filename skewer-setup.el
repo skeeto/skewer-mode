@@ -1,4 +1,4 @@
-;;; skewer-setup.el --- automatic setup for the Skewer minor modes
+;;; skewer-setup.el --- automatic setup for the Skewer minor modes -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

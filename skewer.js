@@ -382,7 +382,10 @@ skewer.error = function(event) {
     "use strict";
     skewer.send({
         type: "error",              
-        value: event.message
+        value: event.message,
+        filename: event.filename,
+        line: event.lineno,
+        column: event.column
     });
 };
 

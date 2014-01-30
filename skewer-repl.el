@@ -1,4 +1,4 @@
-;;; skewer-repl.el --- create a REPL in a visiting browser
+;;; skewer-repl.el --- create a REPL in a visiting browser -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -8,9 +8,15 @@
 ;; switch to the REPL buffer and evaluate code. Use
 ;; `skewer-repl-toggle-strict-mode' to turn strict mode on and off.
 
+;; If `compilation-search-path' is set up properly, along with
+;; `skewer-path-strip-level', asynchronous errors will provide
+;; clickable error messages that will take you to the source file of
+;; the error. This is done using `compilation-shell-minor-mode'.
+
 ;;; Code:
 
 (require 'comint)
+(require 'compile)
 (require 'skewer-mode)
 
 (defcustom skewer-repl-strict-p nil
@@ -65,7 +71,7 @@ buffer.")
   (message "REPL strict mode %s"
            (if skewer-repl-strict-p "enabled" "disabled")))
 
-(defun skewer-input-sender (proc input)
+(defun skewer-input-sender (_ input)
   "REPL comint handler."
   (skewer-eval input 'skewer-post-repl
                :verbose t :strict skewer-repl-strict-p))
@@ -84,6 +90,15 @@ buffer.")
     ("error" . skewer-error-face))
   "Faces to use for different types of log messages.")
 
+(defun skewer-log-filename (log)
+  "Create a log string for the source file in LOG if present."
+  (let ((name (cdr (assoc 'filename log)))
+        (line (cdr (assoc 'line log)))
+        (column (cdr (assoc 'column log))))
+    (when name
+      (concat (format "\n    at %s:%s" name line)
+              (if column (format ":%s" column))))))
+
 (defun skewer-post-log (log)
   "Callback for logging messages to the REPL."
   (let* ((buffer (get-buffer "*skewer-repl*"))
@@ -96,7 +111,21 @@ buffer.")
           (goto-char (point-max))
           (forward-line 0)
           (backward-char)
-          (insert (concat "\n" output "")))))))
+          (insert (concat "\n" output (skewer-log-filename log))))))))
+
+(defcustom skewer-path-strip-level 1
+  "Number of folders which will be stripped from url when discovering paths.
+Use this to limit path matching to files in your filesystem. You
+may want to add some folders to `compilation-search-path', so
+matched files can be found."
+  :type 'number
+  :group 'skewer)
+
+(defun skewer-repl-mode-compilation-shell-hook ()
+  "Setup compilation shell minor mode for highlighting files"
+  (let ((error-re (format "^[ ]*at https?://[^/]+/\\(?:[^/]+/\\)\\{%d\\}\\([^:?#]+\\)\\(?:[?#][^:]*\\)?:\\([[:digit:]]+\\)\\(?::\\([[:digit:]]+\\)\\)?$" skewer-path-strip-level)))
+    (setq-local compilation-error-regexp-alist `((,error-re 1 2 3 2))))
+  (compilation-shell-minor-mode 1))
 
 ;;;###autoload
 (defun skewer-repl--response-hook (response)
@@ -118,6 +147,7 @@ buffer.")
 (eval-after-load 'skewer-mode
   '(progn
      (add-hook 'skewer-response-hook #'skewer-repl--response-hook)
+     (add-hook 'skewer-repl-mode-hook #'skewer-repl-mode-compilation-shell-hook)
      (define-key skewer-mode-map (kbd "C-c C-z") #'skewer-repl)))
 
 (provide 'skewer-repl)

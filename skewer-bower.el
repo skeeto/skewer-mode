@@ -25,7 +25,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'skewer-mode)
 (require 'simple-httpd)
 (require 'magit nil t) ; optional
@@ -46,12 +46,10 @@
   :group 'skewer)
 
 ; Try to match Magit's configuration if available
-(if (boundp 'magit-git-executable)
-    (defvaralias 'skewer-bower-git-executable 'magit-git-executable)
-  (defcustom skewer-bower-git-executable "git"
-    "Name of the git executable."
-    :type 'string
-    :group 'skewer))
+(defcustom skewer-bower-git-executable "git"
+  "Name of the git executable."
+  :type 'string
+  :group 'skewer)
 
 (defvar skewer-bower-packages nil
   "Alist of all packages known to bower.")
@@ -69,10 +67,10 @@ them from hitting the network frequently.")
       (url-retrieve-synchronously (concat skewer-bower-endpoint "/packages"))
     (re-search-forward "\r?\n\r?\n")
     (setf skewer-bower-packages
-          (sort*
-           (loop for package across (json-read)
-                 collect (cons (cdr (assoc 'name package))
-                               (cdr (assoc 'url package))))
+          (cl-sort
+           (cl-loop for package across (json-read)
+                    collect (cons (cdr (assoc 'name package))
+                                  (cdr (assoc 'url package))))
            #'string< :key #'car))))
 
 ;; Git functions
@@ -139,10 +137,10 @@ if no configuration could be found."
   (skewer-bower-package-ensure package)
   (unless version (setf version "master"))
   (json-read-from-string
-   (loop for file in skewer-bower-json
-         for config = (skewer-bower-git-show package version file)
-         when config return it
-         finally (return "null"))))
+   (cl-loop for file in skewer-bower-json
+            for config = (skewer-bower-git-show package version file)
+            when config return it
+            finally (return "null"))))
 
 ;; Serving the library
 
@@ -157,7 +155,7 @@ if no configuration could be found."
   "Prompt for a package and version from the user."
   (when (null skewer-bower-packages) (skewer-bower-refresh))
   (let* ((packages (mapcar #'car skewer-bower-packages))
-         (selection (delete-duplicates
+         (selection (cl-delete-duplicates
                      (append skewer-bower-history packages) :from-end t))
          (package (completing-read "Library: " selection nil t nil
                                    'skewer-bower-history))
@@ -169,10 +167,10 @@ if no configuration could be found."
   "Attempt to determine the main entrypoint from a potentially
 incomplete or incorrect bower configuration. Returns nil if
 guessing failed."
-  (find-if (apply-partially #'skewer-bower-git-show package version)
-           (remove nil (list (cdr (assoc 'main config))
-                             (concat package ".js")
-                             package))))
+  (cl-find-if (apply-partially #'skewer-bower-git-show package version)
+              (remove nil (list (cdr (assoc 'main config))
+                                (concat package ".js")
+                                package))))
 
 ;;;###autoload
 (defun skewer-bower-load (package &optional version)
@@ -184,14 +182,14 @@ guessing failed."
     (when (null main)
       (error "Could not load %s (%s): no \"main\" entrypoint specified"
              package version))
-    (loop for (dep . version) in deps
-          do (skewer-bower-load (format "%s" dep) version))
+    (cl-loop for (dep . version) in deps
+             do (skewer-bower-load (format "%s" dep) version))
     (let ((path (skewer-bowser--path package version main)))
       (skewer-eval path nil :type "script"))))
 
 (defservlet skewer/bower application/javascript (path)
   "Serve a script from the local bower repository cache."
-  (destructuring-bind (_ _skewer _bower package version . parts)
+  (cl-destructuring-bind (_ _skewer _bower package version . parts)
       (split-string path "/")
     (let* ((file (mapconcat #'identity parts "/"))
            (contents (skewer-bower-git-show package version file)))

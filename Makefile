@@ -11,9 +11,9 @@ EL += skewer-css.el
 EL += skewer-html.el
 EL += skewer-repl.el
 ELC = $(EL:.el=.elc)
-EL += skewer-mode-pkg.el
+PKG = skewer-mode-pkg.el
 
-DIST_FILES = $(EL) skewer.js example.html README.md UNLICENSE
+DIST_FILES = $(PKG) $(EL) skewer.js example.html README.md UNLICENSE
 
 .PHONY : all package compile clean
 
@@ -27,7 +27,7 @@ package: skewer-mode-$(VERSION).tar
 compile: $(ELC)
 
 clean:
-	$(RM) *.tar *.elc
+	$(RM) *.tar $(ELC)
 
 %.elc: %.el
-	@$(COMPILE) $<
+	$(COMPILE) $<
