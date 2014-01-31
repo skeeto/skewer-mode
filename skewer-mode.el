@@ -282,8 +282,9 @@ callback. The response object is passed to the hook function.")
                              :Cache-Control "no-cache"
                              :Keep-Alive "timeout=300, max=2"
                              :Access-Control-Allow-Methods "POST, GET, OPTIONS"
-                             :Access-Control-Allow-Headers "X-Skewer-Client-Id"
-                             :Access-Control-Allow-Origin "*"))))
+                             :Access-Control-Allow-Headers "X-Skewer-Client-Id, Content-Type"
+                             :Access-Control-Allow-Origin "*"
+                             :Access-Control-Max-Age "3600"))))
 
      ;Respond to requests with a payload
      ((string= method "POST")
