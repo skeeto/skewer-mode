@@ -10,8 +10,14 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    var polling = 0,
+    var polling = 0, // Number of connections in polling state
+        pending = null, // Pending request being on server side
         cid = (Math.random() * Math.pow(16, 8)).toString(16);
+
+    // Restart connection if there is one already opened
+    if (skewer.close) {
+        skewer.close();
+    }
 
     function handleReqestFromEmacs(request) {
         var result = skewer.fn[request.type](request);
@@ -51,7 +57,7 @@ function skewer() {
     }
 
     function get() {
-        var xhr = new XMLHttpRequest();
+        var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('GET', skewer.host + "/skewer/comet", true);
         xhr.setRequestHeader("X-Skewer-Client-Id", cid);
@@ -59,7 +65,7 @@ function skewer() {
     }
 
     function post(messages) {
-        var xhr = new XMLHttpRequest();
+        var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('POST', skewer.host + "/skewer/comet", true);
         xhr.setRequestHeader("X-Skewer-Client-Id", cid);
@@ -78,13 +84,24 @@ function skewer() {
         }
     }
 
-    function sendWithFlush(object) {
-        skewer._queue.push(JSON.stringify(object));
-        setTimeout(flush, 0); // Delay flush to allow collecting more messages
-    }
+    skewer.send = (function (send){
+        function sendWithFlush(message) {
+            send(message);
+            setTimeout(flush, 0); // Delay flush to allow collecting more messages
+        };
+        sendWithFlush.restore = function restore() {
+            skewer.send = send;
+        };
+        return sendWithFlush;
+    }(skewer.send));
 
-    skewer.send = sendWithFlush;
-    get();
+    skewer.close = function close() {
+        skewer.send.restore();
+        pending.abort();
+        delete skewer.close;
+    };
+
+    flush();
 }
 
 /**
@@ -135,14 +152,6 @@ skewer.postJSON = function(url, object, callback) {
 /**
  * Send a message to server via comet channel. The message may be queued and 
  * combined with other messages.
- * @param {Object} object The object to transmit to the server
- */
-skewer.send = function(object) {
-    skewer._queue.push(JSON.stringify(object));
-};
-
-/**
- * Send a JSON-encoded object to a server
  * @param {Object} object The object to transmit to the server
  */
 skewer.send = function(object) {

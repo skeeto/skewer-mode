@@ -250,16 +250,22 @@ callback. The response object is passed to the hook function.")
         (loop for client in skewer-clients
               unless (equal (skewer-client-cid client) cid)
                 collect client
-              else
-                do (ignore-errors
-                     (skewer--with-response-buffer (skewer-client-proc client) 200 (progn ()))))))
+              else do
+                (let ((proc (skewer-client-proc client)))
+                  (when (process-live-p proc)
+                    (ignore-errors
+                      (skewer--with-response-buffer proc 200 (progn ()))))))))
 
 (defun skewer-queue-client (proc req)
   "Add a client to the queue, given the HTTP header."
   (let ((agent (cl-second (assoc "User-Agent" req)))
         (cid (cl-second (assoc "X-Skewer-Client-Id" req))))
     (if cid (skewer-close-client cid)) ;Close other connections of sesion aware clients
-    (push (make-skewer-client :proc proc :cid cid :agent agent) skewer-clients))
+    (push (make-skewer-client :proc proc :cid cid :agent agent) skewer-clients)
+    (set-process-sentinel proc
+      (lambda (proc event)
+        (skewer-close-client cid)
+        (skewer-update-list-buffer))))
   (skewer-update-list-buffer)
   (skewer-process-queue))
 
@@ -297,8 +303,6 @@ callback. The response object is passed to the hook function.")
                   (funcall callback msg))
                 (dolist (hook skewer-response-hook)
                   (funcall hook msg)))))
-      ;TODO: Make client send some notification when closing, so we don't end up with open 
-      ; connections to non-existing clients
       (skewer-queue-client proc req))
 
      ;Queue empty requests which are used only to give token back to server
