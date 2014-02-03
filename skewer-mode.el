@@ -246,9 +246,8 @@ callback. The response object is passed to the hook function.")
 
 (defun skewer-close-client (cid)
   "Close all active connections from client with given id"
-  (message "Closing connection for: %s" cid)
   (setq skewer-clients
-        (loop for client in skewer-clients 
+        (loop for client in skewer-clients
               unless (equal (skewer-client-cid client) cid)
                 collect client
               else
@@ -258,7 +257,7 @@ callback. The response object is passed to the hook function.")
 (defun skewer-queue-client (proc req)
   "Add a client to the queue, given the HTTP header."
   (let ((agent (cl-second (assoc "User-Agent" req)))
-        (cid (cl-second (assoc "X-Skewer-Client-Id" req)))) 
+        (cid (cl-second (assoc "X-Skewer-Client-Id" req))))
     (if cid (skewer-close-client cid)) ;Close other connections of sesion aware clients
     (push (make-skewer-client :proc proc :cid cid :agent agent) skewer-clients))
   (skewer-update-list-buffer)
@@ -273,8 +272,8 @@ callback. The response object is passed to the hook function.")
 
 (defun httpd/skewer/comet (proc _path _query req &rest _args)
   (let ((method (car (car req))))
-    (cond 
-     ((string= method "OPTIONS")          
+    (cond
+     ((string= method "OPTIONS")
       ;Respond to CORS preflight check
       (ignore-errors
         (with-temp-buffer
@@ -286,7 +285,7 @@ callback. The response object is passed to the hook function.")
                              :Access-Control-Allow-Origin "*"
                              :Access-Control-Max-Age "3600"))))
 
-     ;Respond to requests with a payload
+     ;Process requests with a payload and queue them for sending message back to lcient later
      ((string= method "POST")
       (let ((messages (json-read-from-string (cadr (assoc "Content" req)))))
         (loop for i from 0 to (- (length messages) 1) collect
@@ -298,15 +297,15 @@ callback. The response object is passed to the hook function.")
                   (funcall callback msg))
                 (dolist (hook skewer-response-hook)
                   (funcall hook msg)))))
-      ;TODO: add some extra message when client closes, so we don't end up with open 
+      ;TODO: Make client send some notification when closing, so we don't end up with open 
       ; connections to non-existing clients
       (skewer-queue-client proc req))
-     
-     ;Respond to empty requests which are used only to give token back to server
+
+     ;Queue empty requests which are used only to give token back to server
      (t (skewer-queue-client proc req)))))
 
 (defun httpd/skewer/get (proc _path _query req &rest _args)
-      (skewer-queue-client proc req))))
+  (skewer-queue-client proc req))
 
 (defun httpd/skewer/post (proc _path _query req &rest _args)
   (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
