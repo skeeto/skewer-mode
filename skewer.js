@@ -59,7 +59,7 @@ function skewer() {
     function get() {
         var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
-        xhr.open('GET', skewer.host + "/skewer/comet", true);
+        xhr.open('GET', skewer.host + "/skewer/channel", true);
         xhr.setRequestHeader("X-Skewer-Client-Id", cid);
         xhr.send();
     }
@@ -67,7 +67,7 @@ function skewer() {
     function post(messages) {
         var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
-        xhr.open('POST', skewer.host + "/skewer/comet", true);
+        xhr.open('POST', skewer.host + "/skewer/channel", true);
         xhr.setRequestHeader("X-Skewer-Client-Id", cid);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send('[' + messages + ']');
@@ -150,7 +150,7 @@ skewer.postJSON = function(url, object, callback) {
 };
 
 /**
- * Send a message to server via comet channel. The message may be queued and 
+ * Send a message to server via BOSH like channel. The message may be queued and 
  * combined with other messages.
  * @param {Object} object The object to transmit to the server
  */

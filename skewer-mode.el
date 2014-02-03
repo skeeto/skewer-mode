@@ -276,7 +276,7 @@ callback. The response object is passed to the hook function.")
   (goto-char (point-max))
   (run-hooks 'skewer-js-hook))
 
-(defun httpd/skewer/comet (proc _path _query req &rest _args)
+(defun httpd/skewer/channel (proc _path _query req &rest _args)
   (let ((method (car (car req))))
     (cond
      ((string= method "OPTIONS")
