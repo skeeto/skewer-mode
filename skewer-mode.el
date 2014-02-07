@@ -180,7 +180,7 @@ callback. The response object is passed to the hook function.")
 
 (cl-defstruct skewer-client
   "A client connection awaiting a response."
-  proc cid agent)
+  proc ckey agent)
 
 (defmacro skewer--with-response-buffer (proc status &rest body)
   `(with-temp-buffer
@@ -210,14 +210,16 @@ callback. The response object is passed to the hook function.")
   "Prepare client list for tabulated-list-mode."
   (cl-loop for client in skewer-clients collect
            (let ((proc (skewer-client-proc client))
-                 (agent (skewer-client-agent client)))
+                 (agent (skewer-client-agent client))
+                 (ckey (skewer-client-ckey client)))
              (cl-destructuring-bind (host port) (process-contact proc)
-               `(,client [,host ,(format "%d" port) ,agent])))))
+               `(,client [,host ,(format "%d" port), ckey ,agent])))))
 
 (define-derived-mode skewer-clients-mode tabulated-list-mode "skewer-clients"
   "Mode for listing browsers attached to Emacs for skewer-mode."
   (setq tabulated-list-format [("Host" 12 t)
                                ("Port" 5 t)
+                               ("Con.Key" 8 t)
                                ("User Agent" 0 t)])
   (setq tabulated-list-entries #'skewer-clients-tabulate)
   (tabulated-list-init-header))
@@ -244,11 +246,11 @@ callback. The response object is passed to the hook function.")
   (skewer-clients-mode)
   (tabulated-list-print))
 
-(defun skewer-close-client (cid)
-  "Close all active connections from client with given id"
+(defun skewer-close-client (ckey)
+  "Close all active connections from client with given connection key"
   (setq skewer-clients
         (loop for client in skewer-clients
-              unless (equal (skewer-client-cid client) cid)
+              unless (equal (skewer-client-ckey client) ckey)
                 collect client
               else do
                 (let ((proc (skewer-client-proc client)))
@@ -259,12 +261,12 @@ callback. The response object is passed to the hook function.")
 (defun skewer-queue-client (proc req)
   "Add a client to the queue, given the HTTP header."
   (let ((agent (cl-second (assoc "User-Agent" req)))
-        (cid (cl-second (assoc "X-Skewer-Client-Id" req))))
-    (if cid (skewer-close-client cid)) ;Close other connections of sesion aware clients
-    (push (make-skewer-client :proc proc :cid cid :agent agent) skewer-clients)
+        (ckey (cl-second (assoc "X-Skewer-Connection-Key" req))))
+    (if ckey (skewer-close-client ckey)) ;Close other connections of sesion aware clients
+    (push (make-skewer-client :proc proc :ckey ckey :agent agent) skewer-clients)
     (set-process-sentinel proc
       (lambda (proc event)
-        (skewer-close-client cid)
+        (skewer-close-client ckey)
         (skewer-update-list-buffer))))
   (skewer-update-list-buffer)
   (skewer-process-queue))
@@ -287,7 +289,7 @@ callback. The response object is passed to the hook function.")
                              :Cache-Control "no-cache"
                              :Keep-Alive "timeout=300, max=2"
                              :Access-Control-Allow-Methods "POST, GET, OPTIONS"
-                             :Access-Control-Allow-Headers "X-Skewer-Client-Id, Content-Type"
+                             :Access-Control-Allow-Headers "X-Skewer-Connection-Key, Content-Type"
                              :Access-Control-Allow-Origin "*"
                              :Access-Control-Max-Age "3600"))))
 

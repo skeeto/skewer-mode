@@ -12,7 +12,7 @@
 function skewer() {
     var polling = 0, // Number of connections in polling state
         pending = null, // Pending request being on server side
-        cid = (Math.random() * Math.pow(16, 8)).toString(16);
+        ckey = (Math.random() * Math.pow(16, 8)).toString(16);
 
     // Restart connection if there is one already opened
     if (skewer.close) {
@@ -60,7 +60,7 @@ function skewer() {
         var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('GET', skewer.host + "/skewer/channel", true);
-        xhr.setRequestHeader("X-Skewer-Client-Id", cid);
+        xhr.setRequestHeader("X-Skewer-Connection-Key", ckey);
         xhr.send();
     }
 
@@ -68,7 +68,7 @@ function skewer() {
         var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('POST', skewer.host + "/skewer/channel", true);
-        xhr.setRequestHeader("X-Skewer-Client-Id", cid);
+        xhr.setRequestHeader("X-Skewer-Connection-Key", ckey);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send('[' + messages + ']');
     }
@@ -101,6 +101,7 @@ function skewer() {
         delete skewer.close;
     };
 
+    skewer.ckey = ckey;
     flush();
 }
 
