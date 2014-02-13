@@ -168,12 +168,24 @@ skewer.fn.ping = function(request) {
 skewer.fn.css = function(request) {
     var style = document.createElement('style');
     style.type = 'text/css';
+    style.className = 'skewer';
     if (style.styleSheet) { // < IE9
         style.styleSheet.cssText = request.eval;
     } else {
         style.appendChild(document.createTextNode(request.eval));
     }
     document.body.appendChild(style);
+    return {};
+};
+
+/**
+ * Remove all of Skewer's style tags from the document.
+ */
+skewer.fn.cssClearAll = function(request) {
+    var styles = document.body.querySelectorAll('style.skewer');
+    for (var i = 0; i < styles.length; i++) {
+        styles[i].parentNode.removeChild(styles[i]);
+    }
     return {};
 };
 
