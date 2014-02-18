@@ -1,36 +1,87 @@
 /**
  * @fileOverview Live browser interaction with Emacs
- * @version 1.4
+ * @version 1.7.0
  */
 
 /**
  * Connects to Emacs and waits for a request. After handling the
  * request it sends back the results and queues itself for another
  * request.
- * @namespace Holds all of Skewer's functionality.
+ * @namespace skewer
  */
 function skewer() {
+    skewer.websocket(function(error) {
+        var message = error.message || 'WebSocket failed';
+        console.log('noitce: ' + message + ': trying BOSH');
+        skewer.bosh();
+    });
+}
+
+/**
+ * Connection key identifying this client instance.
+ * @constant {string}
+ */
+skewer.ckey = (Math.random() * Math.pow(16, 8)).toString(16);
+
+/**
+ * Attempt to establish a WebSocket connection to the server.
+ */
+skewer.websocket = function(onerror) {
+    function onmessage(event) {
+        skewer.handleRequest(JSON.parse(event.data));
+    }
+
+    function onclose(event) {
+        console.log('ONCLOSE');
+        onerror(event);
+    }
+
+    // Close any existing connection
+    skewer.close();
+
+    skewer.getJSON(skewer.host + '/skewer/websocket/port', function(port) {
+        try {
+            if (port == null) {
+                onerror({ message: 'WebSocket server down' });
+            } else {
+                var match = skewer.host.match(/\w*:\/\/([^/:]+)/),
+                    host = match != null ? match[1] : 'localhost',
+                    uri = 'ws://' + host + ':' + port + '/',
+                    ws = new WebSocket(uri);
+                ws.onclose = onclose;
+                ws.onerror = onerror;
+                ws.onmessage = onmessage;
+                skewer.ws = ws;
+            }
+        } catch (e) {
+            onerror(e);
+        }
+    });
+
+    skewer.flush = function() {
+        if (skewer.ws != null) {
+            skewer.ws.send('[' + skewer._queue + ']');
+            skewer._queue = [];
+        }
+    };
+
+    skewer.close = function() {
+        if (skewer.ws != null) {
+            skewer.ws.close();
+            skewer.ws = null;
+        }
+    };
+};
+
+/**
+ * Set up Skewer to use a BOSH-style (long-polling) connection.
+ */
+skewer.bosh = function() {
     var polling = 0, // Number of connections in polling state
-        pending = null, // Pending request being on server side
-        ckey = (Math.random() * Math.pow(16, 8)).toString(16);
+        pending = null; // Pending request being on server side
 
     // Restart connection if there is one already opened
-    if (skewer.close) {
-        skewer.close();
-    }
-
-    function handleReqestFromEmacs(request) {
-        var result = skewer.fn[request.type](request);
-        if (result) {
-            result = skewer.extend({
-                id: request.id,
-                type: request.type,
-                status: 'success',
-                value: ''
-            }, result);
-            skewer.send(result);
-        }
-    }
+    skewer.close();
 
     function onstatechange(event) {
         var xhr = event.target;
@@ -42,7 +93,7 @@ function skewer() {
             polling -= 1;
             if (xhr.status === 200) {
                 if (xhr.responseText) {
-                    handleReqestFromEmacs(JSON.parse(xhr.responseText));
+                    skewer.handleRequest(JSON.parse(xhr.responseText));
                 }
             } else if (!xhr.aborted) {
                 if (xhr.status < 500 ) {
@@ -52,11 +103,11 @@ function skewer() {
                     // On all errors from 50x, except 504 retry after
                     // a minute. On 504 retry automatically, because
                     // browser was already waiting its timeout.
-                    setTimeout(flush, 1000);
+                    setTimeout(skewer.flush, 1000);
                     return;
                 }
             }
-            flush();
+            skewer.flush();
         }
     }
 
@@ -64,7 +115,7 @@ function skewer() {
         var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('GET', skewer.host + "/skewer/channel", true);
-        xhr.setRequestHeader("X-Skewer-Connection-Key", ckey);
+        xhr.setRequestHeader("X-Skewer-Connection-Key", skewer.ckey);
         xhr.send();
     }
 
@@ -72,12 +123,12 @@ function skewer() {
         var xhr = pending = new XMLHttpRequest();
         xhr.onreadystatechange = onstatechange;
         xhr.open('POST', skewer.host + "/skewer/channel", true);
-        xhr.setRequestHeader("X-Skewer-Connection-Key", ckey);
+        xhr.setRequestHeader("X-Skewer-Connection-Key", skewer.ckey);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.send('[' + messages + ']');
     }
 
-    function flush() {
+    skewer.flush = function() {
         if (skewer._queue.length > 0) {
             if (polling <= 1) {
                 post(skewer._queue);
@@ -88,29 +139,15 @@ function skewer() {
             // already some connection polling.
             get();
         }
-    }
-
-    skewer.send = (function (send){
-        function sendWithFlush(message) {
-            send(message);
-            // Delay flush to allow collecting more messages
-            setTimeout(flush, 0);
-        };
-        sendWithFlush.restore = function restore() {
-            skewer.send = send;
-        };
-        return sendWithFlush;
-    }(skewer.send));
-
-    skewer.close = function close() {
-        skewer.send.restore();
-        pending.abort();
-        delete skewer.close;
     };
 
-    skewer.ckey = ckey;
-    flush();
-}
+    skewer.close = function() {
+        skewer._queue = [];
+        pending.abort();
+    };
+
+    skewer.flush();
+};
 
 /**
  * Queue of messages for the server. Do not use directly, instead use
@@ -118,6 +155,23 @@ function skewer() {
  * @private
  */
 skewer._queue = [];
+
+/**
+ * Process a request from Emacs.
+ * @param request
+ */
+skewer.handleRequest = function(request) {
+    var result = skewer.fn[request.type](request);
+    if (result) {
+        result = skewer.extend({
+            id: request.id,
+            type: request.type,
+            status: 'success',
+            value: ''
+        }, result);
+        skewer.send(result);
+    }
+};
 
 /**
  * Get a JSON-encoded object from a server.
@@ -165,6 +219,21 @@ skewer.postJSON = function(url, object, callback) {
  */
 skewer.send = function(object) {
     skewer._queue.push(JSON.stringify(object));
+    setTimeout(skewer.flush, 0);
+};
+
+/**
+ * Flush the message queue and send everything immediately.
+ */
+skewer.flush = function() {
+    /* no-op */
+};
+
+/**
+ * Close the connection to Emacs.
+ */
+skewer.close = function() {
+    /* no-op */
 };
 
 /**

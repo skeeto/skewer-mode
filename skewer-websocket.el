@@ -33,8 +33,9 @@
 
 (defun skewer-ws-on-message (websocket frame)
   "The server's WebSocket onmessage event."
-  (skewer-response (skewer-ws-to-client websocket)
-                   (json-read-from-string frame)))
+  (let ((client (skewer-ws-to-client websocket)))
+    (mapc (apply-partially #'skewer-response client)
+          (json-read-from-string (websocket-frame-payload frame)))))
 
 (defun skewer-ws-on-close (websocket)
   "The server's WebSocket onclose event."
@@ -71,6 +72,12 @@
   (remove-hook 'skewer-js-hook #'skewer-websocket-first-start))
 
 (add-hook 'skewer-js-hook #'skewer-websocket-first-start)
+
+(defservlet skewer/websocket/port "text/plain" ()
+  "Whisper the websocket port to the browser."
+  (if skewer-websocket-server
+      (insert (json-encode skewer-websocket-port))
+    (insert (json-encode json-null))))
 
 (provide 'skewer-websocket)
 
