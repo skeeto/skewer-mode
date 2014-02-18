@@ -221,7 +221,7 @@ automatically added to the global client list.")
 (defun skewer-clients-tabulate ()
   "Prepare client list for tabulated-list-mode."
   (cl-loop for client in skewer-clients collect
-           (let ((proc (skewer-proc client))
+           (let ((proc (skewer-process client))
                  (agent (skewer-agent client))
                  (id (skewer-id client)))
              (cl-destructuring-bind (host port) (process-contact proc)
