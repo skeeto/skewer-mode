@@ -83,7 +83,7 @@ function skewer() {
                 post(skewer._queue);
                 skewer._queue = [];
             }
-        } else if (!polling) {
+        } else if (polling === 0) {
             // There is no reason to fire empty get if there is
             // already some connection polling.
             get();
