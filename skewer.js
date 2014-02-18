@@ -45,10 +45,14 @@ function skewer() {
                     handleReqestFromEmacs(JSON.parse(xhr.responseText));
                 }
             } else if (!xhr.aborted) {
-                if (xhr.status < 500 ) { // No point of retrying on 40x and 30x errors
+                if (xhr.status < 500 ) {
+                    // No point of retrying on 40x and 30x errors
                     return;
-                } else if (xhr.status !== 504) { // On all errors from 50x, except 504 retry after a minute.
-                    setTimeout(flush, 1000);     // On 504 retry automatically, because browser was already waiting its timeout.
+                } else if (xhr.status !== 504) {
+                    // On all errors from 50x, except 504 retry after
+                    // a minute. On 504 retry automatically, because
+                    // browser was already waiting its timeout.
+                    setTimeout(flush, 1000);
                     return;
                 }
             }
@@ -80,14 +84,17 @@ function skewer() {
                 skewer._queue = [];
             }
         } else if (!polling) {
-            get(); // There is no reason to fire empty get if there is already some connection polling
+            // There is no reason to fire empty get if there is
+            // already some connection polling.
+            get();
         }
     }
 
     skewer.send = (function (send){
         function sendWithFlush(message) {
             send(message);
-            setTimeout(flush, 0); // Delay flush to allow collecting more messages
+            // Delay flush to allow collecting more messages
+            setTimeout(flush, 0);
         };
         sendWithFlush.restore = function restore() {
             skewer.send = send;
@@ -106,7 +113,8 @@ function skewer() {
 }
 
 /**
- * Queue with messages to server. You should not use it directly, rather use {@link send} method
+ * Queue of messages for the server. Do not use directly, instead use
+ * {@link send}.
  * @private
  */
 skewer._queue = [];
@@ -151,8 +159,8 @@ skewer.postJSON = function(url, object, callback) {
 };
 
 /**
- * Send a message to server via BOSH like channel. The message may be queued and 
- * combined with other messages.
+ * Send a message to server via BOSH like channel. The message may be
+ * queued and combined with other messages.
  * @param {Object} object The object to transmit to the server
  */
 skewer.send = function(object) {
@@ -452,7 +460,7 @@ skewer.log = function(message) {
 skewer.error = function(event) {
     "use strict";
     skewer.send({
-        type: "error",              
+        type: "error",
         value: event.message,
         filename: event.filename,
         line: event.lineno,
