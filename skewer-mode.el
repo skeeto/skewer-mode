@@ -633,8 +633,8 @@ inconsistent buffer."
   (interactive)
   (mapc #'kill-process skewer-phantomjs-processes))
 
-(require 'skewer-bosh)
-
 (provide 'skewer-mode)
+
+(require 'skewer-bosh)
 
 ;;; skewer-mode.el ends here
