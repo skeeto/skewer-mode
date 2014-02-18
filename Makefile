@@ -8,6 +8,7 @@ VERSION := $(shell $(CASK) version)
 
 EL  = skewer-mode.el
 EL  = skewer-bosh.el
+EL  = skewer-websocket.el
 EL += skewer-setup.el
 EL += cache-table.el
 EL += skewer-bower.el

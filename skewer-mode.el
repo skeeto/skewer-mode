@@ -636,5 +636,6 @@ inconsistent buffer."
 (provide 'skewer-mode)
 
 (require 'skewer-bosh)
+(require 'skewer-websocket)
 
 ;;; skewer-mode.el ends here
