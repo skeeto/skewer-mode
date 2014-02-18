@@ -4,6 +4,8 @@
 
 ;; Author: Christopher Wellons <wellons@nullprogram.com>
 ;; URL: https://github.com/skeeto/skewer-mode
+;; Version: 1.7.0
+;; Package-Requires: ((emacs "24") (simple-httpd "1.4.0") (js2-mode "20090723") (websocket "1.2"))
 
 ;;; Commentary:
 
@@ -44,7 +46,7 @@
 ;; Multiple browsers and browser tabs can be attached to Emacs at
 ;; once. JavaScript forms are sent to all attached clients
 ;; simultaneously, and each will echo back the result
-;; individually. Use `list-skewer-clients' to see a list of all
+;; individually. Use `skewer-list-clients' to see a list of all
 ;; currently attached clients.
 
 ;; Sometimes Skewer's long polls from the browser will timeout after a
@@ -127,6 +129,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'eieio)
 (require 'json)
 (require 'url-util)
 (require 'simple-httpd)
@@ -163,63 +166,72 @@ catching messages from the browser with no associated
 callback. The response object is passed to the hook function.")
 
 (defvar skewer-timeout 3600
-  "Maximum time to wait on the browser to respond, in seconds.")
+  "Maximum time to keep track of requests, in seconds.")
 
 (defvar skewer-clients ()
   "Browsers awaiting JavaScript snippets.")
 
-(defvar skewer-callbacks (cache-table-create skewer-timeout :test 'equal)
-  "Maps evaluation IDs to local callbacks.")
+;; Skewer Client Class
 
-(defvar skewer-queue ()
-  "Queued messages for the browser.")
+(defclass skewer-client ()
+  ((process :accessor skewer-process
+            :initarg :process
+            :documentation "Process used to communicate with this client.")
+   (id :reader skewer-id
+       :initarg :id
+       :documentation "Unique identifier for this client.")
+   (agent :accessor skewer-agent
+          :initarg :agent
+          :documentation "User agent string describing this client.")
+   (last-seen :accessor skewer-last-seen
+              :initform (float-time)
+              :documentation "Last time this client was active."))
+  (:documentation
+   "A connection to a single browser page. Subclasses must
+implement `skewer-close' and `skewer-request', and it should call
+`skewer-response' with any client responses. Instances are
+automatically added to the global client list.")
+  :abstract t)
 
-(defvar skewer--last-timestamp 0
-  "Timestamp of the last browser response. Use
-`skewer-last-seen-seconds' to access this.")
+(defgeneric skewer-request (client request)
+  "Pass REQUEST to CLIENT.")
 
-(cl-defstruct skewer-client
-  "A client connection awaiting a response."
-  proc ckey agent)
+(defgeneric skewer-close (client)
+  "Close a connection to a specific client.")
 
-(defmacro skewer--with-response-buffer (proc status &rest body)
-  `(with-temp-buffer
-     ,@body
-     (httpd-send-header ,proc "text/plain" ,status
-                        :Cache-Control "no-cache"
-                        :Keep-Alive "timeout=300, max=2"
-                        :Access-Control-Allow-Origin "*")))
+(defmethod skewer-close :after ((client skewer-client))
+  "Removes CLIENT from the global listing."
+  (setf skewer-clients (cl-delete (skewer-id client) skewer-clients
+                                  :key #'skewer-id :test #'string=)))
 
-(defun skewer-process-queue ()
-  "Send all queued messages to clients."
-  (when (and skewer-queue skewer-clients)
-    (let ((message (pop skewer-queue))
-          (sent nil))
-      (while skewer-clients
-        (ignore-errors
-          (progn
-            (let ((proc (skewer-client-proc (pop skewer-clients))))
-              (skewer--with-response-buffer proc 200
-                (insert (json-encode message))))
-            (setq skewer--last-timestamp (float-time))
-            (setq sent t))))
-      (if (not sent) (push message skewer-queue)))
-    (skewer-process-queue)))
+(defmethod skewer-live-p ((client skewer-client))
+  "Return non-nil if CLIENT is still alive."
+  (process-live-p (skewer-process client)))
+
+;; Generic client handling
+
+(defun skewer-id-create ()
+  "Generate a random identifier string."
+  (base64-encode-string (concat (cl-loop repeat 12 collect (random 256)))))
+
+(defun skewer-get-client (client-id)
+  "Return canonical client object for CLIENT-ID."
+  (cl-find client-id skewer-clients :key #'skewer-id :test #'string=))
 
 (defun skewer-clients-tabulate ()
   "Prepare client list for tabulated-list-mode."
   (cl-loop for client in skewer-clients collect
-           (let ((proc (skewer-client-proc client))
-                 (agent (skewer-client-agent client))
-                 (ckey (skewer-client-ckey client)))
+           (let ((proc (skewer-proc client))
+                 (agent (skewer-agent client))
+                 (id (skewer-id client)))
              (cl-destructuring-bind (host port) (process-contact proc)
-               `(,client [,host ,(format "%d" port), ckey ,agent])))))
+               `(,client [,host ,(format "%d" port) ,id ,agent])))))
 
 (define-derived-mode skewer-clients-mode tabulated-list-mode "skewer-clients"
   "Mode for listing browsers attached to Emacs for skewer-mode."
   (setq tabulated-list-format [("Host" 12 t)
                                ("Port" 5 t)
-                               ("Con.Key" 8 t)
+                               ("ID" 8 t)
                                ("User Agent" 0 t)])
   (setq tabulated-list-entries #'skewer-clients-tabulate)
   (tabulated-list-init-header))
@@ -239,90 +251,33 @@ callback. The response object is passed to the hook function.")
           (revert-buffer))))))
 
 ;;;###autoload
-(defun list-skewer-clients ()
+(defun skewer-list-clients ()
   "List the attached browsers in a buffer."
   (interactive)
   (pop-to-buffer (get-buffer-create "*skewer-clients*"))
   (skewer-clients-mode)
   (tabulated-list-print))
 
-(defun skewer-close-client (ckey)
-  "Close all active connections from client with given connection key"
-  (setq skewer-clients
-        (loop for client in skewer-clients
-              unless (equal (skewer-client-ckey client) ckey)
-                collect client
-              else do
-                (let ((proc (skewer-client-proc client)))
-                  (when (process-live-p proc)
-                    (ignore-errors
-                      (skewer--with-response-buffer proc 200 (progn ()))))))))
+(define-obsolete-function-alias 'list-skewer-clients 'skewer-list-clients
+  "1.7.0" "Obsoleted in favor of a cleaner namespace.")
 
-(defun skewer-queue-client (proc req)
-  "Add a client to the queue, given the HTTP header."
-  (let ((agent (cl-second (assoc "User-Agent" req)))
-        (ckey (cl-second (assoc "X-Skewer-Connection-Key" req))))
-    (if ckey (skewer-close-client ckey)) ;Close other connections of sesion aware clients
-    (push (make-skewer-client :proc proc :ckey ckey :agent agent) skewer-clients)
-    (set-process-sentinel proc
-      (lambda (proc event)
-        (skewer-close-client ckey)
-        (skewer-update-list-buffer))))
-  (skewer-update-list-buffer)
-  (skewer-process-queue))
+(defmethod initialize-instance :after ((client skewer-client) &key)
+  "Add a client to the global list."
+  (let* ((id (skewer-id client))
+         (position (cl-position id skewer-clients
+                                :key #'skewer-id :test #'string=)))
+    (prog1 client
+      (if (null position)
+          (push client skewer-clients)
+        (setf (nth position skewer-client) client))
+      (skewer-update-list-buffer))))
 
 ;; Servlets
 
 (defservlet skewer text/javascript ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root))
-  (goto-char (point-max))
+  (setf (point) (point-max))
   (run-hooks 'skewer-js-hook))
-
-(defun httpd/skewer/channel (proc _path _query req &rest _args)
-  (let ((method (car (car req))))
-    (cond
-     ((string= method "OPTIONS")
-      ;Respond to CORS preflight check
-      (ignore-errors
-        (with-temp-buffer
-          (httpd-send-header proc "text/plain" 200
-                             :Cache-Control "no-cache"
-                             :Keep-Alive "timeout=300, max=2"
-                             :Access-Control-Allow-Methods "POST, GET, OPTIONS"
-                             :Access-Control-Allow-Headers "X-Skewer-Connection-Key, Content-Type"
-                             :Access-Control-Allow-Origin "*"
-                             :Access-Control-Max-Age "3600"))))
-
-     ;Process requests with a payload and queue them for sending message back to lcient later
-     ((string= method "POST")
-      (let ((messages (json-read-from-string (cadr (assoc "Content" req)))))
-        (loop for i from 0 to (- (length messages) 1) collect
-              (let* ((msg (elt messages i))
-                     (id (cdr (assoc 'id msg)))
-                     (callback (cache-table-get id skewer-callbacks)))
-                (setq skewer--last-timestamp (float-time))
-                (when callback
-                  (funcall callback msg))
-                (dolist (hook skewer-response-hook)
-                  (funcall hook msg)))))
-      (skewer-queue-client proc req))
-
-     ;Queue empty requests which are used only to give token back to server
-     (t (skewer-queue-client proc req)))))
-
-(defun httpd/skewer/get (proc _path _query req &rest _args)
-  (skewer-queue-client proc req))
-
-(defun httpd/skewer/post (proc _path _query req &rest _args)
-  (let* ((result (json-read-from-string (cadr (assoc "Content" req))))
-         (id (cdr (assoc 'id result)))
-         (callback (cache-table-get id skewer-callbacks)))
-    (setq skewer--last-timestamp (float-time))
-    (when callback
-      (funcall callback result))
-    (skewer-queue-client proc req)
-    (dolist (hook skewer-response-hook)
-      (funcall hook result))))
 
 (defservlet skewer/demo text/html ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
@@ -371,27 +326,62 @@ callback. The response object is passed to the hook function.")
                 (cdr (assoc 'eval error)))
         (goto-char (point-min))))))
 
+;; Request Accessors
+
+(defun skewer--slot-accessor (slot)
+  "Return a function that accesses SLOT in an alist."
+  (lambda (alist) (cdr (assoc slot alist))))
+
+(defalias 'skewer-request-type (skewer--slot-accessor 'type))
+(defalias 'skewer-request-eval (skewer--slot-accessor 'eval))
+(defalias 'skewer-request-id (skewer--slot-accessor 'id))
+(defalias 'skewer-request-verbose-p (skewer--slot-accessor 'verbose))
+(defalias 'skewer-request-strict-p (skewer--slot-accessor 'strict))
+
 ;; Evaluation functions
 
+(defvar skewer-callbacks (cache-table-create skewer-timeout :test 'equal)
+  "Maps evaluation IDs to local callbacks.")
+
+(defun skewer-register-callback (request-id callback)
+  "Register CALLBACK to be called with request reponse."
+  (push callback (cache-table-get request-id skewer-callbacks)))
+
+(defun skewer-callback (request-id arg)
+  "Call all the callbacks for REQUEST-ID with ARG."
+  (let ((callbacks (cache-table-get request-id skewer-callbacks)))
+    (dolist (callback callbacks)
+      (when callback
+        (funcall callback arg)))))
+
+(defmethod skewer-response ((client skewer-client) response)
+  "Handle RESPONSE from CLIENT."
+  (setf (skewer-last-seen client) (float-time))
+  (let* ((request-id (cdr (assoc 'id response))))
+    (skewer-callback request-id response)
+    (dolist (function skewer-response-hook)
+      (funcall function response))))
+
 (cl-defun skewer-eval (string &optional callback
-                            &key verbose strict (type "eval") extra)
+                              &key verbose strict (type "eval") extra)
   "Evaluate STRING in the waiting browsers, giving the result to CALLBACK.
 
 :VERBOSE -- if T, the return will try to be JSON encoded
 :STRICT  -- if T, expression is evaluated with 'use strict'
 :TYPE    -- chooses the JavaScript handler (default: eval)
 :EXTRA   -- additional alist keys to append to the request object"
-  (let* ((id (format "%x" (random most-positive-fixnum)))
-         (request `((type . ,type)
-                    (eval . ,string)
-                    (id . ,id)
-                    (verbose . ,verbose)
-                    (strict . ,strict)
-                    ,@extra)))
-    (prog1 request
-      (setf (cache-table-get id skewer-callbacks) callback)
-      (setq skewer-queue (append skewer-queue (list request)))
-      (skewer-process-queue))))
+  (dolist (client skewer-clients)
+    ;; Unique request object for each client.
+    (let* ((id (skewer-id-create))
+           (request `((type . ,type)
+                      (eval . ,string)
+                      (id . ,id)
+                      (verbose . ,verbose)
+                      (strict . ,strict)
+                      ,@extra)))
+      (when callback
+        (skewer-register-callback id callback))
+      (skewer-request client request))))
 
 (defun skewer-eval-synchronously (string &rest args)
   "Just like `skewer-eval' but synchronously, so don't provide a
@@ -435,6 +425,26 @@ must be printable by `json-read-from-string. For example,
 Uncaught exceptions propagate to Emacs as an error."
   (skewer-apply function args))
 
+(defun skewer-ping ()
+  "Ping the browser to test that it's still alive."
+  (unless (null skewer-clients) ; don't queue pings
+    (skewer-eval (prin1-to-string (float-time)) nil :type "ping")))
+
+(defun skewer-last-seen-seconds ()
+  "Return the number of seconds since a browser was last seen, nil if never."
+  (skewer-ping) ; make sure it's still alive next request
+  (cl-loop with time = (float-time)
+           for client in skewer-clients
+           minimize (- (float-time) (skewer-last-seen client))))
+
+;; Region Grabbing (js2-mode stuff)
+
+(defun skewer-flash-region (start end &optional timeout)
+  "Temporarily highlight region from START to END."
+  (let ((overlay (make-overlay start end)))
+    (overlay-put overlay 'face 'secondary-selection)
+    (run-with-timer (or timeout 0.2) nil 'delete-overlay overlay)))
+
 (defun skewer--save-point (f &rest args)
   "Return a function that calls F with point at the current point."
   (let ((saved-point (point)))
@@ -442,16 +452,6 @@ Uncaught exceptions propagate to Emacs as an error."
       (save-excursion
         (goto-char saved-point)
         (apply f (append args more))))))
-
-(defun skewer-ping ()
-  "Ping the browser to test that it's still alive."
-  (unless (null skewer-clients) ; don't queue pings
-    (skewer-eval (prin1-to-string (float-time)) nil :type "ping")))
-
-(defun skewer-last-seen-seconds ()
-  "Return the number of seconds since the browser was last seen."
-  (skewer-ping) ; make sure it's still alive next request
-  (- (float-time) skewer--last-timestamp))
 
 (defun skewer-mode-strict-p ()
   "Return T if buffer contents indicates strict mode."
@@ -466,12 +466,6 @@ Uncaught exceptions propagate to Emacs as an error."
              (code (buffer-substring-no-properties (js2-node-abs-pos node)
                                                    (js2-node-abs-end node))))
         (and (member code stricts) t)))))
-
-(defun skewer-flash-region (start end &optional timeout)
-  "Temporarily highlight region from START to END."
-  (let ((overlay (make-overlay start end)))
-    (overlay-put overlay 'face 'secondary-selection)
-    (run-with-timer (or timeout 0.2) nil 'delete-overlay overlay)))
 
 (defun skewer-get-last-expression ()
   "Return the JavaScript expression before the point as a
@@ -638,6 +632,8 @@ inconsistent buffer."
   "Kill all inferior phantomjs processes connected to Skewer."
   (interactive)
   (mapc #'kill-process skewer-phantomjs-processes))
+
+(require 'skewer-bosh)
 
 (provide 'skewer-mode)
 
