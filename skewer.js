@@ -12,7 +12,7 @@
 function skewer() {
     skewer.websocket(function(error) {
         var message = error.message || 'WebSocket failed';
-        console.log('noitce: ' + message + ': trying BOSH');
+        console.log('notice: ' + message + ': trying BOSH');
         skewer.bosh();
     });
 }
@@ -32,7 +32,6 @@ skewer.websocket = function(onerror) {
     }
 
     function onclose(event) {
-        console.log('ONCLOSE');
         onerror(event);
     }
 

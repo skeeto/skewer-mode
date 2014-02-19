@@ -14,7 +14,9 @@
 (defclass skewer-ws-client (skewer-client)
   ((websocket :accessor skewer-websocket
               :initarg :websocket
-              :documentation "Struct from the websocket library.")))
+              :documentation "Struct from the websocket library.")
+   (closed-p :accessor skewer-closed-p
+             :documentation "Non-nil if this client has been closed.")))
 
 (defun skewer-ws-to-client (websocket)
   "Return the skewer-client belonging to WEBSOCKET."
@@ -39,7 +41,10 @@
 
 (defun skewer-ws-on-close (websocket)
   "The server's WebSocket onclose event."
-  (skewer-close (skewer-ws-to-client websocket)))
+  (unless (processp websocket) ; ignore server process
+    (let ((client (skewer-ws-to-client websocket)))
+      (setf (skewer-closed-p client) t)
+      (skewer-close client))))
 
 (defun skewer-websocket-start ()
   "Start the Skewer WebSocket server."
@@ -54,17 +59,18 @@
 (defun skewer-websocket-stop ()
   "Stop the Skewer WebSocket server."
   (interactive)
-  (when skewer-websocket-server
+  (when (and skewer-websocket-server (process-live-p skewer-websocket-server))
     (websocket-server-close skewer-websocket-server)
     (setf skewer-websocket-server nil)))
 
 (defmethod skewer-close ((client skewer-ws-client))
-  (let ((process (skewer-process client)))
-    (when (process-live-p process)
-      (websocket-close process))))
+  (when (and (not (skewer-closed-p client)) (skewer-live-p client))
+    (websocket-close (skewer-websocket client))))
 
 (defmethod skewer-request ((client skewer-ws-client) request)
-  (websocket-send-text (skewer-websocket client) (json-encode request)))
+  (if (or (skewer-closed-p client) (not (skewer-live-p client)))
+      (skewer-close client)
+    (websocket-send-text (skewer-websocket client) (json-encode request))))
 
 (defun skewer-websocket-first-start ()
   "One-shot hook function to start the websocket server."
