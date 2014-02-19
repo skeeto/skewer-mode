@@ -41,10 +41,11 @@
 
 (defun skewer-ws-on-close (websocket)
   "The server's WebSocket onclose event."
-  (unless (processp websocket) ; ignore server process
+  (when (websocket-p websocket) ; ignore server process
     (let ((client (skewer-ws-to-client websocket)))
-      (setf (skewer-closed-p client) t)
-      (skewer-close client))))
+      (when client
+        (setf (skewer-closed-p client) t)
+        (skewer-close client)))))
 
 (defun skewer-websocket-start ()
   "Start the Skewer WebSocket server."
