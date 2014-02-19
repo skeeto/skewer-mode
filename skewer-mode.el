@@ -427,8 +427,7 @@ Uncaught exceptions propagate to Emacs as an error."
 
 (defun skewer-ping ()
   "Ping the browser to test that it's still alive."
-  (unless (null skewer-clients) ; don't queue pings
-    (skewer-eval (prin1-to-string (float-time)) nil :type "ping")))
+  (skewer-eval (prin1-to-string (float-time)) nil :type "ping"))
 
 (defun skewer-last-seen-seconds ()
   "Return the number of seconds since a browser was last seen, nil if never."
