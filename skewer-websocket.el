@@ -6,7 +6,8 @@
 (require 'skewer-mode)
 
 (defvar skewer-websocket-port 9999
-  "Port for serving websocket connections.")
+  "Port for serving websocket connections. If nil, don't start
+the websocket server.")
 
 (defvar skewer-websocket-server nil
   "WebSocket server connection.")
@@ -50,7 +51,7 @@
 (defun skewer-websocket-start ()
   "Start the Skewer WebSocket server."
   (interactive)
-  (unless skewer-websocket-server
+  (unless (or skewer-websocket-server (null skewer-websocket-port))
     (setf skewer-websocket-server
           (websocket-server skewer-websocket-port
                             :on-open #'skewer-ws-on-open
