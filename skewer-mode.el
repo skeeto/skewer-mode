@@ -370,18 +370,18 @@ automatically added to the global client list.")
 :STRICT  -- if T, expression is evaluated with 'use strict'
 :TYPE    -- chooses the JavaScript handler (default: eval)
 :EXTRA   -- additional alist keys to append to the request object"
-  (dolist (client skewer-clients)
-    ;; Unique request object for each client.
-    (let* ((id (skewer-id-create))
-           (request `((type . ,type)
-                      (eval . ,string)
-                      (id . ,id)
-                      (verbose . ,verbose)
-                      (strict . ,strict)
-                      ,@extra)))
-      (when callback
-        (skewer-register-callback id callback))
-      (skewer-request client request))))
+  ;; Unique request object for each client.
+  (cl-loop for client in skewer-clients
+           for id = (skewer-id-create)
+           for request = `((type . ,type)
+                           (eval . ,string)
+                           (id . ,id)
+                           (verbose . ,verbose)
+                           (strict . ,strict)
+                           ,@extra)
+           when callback do (skewer-register-callback id callback)
+           do (skewer-request client request)
+           collect request))
 
 (defun skewer-eval-synchronously (string &rest args)
   "Just like `skewer-eval' but synchronously, so don't provide a
@@ -531,11 +531,11 @@ waiting browser."
   "Insert the result after its source expression."
   (if (not (skewer-success-p result))
       (skewer-post-minibuffer result)
-    (let* ((id (cdr (assoc 'id result)))
+    (let* ((id (skewer-request-id result))
            (pos (cache-table-get id skewer-eval-print-map)))
       (when pos
         (with-current-buffer (car pos)
-          (goto-char (cdr pos))
+          (setf (point) (cdr pos))
           (insert (cdr (assoc 'value result)) "\n"))))))
 
 (defun skewer-eval-print-last-expression ()
@@ -547,11 +547,11 @@ waiting browser and insert the result in the buffer at point."
        (skewer--save-point #'skewer-eval-print-last-expression))
     (cl-destructuring-bind (string start end) (skewer-get-defun)
       (skewer-flash-region start end)
-      (insert "\n")
-      (let* ((request (skewer-eval string #'skewer-post-print :verbose t))
-             (id (cdr (assoc 'id request)))
-             (pos (cons (current-buffer) (point))))
-        (setf (cache-table-get id skewer-eval-print-map) pos)))))
+      (let* ((pos (cons (current-buffer) (point)))
+             (requests (skewer-eval string #'skewer-post-print :verbose t)))
+        (cl-loop for request in requests
+                 for id = (skewer-request-id request)
+                 do (setf (cache-table-get id skewer-eval-print-map) pos))))))
 
 ;; Script loading
 
