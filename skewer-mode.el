@@ -435,7 +435,7 @@ Uncaught exceptions propagate to Emacs as an error."
   (skewer-ping) ; make sure it's still alive next request
   (cl-loop with time = (float-time)
            for client in skewer-clients
-           minimize (- (float-time) (skewer-last-seen client))))
+           minimize (- time (skewer-last-seen client))))
 
 ;; Region Grabbing (js2-mode stuff)
 
