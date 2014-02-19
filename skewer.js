@@ -82,8 +82,8 @@ skewer.bosh = function() {
     // Restart connection if there is one already opened
     skewer.close();
 
-    function onstatechange(event) {
-        var xhr = event.target;
+    function onstatechange() {
+        var xhr = pending;
         switch (xhr.readyState) {
         case 1:
             polling += 1;
