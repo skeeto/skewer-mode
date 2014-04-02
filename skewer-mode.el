@@ -149,7 +149,7 @@
   "Keymap for skewer-mode.")
 
 (defvar skewer-data-root (file-name-directory load-file-name)
-  "Location of data files needed by impatient-mode.")
+  "Location of data files needed by Skewer.")
 
 (defvar skewer-js-hook ()
   "Hook to run when skewer.js is being served to the browser.
