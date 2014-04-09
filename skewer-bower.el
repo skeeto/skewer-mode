@@ -62,10 +62,11 @@ them from hitting the network frequently.")
 (defun skewer-bower-refresh ()
   "Update the package listing and packages synchronously."
   (interactive)
+  (cl-declare (special url-http-end-of-headers))
   (setf skewer-bower-refreshed nil)
   (with-current-buffer
       (url-retrieve-synchronously (concat skewer-bower-endpoint "/packages"))
-    (re-search-forward "\r?\n\r?\n")
+    (setf (point) url-http-end-of-headers)
     (setf skewer-bower-packages
           (cl-sort
            (cl-loop for package across (json-read)
