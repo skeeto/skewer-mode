@@ -584,7 +584,8 @@ inconsistent buffer."
 (defun skewer-phantomjs-kill ()
   "Kill all inferior phantomjs processes connected to Skewer."
   (interactive)
-  (mapc #'kill-process skewer-phantomjs-processes))
+  (mapc #'delete-process skewer-phantomjs-processes)
+  (setf skewer-phantomjs-processes nil))
 
 (provide 'skewer-mode)
 
