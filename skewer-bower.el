@@ -155,13 +155,16 @@ if no configuration could be found."
 (defun skewer-bower-prompt-package ()
   "Prompt for a package and version from the user."
   (when (null skewer-bower-packages) (skewer-bower-refresh))
+  ;; ido-completing-read bug workaround:
+  (when (> (length skewer-bower-history) 32)
+    (setf skewer-bower-history (cl-subseq skewer-bower-history 0 16)))
   (let* ((packages (mapcar #'car skewer-bower-packages))
-         (selection (cl-delete-duplicates
-                     (append skewer-bower-history packages) :from-end t))
+         (selection (nconc skewer-bower-history packages))
          (package (completing-read "Library: " selection nil t nil
                                    'skewer-bower-history))
-         (versions (skewer-bower-package-versions package))
-         (version (completing-read "Version: " (reverse versions))))
+         (versions (reverse (skewer-bower-package-versions package)))
+         (version (completing-read "Version: " versions
+                                   nil t nil nil (car versions))))
     (list package version)))
 
 (defun skewer-bower--js-p (filename)
@@ -187,7 +190,7 @@ guessing failed."
 (defun skewer-bower-load (package &optional version)
   "Dynamically load a library from bower into the current page."
   (interactive (skewer-bower-prompt-package))
-  (let* ((config (skewer-bower-get-config package))
+  (let* ((config (skewer-bower-get-config package version))
          (deps (cdr (assoc 'dependencies config)))
          (main (skewer-bower-guess-main package version config)))
     (when (null main)
