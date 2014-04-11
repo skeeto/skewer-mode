@@ -179,9 +179,9 @@ guessing failed."
           ((and (stringp main) (funcall check main))
            (list main))
           ((funcall check (concat package ".js"))
-           (concat package ".js"))
+           (list (concat package ".js")))
           ((funcall check package)
-           package))))
+           (list package)))))
 
 ;;;###autoload
 (defun skewer-bower-load (package &optional version)
