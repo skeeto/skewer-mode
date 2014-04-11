@@ -164,14 +164,24 @@ if no configuration could be found."
          (version (completing-read "Version: " (reverse versions))))
     (list package version)))
 
+(defun skewer-bower--js-p (filename)
+  "Return non-nil if FILENAME looks like JavaScript."
+  (string-match "\\.js$" filename))
+
 (defun skewer-bower-guess-main (package version config)
-  "Attempt to determine the main entrypoint from a potentially
+  "Attempt to determine the main entrypoints from a potentially
 incomplete or incorrect bower configuration. Returns nil if
 guessing failed."
-  (cl-find-if (apply-partially #'skewer-bower-git-show package version)
-              (remove nil (list (cdr (assoc 'main config))
-                                (concat package ".js")
-                                package))))
+  (let ((check (apply-partially #'skewer-bower-git-show package version))
+        (main (cdr (assoc 'main config))))
+    (cond ((and (vectorp main) (cl-some check main))
+           (cl-coerce (cl-remove-if-not #'skewer-bower--js-p main) 'list))
+          ((and (stringp main) (funcall check main))
+           (list main))
+          ((funcall check (concat package ".js"))
+           (concat package ".js"))
+          ((funcall check package)
+           package))))
 
 ;;;###autoload
 (defun skewer-bower-load (package &optional version)
@@ -185,8 +195,9 @@ guessing failed."
              package version))
     (cl-loop for (dep . version) in deps
              do (skewer-bower-load (format "%s" dep) version))
-    (let ((path (skewer-bowser--path package version main)))
-      (skewer-eval path nil :type "script"))))
+    (cl-loop for entrypoint in main
+             for path = (skewer-bowser--path package version entrypoint)
+             do (skewer-eval path nil :type "script"))))
 
 (defservlet skewer/bower application/javascript (path)
   "Serve a script from the local bower repository cache."
