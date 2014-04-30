@@ -299,7 +299,7 @@ skewer.safeStringify = function (object, verbose) {
             }
         } else if (typeof obj === "string") {
             return JSON.stringify(obj);
-        } else if (obj instanceof Node) {
+        } else if (window.Node != null && obj instanceof Node) {
             return obj.toString();  // DOM elements can't stringify
         } else if (typeof obj === "function") {
             if (verbose)
