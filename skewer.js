@@ -110,6 +110,14 @@ skewer.globalEval = (function() {
 }());
 
 /**
+ * Same as Date.now(), supplied for pre-ES5 JS (<=IE8).
+ * @returns {number} The epoch time in milliseconds
+ */
+skewer.now = function() {
+    return new Date().valueOf();
+};
+
+/**
  * Handlers accept a request object from Emacs and return either a
  * logical false (no response) or an object to return to Emacs.
  * @namespace Request handlers.
@@ -125,7 +133,7 @@ skewer.fn.eval = function(request) {
     var result = {
         strict: request.strict
     };
-    var start = Date.now();
+    var start = skewer.now();
     try {
         var prefix = request.strict ? '"use strict";\n' : "";
         var value = skewer.globalEval(prefix + request.eval);
@@ -133,7 +141,7 @@ skewer.fn.eval = function(request) {
     } catch (error) {
         result = skewer.errorResult(error, result, request);
     }
-    result.time = (Date.now() - start) / 1000;
+    result.time = (skewer.now() - start) / 1000;
     return result;
 };
 
@@ -157,7 +165,7 @@ skewer.fn.script = function(request) {
 skewer.fn.ping = function(request) {
     return {
         type: 'pong',
-        date: Date.now() / 1000,
+        date: skewer.now() / 1000,
         value: request.eval
     };
 };
