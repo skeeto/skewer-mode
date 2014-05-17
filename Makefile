@@ -1,9 +1,13 @@
 EMACS   ?= emacs
-BATCH   := $(EMACS) -batch -Q -L .
-COMPILE := $(BATCH) -f batch-byte-compile
-VERSION := $(word 1,$(subst -, ,$(shell git describe)))
+CASK    ?= cask
+VIRTUAL := $(CASK) exec $(EMACS)
+BATCH   := $(VIRTUAL) -batch -Q -L .
+
+PACKAGE := skewer-mode
+VERSION := $(shell $(CASK) version)
 
 EL  = skewer-mode.el
+EL  = skewer-bosh.el
 EL += skewer-setup.el
 EL += cache-table.el
 EL += skewer-bower.el
@@ -11,23 +15,26 @@ EL += skewer-css.el
 EL += skewer-html.el
 EL += skewer-repl.el
 ELC = $(EL:.el=.elc)
-PKG = skewer-mode-pkg.el
 
-DIST_FILES = $(PKG) $(EL) skewer.js example.html README.md UNLICENSE
+DIST_FILES = $(EL) skewer.js example.html README.md
 
 .PHONY : all package compile clean
 
-all : package
+all : compile
 
-skewer-mode-$(VERSION).tar : $(DIST_FILES)
-	tar -cf $@ --transform "s,^,skewer-mode-$(VERSION)/," $^
+.cask : Cask
+	cask install
+	touch .cask
 
-package: skewer-mode-$(VERSION).tar
+$(PACKAGE)-$(VERSION).tar : $(DIST_FILES)
+	tar -cf $@ --transform "s,^,$(PACKAGE)-$(VERSION)/," $^
 
-compile: $(ELC)
+package: $(PACKAGE)-$(VERSION).tar
+
+compile: .cask $(ELC)
 
 clean:
 	$(RM) *.tar $(ELC)
 
 %.elc: %.el
-	$(COMPILE) $<
+	$(BATCH) -f batch-byte-compile $<

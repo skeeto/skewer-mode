@@ -10,7 +10,16 @@
  * @namespace Holds all of Skewer's functionality.
  */
 function skewer() {
-    function callback(request) {
+    var polling = 0, // Number of connections in polling state
+        pending = null, // Pending request being on server side
+        ckey = (Math.random() * Math.pow(16, 8)).toString(16);
+
+    // Restart connection if there is one already opened
+    if (skewer.close) {
+        skewer.close();
+    }
+
+    function handleReqestFromEmacs(request) {
         var result = skewer.fn[request.type](request);
         if (result) {
             result = skewer.extend({
@@ -19,16 +28,100 @@ function skewer() {
                 status: 'success',
                 value: ''
             }, result);
-            skewer.postJSON(skewer.host + "/skewer/post", result, callback);
-        } else {
-            skewer.getJSON(skewer.host + "/skewer/get", callback);
+            skewer.send(result);
         }
+    }
+
+    function onstatechange() {
+        var xhr = pending;
+        switch (xhr.readyState) {
+        case 1:
+            polling += 1;
+            break;
+        case 4:
+            polling -= 1;
+            if (xhr.status === 200) {
+                if (xhr.responseText) {
+                    handleReqestFromEmacs(JSON.parse(xhr.responseText));
+                }
+            } else if (!xhr.aborted) {
+                if (xhr.status < 500 ) {
+                    // No point of retrying on 40x and 30x errors
+                    return;
+                } else if (xhr.status !== 504) {
+                    // On all errors from 50x, except 504 retry after
+                    // a minute. On 504 retry automatically, because
+                    // browser was already waiting its timeout.
+                    setTimeout(flush, 1000);
+                    return;
+                }
+            }
+            flush();
+        }
+    }
+
+    function get() {
+        var xhr = pending = new XMLHttpRequest();
+        xhr.onreadystatechange = onstatechange;
+        xhr.open('GET', skewer.host + "/skewer/channel", true);
+        xhr.setRequestHeader("X-Skewer-Connection-Key", ckey);
+        xhr.send();
+    }
+
+    function post(messages) {
+        var xhr = pending = new XMLHttpRequest();
+        xhr.onreadystatechange = onstatechange;
+        xhr.open('POST', skewer.host + "/skewer/channel", true);
+        xhr.setRequestHeader("X-Skewer-Connection-Key", ckey);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send('[' + messages + ']');
+    }
+
+    function flush() {
+        if (skewer._queue.length > 0) {
+            if (polling <= 1) {
+                post(skewer._queue);
+                skewer._queue = [];
+            }
+        } else if (polling === 0) {
+            // There is no reason to fire empty get if there is
+            // already some connection polling.
+            get();
+        }
+    }
+
+    skewer.send = (function (send){
+        function sendWithFlush(message) {
+            send(message);
+            // Delay flush to allow collecting more messages
+            setTimeout(flush, 0);
+        };
+        sendWithFlush.restore = function restore() {
+            skewer.send = send;
+        };
+        return sendWithFlush;
+    }(skewer.send));
+
+    skewer.close = function close() {
+        skewer.send.restore();
+        pending.abort();
+        delete skewer.close;
     };
-    skewer.getJSON(skewer.host + "/skewer/get", callback);
+
+    skewer.ckey = ckey;
+    flush();
 }
 
 /**
+ * Queue of messages for the server. Do not use directly, instead use
+ * {@link send}.
+ * @private
+ */
+skewer._queue = [];
+
+/**
  * Get a JSON-encoded object from a server.
+ * It is supposed to be used with custom url.
  * @param {String} url The location of the remote server
  * @param {Function} [callback] The callback to receive a response object
  */
@@ -45,6 +138,10 @@ skewer.getJSON = function(url, callback) {
 
 /**
  * Send a JSON-encoded object to a server.
+ * It is supposed to be used with custom urls. When communicating with
+ * skewer emacs hooks it is much better to use send method. Which takes care
+ * of keeping low latency and combining multiple message to save bandwidth.
+ *
  * @param {String} url The location of the remote server
  * @param {Object} object The object to transmit to the server
  * @param {Function} [callback] The callback to receive a response object
@@ -59,6 +156,15 @@ skewer.postJSON = function(url, object, callback) {
     xhr.open('POST', url, true);
     xhr.setRequestHeader("Content-Type", "text/plain"); // CORS
     xhr.send(JSON.stringify(object));
+};
+
+/**
+ * Send a message to server via BOSH like channel. The message may be
+ * queued and combined with other messages.
+ * @param {Object} object The object to transmit to the server
+ */
+skewer.send = function(object) {
+    skewer._queue.push(JSON.stringify(object));
 };
 
 /**
@@ -349,11 +455,10 @@ skewer.safeStringify = function (object, verbose) {
  */
 skewer.log = function(message) {
     "use strict";
-    var log = {
+    skewer.send({
         type: "log",
         value: skewer.safeStringify(message, true)
-    };
-    skewer.postJSON(skewer.host + "/skewer/post", log);
+    });
 };
 
 /**
@@ -362,14 +467,13 @@ skewer.log = function(message) {
  */
 skewer.error = function(event) {
     "use strict";
-    var log = {
+    skewer.send({
         type: "error",
         value: event.message,
         filename: event.filename,
         line: event.lineno,
         column: event.column
-    };
-    skewer.postJSON(skewer.host + "/skewer/post", log);
+    });
 };
 
 /**
