@@ -88,6 +88,10 @@
 
 ;;; History:
 
+;; Version 1.6.1: fixes
+;;   * Add `skewer-css-clear-all'
+;;   * Better IE8 compatibility
+;;   * User interface tweaks
 ;; Version 1.6.0: fixes
 ;;   * Bring up to speed with Emacs 24.3
 ;;   * Switch to cl-lib from cl
