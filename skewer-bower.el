@@ -202,7 +202,7 @@ guessing failed."
              for path = (skewer-bowser--path package version entrypoint)
              do (skewer-eval path nil :type "script"))))
 
-(defservlet skewer/bower application/javascript (path)
+(defservlet skewer/bower "application/javascript; charset=utf-8" (path)
   "Serve a script from the local bower repository cache."
   (cl-destructuring-bind (_ _skewer _bower package version . parts)
       (split-string path "/")
