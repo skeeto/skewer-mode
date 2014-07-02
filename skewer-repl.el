@@ -53,8 +53,9 @@ buffer.")
   "Provide a REPL into the visiting browser."
   :group 'skewer
   :syntax-table emacs-lisp-mode-syntax-table
-  (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt)))
-  (setq comint-input-sender 'skewer-input-sender)
+  (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt))
+        comint-input-sender 'skewer-input-sender
+        comint-process-echoes nil)
   (unless (comint-check-proc (current-buffer))
     (insert skewer-repl-welcome)
     (start-process "skewer-repl" (current-buffer) nil)
