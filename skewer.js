@@ -261,6 +261,10 @@ skewer.fn.fetchselector = function(request) {
     var script = document.querySelector('script[src$="/skewer"]');
     if (script) {
         skewer.host = script.src.match(/\w+:\/\/[^/]+/)[0];
+    } else if (skewerHost) {
+	/* global set in an injected context where skewer.host's
+	 scheme would otherwise default to file://, e.g., PhantomJS */
+	skewer.host = skewerHost;
     } else {
         skewer.host = '';  // default to the current host
     }
