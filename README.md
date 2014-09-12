@@ -95,9 +95,9 @@ To skewer your own document rather than the provided blank one,
  5. Visit the document from your browser
 
 Skewer fully supports CORS so the document need not be hosted by Emacs
-itself. A Greasemonkey userscript is provided for injecting Skewer
-into any arbitrary page you're visiting without needing to modify the
-page on the host. More information below.
+itself. A Greasemonkey userscript is provided, *Skewer Everything*,
+for injecting Skewer into any arbitrary page you're visiting without
+needing to modify the page on the host. More information below.
 
 **Don't copy `skewer.js` anywhere or use it directly**. Emacs hosts
 this script itself, manipulating it in memory before it reaches the
@@ -132,10 +132,10 @@ a script in that document.
 
 If you don't control the server from which you want to skewer pages --
 such that you can't add the Skewer's script -- the provided
-Greasemonkey userscript can be used to inject it into any page you
-visit. Note that this userscript will assume you're running the Skewer
-server at http://localhost:8080/ (simple-httpd's default port). If
-this isn't true, you need to edit the top of the userscript.
+Greasemonkey userscript (`.user.js`) can be used to inject it into any
+page you visit. Note that this userscript will assume you're running
+the Skewer server at http://localhost:8080/ (simple-httpd's default
+port). If this isn't true, you need to edit the top of the userscript.
 
 The script isn't actually injected until you switch the toggle in the
 top-right corner, the red/green triangle.
