@@ -347,13 +347,15 @@ skewer.safeStringify = function (object, verbose) {
  * Log an object to the Skewer REPL in Emacs (console.log).
  * @param message The object to be logged.
  */
-skewer.log = function(message) {
+skewer.log = function() {
     "use strict";
-    var log = {
-        type: "log",
-        value: skewer.safeStringify(message, true)
-    };
-    skewer.postJSON(skewer.host + "/skewer/post", log);
+    for (var i = 0; i < arguments.length; i++) {
+        var log = {
+            type: "log",
+            value: skewer.safeStringify(arguments[i], true)
+        };
+        skewer.postJSON(skewer.host + "/skewer/post", log);
+    }
 };
 
 /**
