@@ -88,6 +88,9 @@
 
 ;;; History:
 
+;; Version 1.6.2: fixes
+;;   * skewer.log() takes multiple arguments
+;;   * comint and encoding fixes
 ;; Version 1.6.1: fixes
 ;;   * Add `skewer-css-clear-all'
 ;;   * Better IE8 compatibility
