@@ -28,6 +28,7 @@
 ;; `skewer-mode'.
 
 ;;  * C-x C-e -- `skewer-eval-last-expression'
+;;  * C-c C-p -- `skewer-eval-and-print-last-expression'
 ;;  * C-M-x   -- `skewer-eval-defun'
 ;;  * C-c C-k -- `skewer-load-buffer'
 
@@ -148,6 +149,7 @@
   (let ((map (make-sparse-keymap)))
     (prog1 map
       (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)
+      (define-key map (kbd "C-c C-p") 'skewer-eval-and-print-last-expression)
       (define-key map (kbd "C-M-x") 'skewer-eval-defun)
       (define-key map (kbd "C-c C-k") 'skewer-load-buffer)))
   "Keymap for skewer-mode.")
@@ -442,7 +444,11 @@ list: (string start end)."
             (end (js2-node-abs-end node)))
         (list (buffer-substring-no-properties start end) start end)))))
 
-(defun skewer-eval-last-expression (&optional prefix)
+(defun skewer-eval-and-print-last-expression ()
+  (interactive)
+  (skewer-eval-last-expression nil :pprint t))
+
+(cl-defun skewer-eval-last-expression (&optional prefix &key (pprint nil))
   "Evaluate the JavaScript expression before the point in the
 waiting browser. If invoked with a prefix argument, insert the
 result into the current buffer."
@@ -454,7 +460,15 @@ result into the current buffer."
          (skewer--save-point #'skewer-eval-last-expression))
       (cl-destructuring-bind (string start end) (skewer-get-last-expression)
         (skewer-flash-region start end)
-        (skewer-eval string #'skewer-post-minibuffer)))))
+        (skewer-eval (if pprint
+                         (concat "skewer.log("
+                                 ;; remove tailing semicolon
+                                 (let ((trimmed (trim-string string)))
+                                   (if (equal (substring trimmed -1 nil) ";")
+                                       (substring trimmed 0 -1)
+                                     trimmed)) ");")
+                       string)
+                     #'skewer-post-minibuffer)))))
 
 (defun skewer-get-defun ()
   "Return the toplevel JavaScript expression around the point as
