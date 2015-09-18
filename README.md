@@ -174,7 +174,7 @@ server-side.
 
 [simple-httpd]: https://github.com/skeeto/emacs-http-server
 [js2-mode]: https://github.com/mooz/js2-mode
-[melpa]: http://melpa.milkbox.net/
+[melpa]: https://melpa.org/
 [swank-js]: https://github.com/swank-js/swank-js
 [cors]: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
 [kite]: https://github.com/jscheid/kite
