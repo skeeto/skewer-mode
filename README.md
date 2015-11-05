@@ -96,11 +96,10 @@ To skewer your own document rather than the provided blank one,
 
 #### How to visit HTML file
 
-To view an HTML file being developed, do the following:
+To visit an HTML document, do the following:
 
-1. `(setq httpd-root "~/web-page-making")` web-page-making is the directory where the HTML file to be visited is.
-2. At your browser's URL field enter: `http://127.0.0.1:8080/index.html` 8080 is the value of `httpd-port` and `index.html` is the HTML file name.
-
+1. `(setq httpd-root "~/web-page-making")` `web-page-making` is the directory where the HTML document to be visited is.
+2. At your browser's URL field enter: `http://127.0.0.1:8080/index.html` `8080` is the value of `httpd-port` and `index.html` is the HTML document name.
 
 
 Skewer fully supports CORS so the document need not be hosted by Emacs
