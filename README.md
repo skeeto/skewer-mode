@@ -146,6 +146,11 @@ Alternatively, the following bookmarklet will load skewer on demand:
 javascript:(function(){var d=document;var s=d.createElement('script');s.src='http://localhost:8080/skewer';d.body.appendChild(s);})()
 ```
 
+With a browser plugin like
+[Custom Javascript for Websites](https://chrome.google.com/webstore/detail/custom-javascript-for-web/poakhlngfciodnhlhhgnaaelnpjljija?hl=en),
+you can use the bookmarklet to auto-skewer specific domains, saving you a
+mouse click on each reload.
+
 ## bower
 
 Also provided are some functions for loading libraries from the bower
