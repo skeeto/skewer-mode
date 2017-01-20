@@ -56,6 +56,7 @@ buffer.")
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt))
         comint-input-sender 'skewer-input-sender
         comint-process-echoes nil)
+  (setq-local company-backends '(company-skewer-repl))
   (unless (comint-check-proc (current-buffer))
     (insert skewer-repl-welcome)
     (start-process "skewer-repl" (current-buffer) nil)
@@ -143,6 +144,63 @@ matched files can be found."
     (with-current-buffer (get-buffer-create "*skewer-repl*")
       (skewer-repl-mode)))
   (pop-to-buffer (get-buffer "*skewer-repl*")))
+
+(defun company-skewer-repl (command &optional arg &rest _args)
+  "Skewerl REPL backend for company-mode.
+See `company-backends' for more info about COMMAND and ARG."
+  (interactive (list 'interactive))
+  (cl-case command
+    (interactive (company-begin-backend 'company-skewer-repl))
+    (prefix (skewer-repl-company-prefix))
+    (ignore-case t)
+    (sorted t)
+    (candidates (cons :async
+                      (lambda (callback)
+                        (skewer-repl-get-completions arg callback))))))
+
+(defun skewer-repl-get-completions (arg callback)
+  "Get the completion list matching the prefix ARG.
+Evaluate CALLBACK with the completion candidates."
+  (string-match "\\." arg)
+  (let* ((expression (substring-no-properties (skewer-repl--get-completion-expression arg)))
+         (pattern (substring-no-properties arg (1+ (length expression)))))
+    (skewer-eval (skewer-repl--format-completion-call expression pattern)
+                 (lambda (result)
+                   (let* ((value (json-read-from-string (cdr (assoc 'value result))))
+                         (completions (mapcar (lambda (completion)
+                                      (concat expression "." completion))
+                                        value)))
+                     (funcall callback completions))))))
+
+(defun skewer-repl--get-completion-expression (arg)
+  "Get completion expression from ARG."
+  (let ((components (split-string arg "\\.")))
+    (if (> (length components) 1)
+        (mapconcat 'identity
+                   (cl-subseq components
+                           0
+                           (- (length components) 1))
+                   ".")
+      "window")))
+
+(defun skewer-repl--format-completion-call (expression pattern)
+  "Format js function  for completion using EXPRESSION and PATTERN."
+  (format "(function(val) {
+  if (!val) return [];
+  var regex = new RegExp('%s');
+  var keys = new Set();
+  for (var key in val) regex.test(key) && keys.add(key);
+  Object.getOwnPropertyNames(val).forEach(key => regex.test(key) && keys.add(key))
+  return Array.from(keys)
+})(%s)"
+          pattern
+          expression))
+
+(defun skewer-repl-company-prefix ()
+  "Prefix for company."
+  (and (eq major-mode 'skewer-repl-mode)
+       (or (company-grab-symbol-cons "\\." 1)
+           'stop)))
 
 ;;;###autoload
 (eval-after-load 'skewer-mode
