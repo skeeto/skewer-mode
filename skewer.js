@@ -271,7 +271,7 @@ skewer.fn.completions = function(request) {
             keys.add(props[i]);
         }
     }
-    return { value: Array.from(keys) };
+    return { value: Array.from(keys).sort() };
 };
 
 /**
