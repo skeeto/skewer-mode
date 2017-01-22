@@ -56,7 +56,11 @@ buffer.")
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt))
         comint-input-sender 'skewer-input-sender
         comint-process-echoes nil)
-  (setq-local company-backends '(company-skewer-repl))
+  ;; Make opportunistic use of company-mode, but don't require it.
+  ;; This means company-backends may be undeclared, so don't emit a
+  ;; warning about it.
+  (with-no-warnings
+    (setq-local company-backends '(company-skewer-repl)))
   (unless (comint-check-proc (current-buffer))
     (insert skewer-repl-welcome)
     (start-process "skewer-repl" (current-buffer) nil)
@@ -150,7 +154,9 @@ matched files can be found."
 See `company-backends' for more info about COMMAND and ARG."
   (interactive (list 'interactive))
   (cl-case command
-    (interactive (company-begin-backend 'company-skewer-repl))
+    (interactive
+     (with-no-warnings ;; opportunistic use of company-mode
+       (company-begin-backend 'company-skewer-repl)))
     (prefix (skewer-repl-company-prefix))
     (ignore-case t)
     (sorted t)
@@ -199,7 +205,8 @@ Evaluate CALLBACK with the completion candidates."
 (defun skewer-repl-company-prefix ()
   "Prefix for company."
   (and (eq major-mode 'skewer-repl-mode)
-       (or (company-grab-symbol-cons "\\." 1)
+       (or (with-no-warnings ;; opportunistic use of company-mode
+             (company-grab-symbol-cons "\\." 1))
            'stop)))
 
 ;;;###autoload
