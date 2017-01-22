@@ -168,39 +168,24 @@ See `company-backends' for more info about COMMAND and ARG."
   "Get the completion list matching the prefix ARG.
 Evaluate CALLBACK with the completion candidates."
   (string-match "\\." arg)
-  (let* ((expression (substring-no-properties (skewer-repl--get-completion-expression arg)))
-         (pattern (substring-no-properties arg (1+ (length expression)))))
-    (skewer-eval (skewer-repl--format-completion-call expression pattern)
+  (let* ((expression (skewer-repl--get-completion-expression arg))
+         (pattern (substring arg (1+ (length expression)))))
+    (skewer-eval expression
                  (lambda (result)
-                   (let* ((value (json-read-from-string (cdr (assoc 'value result))))
-                         (completions (mapcar (lambda (completion)
-                                      (concat expression "." completion))
-                                        value)))
-                     (funcall callback completions))))))
+                   (cl-loop with value = (cdr (assoc 'value result))
+                            for key being the elements of value
+                            for completion = (concat expression "." key)
+                            collect completion into completions
+                            finally (funcall callback completions)))
+                 :type "completions"
+                 :extra `((regexp . ,pattern)))))
 
 (defun skewer-repl--get-completion-expression (arg)
   "Get completion expression from ARG."
   (let ((components (split-string arg "\\.")))
     (if (> (length components) 1)
-        (mapconcat 'identity
-                   (cl-subseq components
-                           0
-                           (- (length components) 1))
-                   ".")
+        (mapconcat #'identity (cl-subseq components 0 -1) ".")
       "window")))
-
-(defun skewer-repl--format-completion-call (expression pattern)
-  "Format js function  for completion using EXPRESSION and PATTERN."
-  (format "(function(val) {
-  if (!val) return [];
-  var regex = new RegExp('%s');
-  var keys = new Set();
-  for (var key in val) regex.test(key) && keys.add(key);
-  Object.getOwnPropertyNames(val).forEach(key => regex.test(key) && keys.add(key))
-  return Array.from(keys)
-})(%s)"
-          pattern
-          expression))
 
 (defun skewer-repl-company-prefix ()
   "Prefix for company."

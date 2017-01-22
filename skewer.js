@@ -254,6 +254,27 @@ skewer.fn.fetchselector = function(request) {
 };
 
 /**
+ * Return a list of completions for an object.
+ */
+skewer.fn.completions = function(request) {
+    var object = skewer.globalEval(request.eval);
+    var keys = new Set();
+    var regex = new RegExp(request.regexp);
+    for (var key in object) {
+        if (regex.test(key)) {
+            keys.add(key);
+        }
+    }
+    var props = object != null ? Object.getOwnPropertyNames(object) : [];
+    for (var i = 0; i < props.length; i++) {
+        if (regex.test(props[i])) {
+            keys.add(props[i]);
+        }
+    }
+    return { value: Array.from(keys) };
+};
+
+/**
  * Host of the skewer script (CORS support).
  * @type string
  */
