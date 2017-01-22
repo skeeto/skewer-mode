@@ -167,25 +167,27 @@ See `company-backends' for more info about COMMAND and ARG."
 (defun skewer-repl-get-completions (arg callback)
   "Get the completion list matching the prefix ARG.
 Evaluate CALLBACK with the completion candidates."
-  (string-match "\\." arg)
   (let* ((expression (skewer-repl--get-completion-expression arg))
-         (pattern (substring arg (1+ (length expression)))))
-    (skewer-eval expression
+         (pattern (if expression
+                      (substring arg (1+ (length expression)))
+                    arg)))
+    (skewer-eval (or expression "window")
                  (lambda (result)
                    (cl-loop with value = (cdr (assoc 'value result))
                             for key being the elements of value
-                            for completion = (concat expression "." key)
-                            collect completion into completions
-                            finally (funcall callback completions)))
+                            when expression
+                            collect (concat expression "." key) into results
+                            else
+                            collect key into results
+                            finally (funcall callback results)))
                  :type "completions"
                  :extra `((regexp . ,pattern)))))
 
 (defun skewer-repl--get-completion-expression (arg)
   "Get completion expression from ARG."
   (let ((components (split-string arg "\\.")))
-    (if (> (length components) 1)
-        (mapconcat #'identity (cl-subseq components 0 -1) ".")
-      "window")))
+    (when (> (length components) 1)
+      (mapconcat #'identity (cl-subseq components 0 -1) "."))))
 
 (defun skewer-repl-company-prefix ()
   "Prefix for company."
