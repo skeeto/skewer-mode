@@ -24,6 +24,7 @@ function skewer() {
             skewer.getJSON(skewer.host + "/skewer/get", callback);
         }
     };
+    cors();
     skewer.getJSON(skewer.host + "/skewer/get", callback);
 }
 
@@ -278,14 +279,14 @@ skewer.fn.completions = function(request) {
  * Host of the skewer script (CORS support).
  * @type string
  */
-(function() {
+var cors = function() {
     var script = document.querySelector('script[src$="/skewer"]');
     if (script) {
         skewer.host = script.src.match(/\w+:\/\/[^/]+/)[0];
     } else {
         skewer.host = '';  // default to the current host
     }
-}());
+};
 
 /**
  * Stringify a potentially circular object without throwing an exception.
