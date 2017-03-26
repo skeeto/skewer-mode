@@ -258,6 +258,8 @@ callback. The response object is passed to the hook function.")
 (defservlet skewer "text/javascript; charset=UTF-8" ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root))
   (goto-char (point-max))
+  (httpd-send-header proc "text/plain" 200
+		     :Access-Control-Allow-Origin "*")
   (run-hooks 'skewer-js-hook))
 
 (defun httpd/skewer/get (proc _path _query req &rest _args)
