@@ -23,21 +23,24 @@
 ;; Macros
 
 (defmacro skewer-html--with-html-mode (&rest body)
-  "Run BODY in `html-mode' by either just doing it if the major
-mode is right, or by creating a temporary buffer."
-  ;; create new uninterned symbols to avoid name collisions
-  (let ((buffer-point (make-symbol "buffer-point"))
-        (buffer-string (make-symbol "buffer-string")))
-    `(if (eq major-mode 'html-mode)
-         (progn ,@body)
-       (let ((,buffer-point (point))
-             (,buffer-string (buffer-substring-no-properties
-                              (point-min) (point-max))))
-         (with-temp-buffer
-           (insert ,buffer-string)
-           (goto-char ,buffer-point)
-           (html-mode)
-           ,@body)))))
+  "Evaluate BODY as if in `html-mode', using a temp buffer if necessary."
+  (declare (indent 0))
+  (let ((orig-buffer (make-symbol "orig-buffer"))
+        (temp-buffer (make-symbol "temp-buffer"))
+        (orig-point  (make-symbol "orig-point")))
+    `(let ((,temp-buffer (and (not (eq major-mode 'html-mode))
+                              (generate-new-buffer " *skewer-html*")))
+           (,orig-buffer (current-buffer))
+           (,orig-point (point)))
+       (unwind-protect
+           (with-current-buffer (or ,temp-buffer ,orig-buffer)
+             (when ,temp-buffer
+               (insert-buffer-substring ,orig-buffer)
+               (setf (point) ,orig-point)
+               (html-mode))
+             ,@body)
+         (when ,temp-buffer
+           (kill-buffer ,temp-buffer))))))
 
 ;; Selector computation
 
