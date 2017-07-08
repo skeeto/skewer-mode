@@ -20,58 +20,82 @@
 (require 'sgml-mode)
 (require 'skewer-mode)
 
+;; Macros
+
+(defmacro skewer-html--with-html-mode (&rest body)
+  "Run BODY in `html-mode' by either just doing it if the major
+mode is right, or by creating a temporary buffer."
+  ;; create new uninterned symbols to avoid name collisions
+  (let ((buffer-point (make-symbol "buffer-point"))
+        (buffer-string (make-symbol "buffer-string")))
+    `(if (eq major-mode 'html-mode)
+         (progn ,@body)
+       (let ((,buffer-point (point))
+             (,buffer-string (buffer-substring-no-properties
+                              (point-min) (point-max))))
+         (with-temp-buffer
+           (insert ,buffer-string)
+           (goto-char ,buffer-point)
+           (html-mode)
+           ,@body)))))
+
 ;; Selector computation
 
 (defun skewer-html--cleanup (tag)
   "Cleanup TAG name from sgml-mode."
-  (replace-regexp-in-string "/$" "" (sgml-tag-name tag)))
+  (skewer-html--with-html-mode
+   (replace-regexp-in-string "/$" "" (sgml-tag-name tag))))
 
 (defun skewer-html--tag-after-point ()
   "Return the tag struct for the tag immediately following point."
-  (save-excursion
-    (forward-char 1)
-    (sgml-parse-tag-backward)))
+  (skewer-html--with-html-mode
+   (save-excursion
+     (forward-char 1)
+     (sgml-parse-tag-backward))))
 
 (defun skewer-html--get-context ()
   "Like `sgml-get-context' but to the root, skipping close tags."
-  (save-excursion
-    (cl-loop for context = (sgml-get-context)
-             while context
-             nconc (nreverse context) into tags
-             finally return (cl-delete 'close tags :key #'sgml-tag-type))))
+  (skewer-html--with-html-mode
+   (save-excursion
+     (cl-loop for context = (sgml-get-context)
+              while context
+              nconc (nreverse context) into tags
+              finally return (cl-delete 'close tags :key #'sgml-tag-type)))))
 
 (cl-defun skewer-html-compute-tag-nth (&optional (point (point)))
   "Compute the position of this tag within its parent."
-  (save-excursion
-    (setf (point) point)
-    (let ((context (skewer-html--get-context)))
-      (when context
-        (let ((tag-name (skewer-html--cleanup (car context)))
-              (target-depth (1- (length context))))
-          (cl-loop with n = 0
-                   ;; If point doesn't move, we're at the root.
-                   for point-start = (point)
-                   do (sgml-skip-tag-backward 1)
-                   until (= (point) point-start)
-                   ;; If depth changed, we're done.
-                   for current-depth = (length (skewer-html--get-context))
-                   until (< current-depth target-depth)
-                   ;; Examine the sibling tag.
-                   for current-name = (save-excursion
-                                        (forward-char)
-                                        (sgml-parse-tag-name))
-                   when (equal current-name tag-name)
-                   do (cl-incf n)
-                   finally return n))))))
+  (skewer-html--with-html-mode
+   (save-excursion
+     (setf (point) point)
+     (let ((context (skewer-html--get-context)))
+       (when context
+         (let ((tag-name (skewer-html--cleanup (car context)))
+               (target-depth (1- (length context))))
+           (cl-loop with n = 0
+                    ;; If point doesn't move, we're at the root.
+                    for point-start = (point)
+                    do (sgml-skip-tag-backward 1)
+                    until (= (point) point-start)
+                    ;; If depth changed, we're done.
+                    for current-depth = (length (skewer-html--get-context))
+                    until (< current-depth target-depth)
+                    ;; Examine the sibling tag.
+                    for current-name = (save-excursion
+                                         (forward-char)
+                                         (sgml-parse-tag-name))
+                    when (equal current-name tag-name)
+                    do (cl-incf n)
+                    finally return n)))))))
 
 (defun skewer-html-compute-tag-ancestry ()
   "Compute the ancestry chain at point."
-  (nreverse
-   (cl-loop for tag in (skewer-html--get-context)
-            for nth = (skewer-html-compute-tag-nth (1+ (sgml-tag-start tag)))
-            for name = (skewer-html--cleanup tag)
-            unless (equal name "html")
-            collect (list name nth))))
+  (skewer-html--with-html-mode
+   (nreverse
+    (cl-loop for tag in (skewer-html--get-context)
+             for nth = (skewer-html-compute-tag-nth (1+ (sgml-tag-start tag)))
+             for name = (skewer-html--cleanup tag)
+             unless (equal name "html")
+             collect (list name nth)))))
 
 (defun skewer-html-compute-selector ()
   "Compute the selector for exactly the tag around point."
@@ -108,8 +132,10 @@
   (let ((ancestry (skewer-html-compute-tag-ancestry)))
     (save-excursion
       ;; Move to beginning of opening tag
-      (let* ((beg (progn (sgml-skip-tag-forward 1) (point)))
-             (end (progn (sgml-skip-tag-backward 1) (point)))
+      (let* ((beg (skewer-html--with-html-mode
+                   (sgml-skip-tag-forward 1) (point)))
+             (end (skewer-html--with-html-mode
+                   (sgml-skip-tag-backward 1) (point)))
              (region (buffer-substring-no-properties beg end)))
         (skewer-flash-region beg end)
         (if (= (length ancestry) 1)
