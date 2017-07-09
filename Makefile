@@ -7,7 +7,7 @@ EMACS   = emacs
 LDFLAGS = -L ../simple-httpd -L ../js2-mode
 BATCH   = $(EMACS) -Q -batch -L . $(LDFLAGS)
 COMPILE = $(BATCH) -f batch-byte-compile
-VERSION = 1.6.2
+VERSION = 1.7.0
 
 EL = skewer-mode.el skewer-setup.el cache-table.el \
      skewer-bower.el skewer-css.el skewer-html.el skewer-repl.el

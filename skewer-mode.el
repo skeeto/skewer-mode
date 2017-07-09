@@ -88,6 +88,11 @@
 
 ;;; History:
 
+;; Version 1.7.0: features and fixes
+;;   * Support for other major modes (including web-mode) in skewer-html-mode
+;;   * Opportunistic support for company-mode completions
+;;   * Always serve content as UTF-8
+;;   * Improve skewer-everything.js portability
 ;; Version 1.6.2: fixes
 ;;   * skewer.log() takes multiple arguments
 ;;   * comint and encoding fixes
