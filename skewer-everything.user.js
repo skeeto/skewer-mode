@@ -6,7 +6,10 @@
 // @license      Public Domain
 // @include      /^https?:///
 // @grant        none
+// @run-at       document-start
 // ==/UserScript==
+
+window.NativeXHR = XMLHttpRequest;
 
 var host = 'http://localhost:8080';
 
