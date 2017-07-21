@@ -10,6 +10,7 @@
 // ==/UserScript==
 
 window.NativeXHR = XMLHttpRequest;
+window.skewer = inject;
 
 var host = 'http://localhost:8080';
 
