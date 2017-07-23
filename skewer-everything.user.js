@@ -43,10 +43,12 @@ function inject() {
     localStorage._autoskewered = JSON.stringify(injected);
 }
 
-/* Don't use on iframes. */
-if (window.top === window.self) {
-    document.body.appendChild(toggle);
-    if (JSON.parse(localStorage._autoskewered || 'false')) {
-        inject();
+document.addEventListener('DOMContentLoaded', function() {
+    /* Don't use on iframes. */
+    if (window.top === window.self) {
+        document.body.appendChild(toggle);
+        if (JSON.parse(localStorage._autoskewered || 'false')) {
+            inject();
+        }
     }
-}
+});
