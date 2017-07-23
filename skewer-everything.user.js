@@ -9,8 +9,8 @@
 // @run-at       document-start
 // ==/UserScript==
 
-window.NativeXHR = XMLHttpRequest;
-window.skewer = inject;
+window.skewerNativeXHR = XMLHttpRequest;
+window.skewerInject = inject;
 
 var host = 'http://localhost:8080';
 
