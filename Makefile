@@ -1,33 +1,36 @@
-EMACS   ?= emacs
-BATCH   := $(EMACS) -batch -Q -L .
-COMPILE := $(BATCH) -f batch-byte-compile
-VERSION := $(word 1,$(subst -, ,$(shell git describe)))
+## Use LDFLAGS to add (-L) simple-httpd and js2-mode to the load-path
 
-EL  = skewer-mode.el
-EL += skewer-setup.el
-EL += cache-table.el
-EL += skewer-bower.el
-EL += skewer-css.el
-EL += skewer-html.el
-EL += skewer-repl.el
+.POSIX:
+.SUFFIXES: .el .elc
+
+EMACS   = emacs
+LDFLAGS = -L ../simple-httpd -L ../js2-mode
+BATCH   = $(EMACS) -Q -batch -L . $(LDFLAGS)
+COMPILE = $(BATCH) -f batch-byte-compile
+VERSION = 1.7.0
+
+EL = skewer-mode.el skewer-setup.el cache-table.el \
+     skewer-bower.el skewer-css.el skewer-html.el skewer-repl.el
 ELC = $(EL:.el=.elc)
 PKG = skewer-mode-pkg.el
+DIST = $(PKG) $(EL) skewer.js example.html README.md UNLICENSE
 
-DIST_FILES = $(PKG) $(EL) skewer.js example.html README.md UNLICENSE
-
-.PHONY : all package compile clean
-
-all : package
-
-skewer-mode-$(VERSION).tar : $(DIST_FILES)
-	tar -cf $@ --transform "s,^,skewer-mode-$(VERSION)/," $^
-
+compile: $(ELC)
+all: compile package
 package: skewer-mode-$(VERSION).tar
+
+skewer-mode-$(VERSION): $(DIST)
+	mkdir -p $@
+	cp $(DIST) $@/
+	touch $@/
+
+skewer-mode-$(VERSION).tar: skewer-mode-$(VERSION)
+	tar cf $@ skewer-mode-$(VERSION)/
 
 compile: $(ELC)
 
 clean:
-	$(RM) *.tar $(ELC)
+	rm -rf skewer-mode-$(VERSION) skewer-mode-$(VERSION).tar $(ELC)
 
-%.elc: %.el
+.el.elc:
 	$(COMPILE) $<

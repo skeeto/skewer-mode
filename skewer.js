@@ -33,7 +33,8 @@ function skewer() {
  * @param {Function} [callback] The callback to receive a response object
  */
 skewer.getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
+    var XHR = skewerNativeXHR || XMLHttpRequest;
+    var xhr = new XHR();
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
             callback(JSON.parse(xhr.responseText));
@@ -50,7 +51,8 @@ skewer.getJSON = function(url, callback) {
  * @param {Function} [callback] The callback to receive a response object
  */
 skewer.postJSON = function(url, object, callback) {
-    var xhr = new XMLHttpRequest();
+    var XHR = skewerNativeXHR || XMLHttpRequest;
+    var xhr = new XHR();
     xhr.onreadystatechange = function() {
         if (callback && xhr.readyState === 4 && xhr.status === 200) {
             callback(JSON.parse(xhr.responseText));
@@ -251,6 +253,27 @@ skewer.fn.html = function(request) {
 skewer.fn.fetchselector = function(request) {
     var element = document.querySelector(request.eval);
     return { value: element.innerHTML };
+};
+
+/**
+ * Return a list of completions for an object.
+ */
+skewer.fn.completions = function(request) {
+    var object = skewer.globalEval(request.eval);
+    var keys = new Set();
+    var regex = new RegExp(request.regexp);
+    for (var key in object) {
+        if (regex.test(key)) {
+            keys.add(key);
+        }
+    }
+    var props = object != null ? Object.getOwnPropertyNames(object) : [];
+    for (var i = 0; i < props.length; i++) {
+        if (regex.test(props[i])) {
+            keys.add(props[i]);
+        }
+    }
+    return { value: Array.from(keys).sort() };
 };
 
 /**

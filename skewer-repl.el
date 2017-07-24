@@ -56,6 +56,11 @@ buffer.")
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt))
         comint-input-sender 'skewer-input-sender
         comint-process-echoes nil)
+  ;; Make opportunistic use of company-mode, but don't require it.
+  ;; This means company-backends may be undeclared, so don't emit a
+  ;; warning about it.
+  (with-no-warnings
+    (setq-local company-backends '(company-skewer-repl)))
   (unless (comint-check-proc (current-buffer))
     (insert skewer-repl-welcome)
     (start-process "skewer-repl" (current-buffer) nil)
@@ -143,6 +148,53 @@ matched files can be found."
     (with-current-buffer (get-buffer-create "*skewer-repl*")
       (skewer-repl-mode)))
   (pop-to-buffer (get-buffer "*skewer-repl*")))
+
+(defun company-skewer-repl (command &optional arg &rest _args)
+  "Skewerl REPL backend for company-mode.
+See `company-backends' for more info about COMMAND and ARG."
+  (interactive (list 'interactive))
+  (cl-case command
+    (interactive
+     (with-no-warnings ;; opportunistic use of company-mode
+       (company-begin-backend 'company-skewer-repl)))
+    (prefix (skewer-repl-company-prefix))
+    (ignore-case t)
+    (sorted t)
+    (candidates (cons :async
+                      (lambda (callback)
+                        (skewer-repl-get-completions arg callback))))))
+
+(defun skewer-repl-get-completions (arg callback)
+  "Get the completion list matching the prefix ARG.
+Evaluate CALLBACK with the completion candidates."
+  (let* ((expression (skewer-repl--get-completion-expression arg))
+         (pattern (if expression
+                      (substring arg (1+ (length expression)))
+                    arg)))
+    (skewer-eval (or expression "window")
+                 (lambda (result)
+                   (cl-loop with value = (cdr (assoc 'value result))
+                            for key being the elements of value
+                            when expression
+                            collect (concat expression "." key) into results
+                            else
+                            collect key into results
+                            finally (funcall callback results)))
+                 :type "completions"
+                 :extra `((regexp . ,pattern)))))
+
+(defun skewer-repl--get-completion-expression (arg)
+  "Get completion expression from ARG."
+  (let ((components (split-string arg "\\.")))
+    (when (> (length components) 1)
+      (mapconcat #'identity (cl-subseq components 0 -1) "."))))
+
+(defun skewer-repl-company-prefix ()
+  "Prefix for company."
+  (and (eq major-mode 'skewer-repl-mode)
+       (or (with-no-warnings ;; opportunistic use of company-mode
+             (company-grab-symbol-cons "\\." 1))
+           'stop)))
 
 ;;;###autoload
 (eval-after-load 'skewer-mode

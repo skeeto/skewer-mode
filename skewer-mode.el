@@ -89,6 +89,11 @@
 
 ;;; History:
 
+;; Version 1.7.0: features and fixes
+;;   * Support for other major modes (including web-mode) in skewer-html-mode
+;;   * Opportunistic support for company-mode completions
+;;   * Always serve content as UTF-8
+;;   * Improve skewer-everything.js portability
 ;; Version 1.6.2: fixes
 ;;   * skewer.log() takes multiple arguments
 ;;   * comint and encoding fixes
@@ -257,7 +262,7 @@ callback. The response object is passed to the hook function.")
 
 ;; Servlets
 
-(defservlet skewer text/javascript ()
+(defservlet skewer "text/javascript; charset=UTF-8" ()
   (insert-file-contents (expand-file-name "skewer.js" skewer-data-root))
   (goto-char (point-max))
   (run-hooks 'skewer-js-hook))
@@ -280,7 +285,7 @@ callback. The response object is passed to the hook function.")
     (dolist (hook skewer-response-hook)
       (funcall hook result))))
 
-(defservlet skewer/demo text/html ()
+(defservlet skewer/demo "text/html; charset=UTF-8" ()
   (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
 
 ;; Minibuffer display
@@ -550,7 +555,7 @@ inconsistent buffer."
                  (lambda (_) (message "%s loaded" buffer-name))
                  :type "script")))
 
-(defservlet skewer/script text/javascript (path)
+(defservlet skewer/script "text/javascript; charset=UTF-8" (path)
   (let ((id (string-to-number (nth 3 (split-string path "/")))))
     (insert (cache-table-get id skewer-hosted-scripts ""))))
 
