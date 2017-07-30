@@ -33,7 +33,7 @@ function skewer() {
  * @param {Function} [callback] The callback to receive a response object
  */
 skewer.getJSON = function(url, callback) {
-    var XHR = skewerNativeXHR || XMLHttpRequest;
+    var XHR = window.skewerNativeXHR || XMLHttpRequest;
     var xhr = new XHR();
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -51,7 +51,7 @@ skewer.getJSON = function(url, callback) {
  * @param {Function} [callback] The callback to receive a response object
  */
 skewer.postJSON = function(url, object, callback) {
-    var XHR = skewerNativeXHR || XMLHttpRequest;
+    var XHR = window.skewerNativeXHR || XMLHttpRequest;
     var xhr = new XHR();
     xhr.onreadystatechange = function() {
         if (callback && xhr.readyState === 4 && xhr.status === 200) {
