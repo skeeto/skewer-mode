@@ -29,6 +29,12 @@ skewer-mode-$(VERSION).tar: skewer-mode-$(VERSION)
 
 compile: $(ELC)
 
+run: compile
+	$(EMACS) -Q -L . $(LDFLAGS) \
+		 -l skewer-mode.elc -l skewer-setup.elc -f skewer-setup \
+		 --eval "(setf initial-scratch-message nil)" \
+		 -f js2-mode -f run-skewer
+
 clean:
 	rm -rf skewer-mode-$(VERSION) skewer-mode-$(VERSION).tar $(ELC)
 
