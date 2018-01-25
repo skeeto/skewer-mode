@@ -1,5 +1,9 @@
-## Use LDFLAGS to add (-L) simple-httpd and js2-mode to the load-path
-
+# Clone the dependencies of this package in sibling directories:
+#   $ git clone https://github.com/mooz/js2-mode ../js2-mode
+#   $ git clone https://github.com/skeeto/emacs-web-server ../simple-httpd
+#
+# Or set LDFLAGS to point at these packages elsewhere:
+#     $ make LDFLAGS='-L path/to/js2-mode -L path/to/simple-httpd'
 .POSIX:
 .SUFFIXES: .el .elc
 
