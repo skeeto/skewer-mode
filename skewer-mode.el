@@ -88,6 +88,9 @@
 
 ;;; History:
 
+;; Version 1.8.0: features
+;;   * Work around XMLHttpRequest tampering in userscript
+;;   * Add Makefile "run" target for testing
 ;; Version 1.7.0: features and fixes
 ;;   * Support for other major modes (including web-mode) in skewer-html-mode
 ;;   * Opportunistic support for company-mode completions
