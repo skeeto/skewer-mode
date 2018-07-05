@@ -286,8 +286,14 @@ callback. The response object is passed to the hook function.")
     (dolist (hook skewer-response-hook)
       (funcall hook result))))
 
+(defvar skewer-demo-source)
+
 (defservlet skewer/demo "text/html; charset=UTF-8" ()
-  (insert-file-contents (expand-file-name "example.html" skewer-data-root)))
+  (cond ((bufferp skewer-demo-source)
+         (insert-buffer-substring skewer-demo-source))
+        ((stringp skewer-demo-source)
+         (insert-file-contents skewer-demo-source))
+        (t (insert-buffer-substring (expand-file-name "example.html" skewer-data-root)))))
 
 ;; Minibuffer display
 
@@ -558,12 +564,24 @@ inconsistent buffer."
   :group 'skewer)
 
 ;;;###autoload
-(defun run-skewer ()
+(defun run-skewer (&optional arg)
   "Attach a browser to Emacs for a skewer JavaScript REPL. Uses
-`browse-url' to launch a browser."
-  (interactive)
-  (httpd-start)
-  (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port)))
+`browse-url' to launch a browser.
+
+With a prefix arugment (C-u), it will ask the filename of the
+root document.  With two prefix arguments (C-u C-u), it will use
+the contents of the current buffer as the root document."
+  (interactive "p")
+
+  (let ((source (cond ((eq arg 4)
+                       (read-file-name "Skewer filename: "))
+                      ((eq arg 16) (current-buffer))
+                      (t
+                       (expand-file-name "example.html" skewer-data-root)))))
+    (httpd-stop)
+    (setq skewer-demo-source source)
+    (httpd-start)
+    (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port))))
 
 ;; PhantomJS
 
