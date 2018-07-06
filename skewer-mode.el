@@ -286,14 +286,14 @@ callback. The response object is passed to the hook function.")
     (dolist (hook skewer-response-hook)
       (funcall hook result))))
 
-(defvar skewer-demo-source)
+(defvar skewer-demo-source
+  (expand-file-name "example.html" skewer-data-root)
+  "Source file name or buffer for `httpd/skewer/demo' servlet.")
 
 (defservlet skewer/demo "text/html; charset=UTF-8" ()
-  (cond ((bufferp skewer-demo-source)
-         (insert-buffer-substring skewer-demo-source))
-        ((stringp skewer-demo-source)
-         (insert-file-contents skewer-demo-source))
-        (t (insert-buffer-substring (expand-file-name "example.html" skewer-data-root)))))
+  (cl-etypecase skewer-demo-source
+    (buffer (insert-buffer-substring skewer-demo-source))
+    (string (insert-file-contents skewer-demo-source))))
 
 ;; Minibuffer display
 
@@ -572,16 +572,11 @@ With a prefix arugment (C-u), it will ask the filename of the
 root document.  With two prefix arguments (C-u C-u), it will use
 the contents of the current buffer as the root document."
   (interactive "p")
-
-  (let ((source (cond ((eq arg 4)
-                       (read-file-name "Skewer filename: "))
-                      ((eq arg 16) (current-buffer))
-                      (t
-                       (expand-file-name "example.html" skewer-data-root)))))
-    (httpd-stop)
-    (setq skewer-demo-source source)
-    (httpd-start)
-    (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port))))
+  (cl-case arg
+    (4  (setf skewer-demo-source (read-file-name "Skewer filename: ")))
+    (16 (setf skewer-demo-source (current-buffer))))
+  (httpd-start)
+  (browse-url (format "http://127.0.0.1:%d/skewer/demo" httpd-port)))
 
 ;; PhantomJS
 
