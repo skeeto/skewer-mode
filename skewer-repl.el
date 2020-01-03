@@ -116,8 +116,10 @@ buffer.")
         (save-excursion
           (goto-char (point-max))
           (forward-line 0)
-          (backward-char)
-          (insert (concat "\n" output (skewer-log-filename log))))))))
+          (if (bobp)
+              (insert (concat output (skewer-log-filename log) "\n"))
+            (backward-char)
+            (insert (concat "\n" output (skewer-log-filename log)))))))))
 
 (defcustom skewer-path-strip-level 1
   "Number of folders which will be stripped from url when discovering paths.
