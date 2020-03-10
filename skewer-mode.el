@@ -28,6 +28,7 @@
 ;; `skewer-mode'.
 
 ;;  * C-x C-e -- `skewer-eval-last-expression'
+;;  * C-c C-p -- `skewer-pprint-eval-last-expression'
 ;;  * C-M-x   -- `skewer-eval-defun'
 ;;  * C-c C-k -- `skewer-load-buffer'
 
@@ -156,6 +157,7 @@
   (let ((map (make-sparse-keymap)))
     (prog1 map
       (define-key map (kbd "C-x C-e") 'skewer-eval-last-expression)
+      (define-key map (kbd "C-c C-p") 'skewer-pprint-eval-last-expression)
       (define-key map (kbd "C-M-x") 'skewer-eval-defun)
       (define-key map (kbd "C-c C-k") 'skewer-load-buffer)))
   "Keymap for skewer-mode.")
@@ -192,6 +194,9 @@ callback. The response object is passed to the hook function.")
 (defvar skewer--last-timestamp 0
   "Timestamp of the last browser response. Use
 `skewer-last-seen-seconds' to access this.")
+
+(defvar skewer-result-buffer "*skewer-result*"
+  "Buffer name for `skewer-pprint-eval-last-expression' result output.")
 
 (cl-defstruct skewer-client
   "A client connection awaiting a response."
@@ -469,6 +474,36 @@ result into the current buffer."
       (cl-destructuring-bind (string start end) (skewer-get-last-expression)
         (skewer-flash-region start end)
         (skewer-eval string #'skewer-post-minibuffer)))))
+
+(defun skewer-pprint-eval-last-expression ()
+  (interactive)
+  (if js2-mode-buffer-dirty-p
+      (js2-mode-wait-for-parse
+       (skewer--save-point #'skewer-pprint-eval-last-expression))
+    (cl-destructuring-bind (string start end) (skewer-get-last-expression)
+      (skewer-flash-region start end)
+      (skewer-eval string #'skewer-post-pprint :verbose t)
+      (display-buffer (get-buffer-create skewer-result-buffer)))))
+
+(defun skewer-json-format ()
+  "Simple pretty print json buffer."
+  (interactive)
+  (beginning-of-buffer)
+  (replace-string "," ",\n")
+  (js2-mode)
+  (mark-whole-buffer)
+  (indent-for-tab-command)
+  (js2-reparse))
+
+(defun skewer-post-pprint (result)
+  (if (not (skewer-success-p result))
+      (skewer-post-minibuffer result)
+    (let ((value (cdr (assoc 'value result))))
+      (with-current-buffer (get-buffer-create skewer-result-buffer)
+        (erase-buffer)
+        (insert value)
+        (insert "\n")
+        (skewer-json-format)))))
 
 (defun skewer-get-defun ()
   "Return the toplevel JavaScript expression around the point as
