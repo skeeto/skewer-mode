@@ -92,8 +92,8 @@ To skewer your own document rather than the provided blank one,
  3. Start the HTTP server (`httpd-start`)
  4. Include "http://localhost:8080/skewer" as a script
     (see example.html and check your `httpd-port`)
- 5. Visit the document from your browser
-
+ 5. Visit the document from your browser, for example, `file:///D:/download/example.html`
+ 
 Skewer fully supports CORS so the document need not be hosted by Emacs
 itself. A Greasemonkey userscript is provided, *Skewer Everything*,
 for injecting Skewer into any arbitrary page you're visiting without
