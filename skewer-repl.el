@@ -52,7 +52,7 @@ buffer.")
 (define-derived-mode skewer-repl-mode comint-mode "js-REPL"
   "Provide a REPL into the visiting browser."
   :group 'skewer
-  :syntax-table emacs-lisp-mode-syntax-table
+  :syntax-table js2-mode-syntax-table
   (setq comint-prompt-regexp (concat "^" (regexp-quote skewer-repl-prompt))
         comint-input-sender 'skewer-input-sender
         comint-process-echoes nil)
@@ -195,7 +195,8 @@ Evaluate CALLBACK with the completion candidates."
   "Prefix for company."
   (and (eq major-mode 'skewer-repl-mode)
        (or (with-no-warnings ;; opportunistic use of company-mode
-             (company-grab-symbol-cons "\\." 1))
+             (with-syntax-table emacs-lisp-mode-syntax-table
+               (company-grab-symbol-cons "\\." 1)))
            'stop)))
 
 ;;;###autoload
