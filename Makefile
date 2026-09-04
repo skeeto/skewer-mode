@@ -11,13 +11,12 @@ EMACS   = emacs
 LDFLAGS = -L ../simple-httpd -L ../js2-mode
 BATCH   = $(EMACS) -Q -batch -L . $(LDFLAGS)
 COMPILE = $(BATCH) -f batch-byte-compile
-VERSION = 1.8.0
+VERSION = 1.9.0
 
 EL = skewer-mode.el skewer-setup.el cache-table.el \
      skewer-bower.el skewer-css.el skewer-html.el skewer-repl.el
 ELC = $(EL:.el=.elc)
-PKG = skewer-mode-pkg.el
-DIST = $(PKG) $(EL) skewer.js example.html README.md UNLICENSE
+DIST = $(EL) skewer.js example.html README.md UNLICENSE
 
 compile: $(ELC)
 all: compile package
